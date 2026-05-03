@@ -1,47 +1,54 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
-  testDir: './tests/e2e',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  expect: {
-    toHaveScreenshot: {
-      maxDiffPixels: 0,
+    testDir: './tests/e2e',
+    fullyParallel: true,
+    forbidOnly: !!process.env.CI,
+    retries: 0,
+    reporter: 'html',
+    use: {
+        baseURL: 'http://localhost:5173',
+        trace: 'on-first-retry',
+        contextOptions: { reducedMotion: 'reduce' },
+        serviceWorkers: 'block',
+        launchOptions: {
+            args: [
+                '--font-render-hinting=none',
+                '--disable-font-subpixel-positioning',
+                '--disable-lcd-text',
+                '--disable-skia-runtime-opts',
+                '--disable-system-font-check',
+                '--disable-features=FontAccess,WebRtcHideLocalIpsWithMdns',
+                '--force-device-scale-factor=1',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gpu', 
+                '--use-gl=swiftshader',
+                '--disable-smooth-scrolling',
+                '--disable-partial-raster',
+            ],
+        },
+        viewport: { width: 393, height: 852 },
+        deviceScaleFactor: 1, 
+        timezoneId: 'America/New_York',
+        locale: 'en-CA', 
     },
-  },
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/test-use */
-  use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:5173',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-  },
-
-  /* Configure projects for major browsers */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+    snapshotPathTemplate: '{testDir}/{testFileDir}/screenshots/{arg}.png',
+    projects: [
+        {
+            name: 'chromium',
+            use: {
+                browserName: 'chromium',
+            },
+        },
+    ],
+    webServer: {
+        command: 'bun run dev',
+        url: 'http://localhost:5173',
+        reuseExistingServer: !process.env.CI,
     },
-  ],
-
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'bun run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+    timeout: 60000, 
+    expect: {
+        timeout: 5000, 
+        toHaveScreenshot: { maxDiffPixels: 0 }
+    }
 });
