@@ -1,0 +1,1 @@
+{"name":"Got Five!","short_name":"GotFive","description":"A game of numbers","start_url":"/gotfive/pr3/","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","lang":"en","scope":"/gotfive/pr3/","icons":[{"src":"pwa-192x192.png","sizes":"192x192","type":"image/png"},{"src":"pwa-512x512.png","sizes":"512x512","type":"image/png"}]}
