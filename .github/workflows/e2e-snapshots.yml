@@ -1,0 +1,42 @@
+name: Regenerate E2E Snapshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate-snapshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Install dependencies
+        run: nix develop --command bun install
+
+      - name: Install Playwright Browsers
+        run: nix develop --command bunx playwright install --with-deps
+
+      - name: Regenerate snapshots
+        run: nix develop --command bun run test:e2e --update-snapshots
+
+      - name: Commit and push snapshots
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add tests/e2e/**/screenshots/*.png tests/e2e/**/README.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: regenerate e2e snapshots and docs"
+            git push
+          fi
