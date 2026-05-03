@@ -3,7 +3,6 @@ import { TestStepHelper } from "../helpers/test-step-helper";
 
 test("Homepage loads correctly", async ({ page }, testInfo) => {
 	const helper = new TestStepHelper(page, testInfo);
-	helper.setMetadata("Homepage Landing", "Verify the initial landing page of Got Five!");
 
 	await page.goto("/");
 
