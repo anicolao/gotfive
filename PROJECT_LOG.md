@@ -182,30 +182,18 @@
 - Add Playwright report upload on failure/completion.
 - Verify changes by pushing to a branch and opening a PR.
 
-## 2026-05-03: E2E Framework Fix and Standardisation
+## 2026-05-03: E2E Framework Fix and Standardisation (Orchestration)
 
-**User Prompt:**
-> This is a partially successfully scaffolded project for the gotfive game, but the E2E framework didn't really come out right.
-> 
-> It should have a workflow that verifies the e2e tests, and screenshots should be checked in. The E2E GUIDE needs to be *much* more explicit. Copy the guide from github.com:anicolao/food and/or github.com:anicolao/chess-tt and use the same test step helper from there too; create a workflow for regenerating the screenshots and a workflow to validate every PR passes the e2e test suite.
-> 
-> Also this project is meant to be implemented with svelte/sveltekit with vanilla CSS, not with react. It would be nice to fix that too, but that could wait for a follow-up.
-
-**Research & Strategy:**
-- Fetched `E2E_GUIDE.md`, `test-step-helper.ts`, and `playwright.config.ts` from `anicolao/food`.
-- Identified necessary updates to `playwright.config.ts` for consistency (software rendering, timezone, locale, etc.).
-- Planned `e2e-validate.yml` and `e2e-snapshots.yml` workflows.
-- Noted the future requirement for SvelteKit/Vanilla CSS migration.
-
-**Action Plan (Delegated to @coder):**
-1.  Initialize feature branch `e2e-framework-fix`.
-2.  Update `playwright.config.ts` with settings from `food` (software rendering, deterministic environment).
-3.  Replace `tests/e2e/helpers/test-step-helper.ts` with the standardized version.
-4.  Replace `E2E_GUIDE.md` with an explicit version based on `food`.
-5.  Create `.github/workflows/e2e-validate.yml` for PR validation.
-6.  Create `.github/workflows/e2e-snapshots.yml` for manual snapshot regeneration.
-7.  Update existing E2E tests to match the new configuration and helper.
-8.  Clean up reference files used during research.
+**Action Plan (Orchestration):**
+- Analyzed the current React-based project structure.
+- Reviewed existing `playwright.config.ts`, `TestStepHelper`, and `E2E_GUIDE.md`.
+- Verified that `deploy.yml` runs E2E tests but lacks specialized snapshot workflows.
+- Prepared detailed instructions for `@coder` to implement the standardized E2E framework, including:
+    - Software-rendered, deterministic Playwright configuration.
+    - Updated `TestStepHelper` with zero-pixel tolerance.
+    - Explicit `E2E_GUIDE.md`.
+    - New workflows for snapshot regeneration and PR validation.
+- Delegating implementation to `@coder`.
 
 
 
