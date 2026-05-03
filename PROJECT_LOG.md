@@ -182,20 +182,30 @@
 - Add Playwright report upload on failure/completion.
 - Verify changes by pushing to a branch and opening a PR.
 
-## 2026-05-03: Moving Repository to anicolao/gotfive
+## 2026-05-03: E2E Framework Fix and Standardisation
 
 **User Prompt:**
-> The repository is in the wrong place, it was supposed to be anicolao/gotfive
+> This is a partially successfully scaffolded project for the gotfive game, but the E2E framework didn't really come out right.
 > 
-> The repository should be empty with a single PR that has all the setup in it. Instead, these files are on main and there is a PR that won't merge cleanly. 
+> It should have a workflow that verifies the e2e tests, and screenshots should be checked in. The E2E GUIDE needs to be *much* more explicit. Copy the guide from github.com:anicolao/food and/or github.com:anicolao/chess-tt and use the same test step helper from there too; create a workflow for regenerating the screenshots and a workflow to validate every PR passes the e2e test suite.
 > 
-> Move the repository and fix it to be empty + the PR (the empty repository may contain a stub README.md if that makes it easier).
+> Also this project is meant to be implemented with svelte/sveltekit with vanilla CSS, not with react. It would be nice to fix that too, but that could wait for a follow-up.
 
-**Action Plan:**
-- Cloned the old repository to retrieve files.
-- Initialized a `setup` branch in `anicolao/gotfive` with the old files.
-- Maintained all previous configuration (Nix, Bun, Vite, TS, Playwright).
-- Pushed changes to `anicolao/gotfive` and opened a PR from `setup` to `main`.
+**Research & Strategy:**
+- Fetched `E2E_GUIDE.md`, `test-step-helper.ts`, and `playwright.config.ts` from `anicolao/food`.
+- Identified necessary updates to `playwright.config.ts` for consistency (software rendering, timezone, locale, etc.).
+- Planned `e2e-validate.yml` and `e2e-snapshots.yml` workflows.
+- Noted the future requirement for SvelteKit/Vanilla CSS migration.
+
+**Action Plan (Delegated to @coder):**
+1.  Initialize feature branch `e2e-framework-fix`.
+2.  Update `playwright.config.ts` with settings from `food` (software rendering, deterministic environment).
+3.  Replace `tests/e2e/helpers/test-step-helper.ts` with the standardized version.
+4.  Replace `E2E_GUIDE.md` with an explicit version based on `food`.
+5.  Create `.github/workflows/e2e-validate.yml` for PR validation.
+6.  Create `.github/workflows/e2e-snapshots.yml` for manual snapshot regeneration.
+7.  Update existing E2E tests to match the new configuration and helper.
+8.  Clean up reference files used during research.
 
 
 
