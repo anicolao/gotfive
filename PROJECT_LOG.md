@@ -224,18 +224,17 @@
 
 
 
-## 2026-05-05: Design Document and Mockups for Got Five
+## 2026-05-05: Detailed Design and Rule Clarification
 
 **User Prompt:**
-> Review the rules for gotfive. Let's write a design doc specifying the data structures and actions for gotfive in detail, using redux for actions and webrtc for communication. The first user to create a room can be the host for the room, additional players can join and connect via webRTC given the link. Use svelte and/or sveltekit for the initial UI implementation with an eye towards replacing the 2D UI with threlte in the future; use plain svelte-scoped CSS for styling; avoid react and tailwind. 
->
-> For now, write the design doc only. Use image generation to produce some mockups for UI inspiration as part of the design.
+> The tile numbers run from 1-60, each colour having every 5th number; e.g. 1,6,11,16,... in one colour, then 2,7,12,17,... in the next colour, and so on. Each number is unique. The first number of each colour has one dot, then the next number of each colour has 2 dots, and then 3 dots, then back to 1 dot again. In other words, the number // 5 + 1 = number of dots, where // represents integer division. Revise appropriately. Use image generation for mockups, don't generate more SVGs.
 
 **Action Plan (Orchestration):**
-- Researched Got Five rules from `RULES.md` and clarified game mechanics (12 tiles per color, 1-60 total).
-- Defined detailed Redux data structures (`GameState`, `Player`, `Tile`) and Actions (`drawTile`, `askClue`, `shoutGotFive`).
-- Outlined a WebRTC host-client architecture for state synchronization without a central authority.
-- Generated 70s-inspired SVG mockups: `main_board.svg`, `deduction_board.svg`, and a new `lobby.svg`.
-- Updated `DESIGN.md` with a full technical blueprint including Svelte component mapping and a Threlte migration roadmap.
-- Updated `VISION.md` to align with the Svelte/SvelteKit and plain CSS direction.
-- Verified all rules are accurately represented in the design.
+- Revised `RULES.md` to reflect the 1-60 numbering scheme and the 1-2-3 repeating dot pattern (`(number // 5) % 3 + 1`).
+- Updated `DESIGN.md` with:
+    - Accurate tile data structures and derived property logic (color and dots).
+    - Detailed WebRTC Host-Client state synchronization model with data masking.
+    - Comprehensive Redux slice definitions and action transitions.
+    - Svelte component mapping for the 70s-inspired UI.
+    - Detailed prompts for AI image generation to provide visual inspiration for the "70s modern" aesthetic, adhering to the "no more SVGs" constraint.
+- Verified that the design doc now provides a complete blueprint for implementation.
