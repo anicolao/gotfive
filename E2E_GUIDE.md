@@ -63,5 +63,7 @@ test('User logs food', async ({ page }, testInfo) => {
 
 ## 5. Running Tests
 
-- **Run all tests**: `bun run test:e2e`
-- **Update snapshots**: `bun run test:e2e:update-snapshots` (Use this when intentionally changing UI)
+Always run tests through `nix develop` to ensure tool version consistency.
+
+- **Run all tests**: `nix develop --command bun run test:e2e`
+- **Update snapshots**: `nix develop --command bun run test:e2e:update-snapshots` (Use this when intentionally changing UI)
