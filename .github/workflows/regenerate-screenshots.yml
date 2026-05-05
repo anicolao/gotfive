@@ -1,0 +1,30 @@
+name: Regenerate Screenshots
+on:
+  workflow_dispatch:
+
+jobs:
+  regenerate:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Install Playwright Browsers
+      run: bun --bun playwright install --with-deps chromium
+
+    - name: Update Snapshots
+      run: bun run test:e2e:update-snapshots
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        commit-message: "chore: regenerate e2e screenshots"
+        title: "chore: regenerate e2e screenshots"
+        body: "Automated screenshot regeneration"
+        branch: regenerate-screenshots
+        delete-branch: true

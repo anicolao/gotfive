@@ -6,23 +6,29 @@ This project uses [Playwright](https://playwright.dev/) for End-to-End testing. 
 
 We enforce a strict **Zero-Pixel Tolerance** policy for visual regression. Since visual state is the primary feedback mechanism for the user, any deviation is considered a bug.
 
-*   **Software Rendering**: We use software rendering (browsers launched with specific flags) to ensure 100% consistent snapshots across CI and local environments.
+*   **Software Rendering**: We use software rendering to ensure 100% consistent snapshots across CI and local environments.
 *   **Determinism**: Tests must be perfectly deterministic. Random seeds must be fixed.
 
-## 2. Test Structure
+## 2. Prohibitions
 
-All E2E tests live in `tests/e2e/`. Each test case gets its own directory.
+- **No manual screenshots**: Never use `page.screenshot()`. Always use the `TestStepHelper`.
+- **No arbitrary waits**: Never use `page.waitForTimeout()`. Use `locator.waitFor()` or wait for network/animation stabilization via the helper.
+- **No ignored tests**: Tests must either pass or be removed.
+
+## 3. Directory Convention
+
+All E2E tests live in `tests/e2e/`. Each test case gets its own directory, prefixed with a three-digit number.
 
 ```
 tests/e2e/
 ├── helpers/                   # Shared utilities (TestStepHelper)
-├── 001-game-start/            # Scenario Directory
-│   ├── 001-game-start.spec.ts # Main test file
+├── 001-homepage/              # Scenario Directory
+│   ├── 001-homepage.spec.ts   # Main test file
 │   ├── README.md              # Auto-generated verification doc
 │   └── screenshots/           # Committed baseline images
 ```
 
-## 3. The "Unified Step Pattern"
+## 4. The "Unified Step Pattern"
 
 To prevent synchronization errors between documentation and screenshots, we use a **Unified Step API**. You must **NEVER** manually manage filenames or counters.
 
@@ -30,22 +36,32 @@ To prevent synchronization errors between documentation and screenshots, we use 
 
 We use a helper class `TestStepHelper` that combines documentation, verification, and capturing into a single atomic operation: `step()`.
 
-#### Usage
+#### Usage Pattern
 
 ```typescript
 import { test, expect } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
 
-test('Scenario Title', async ({ page }, testInfo) => {
+test('User logs food', async ({ page }, testInfo) => {
+  // 1. Initialize
   const tester = new TestStepHelper(page, testInfo);
-  // ... test steps
+  tester.setMetadata('Feature Name', 'User Story description.');
+
+  // 2. Perform Action & Verify
+  await page.goto('/');
+  await tester.step('step-id', {
+    description: 'Human readable step description',
+    verifications: [
+      { spec: 'Technical verification description', check: async () => await expect(page).toHaveTitle('...') }
+    ]
+  });
+
+  // 3. Conclude
   tester.generateDocs();
 });
 ```
 
-## 4. Playwright Configuration
+## 5. Running Tests
 
--   **Browsers**: Tests run in Chromium by default.
--   **Flags**: We use flags like `--disable-gpu` to ensure consistent rendering.
--   **Timeouts**: The maximum acceptable timeout for any condition is **2000ms**.
--   **Waits**: Avoid arbitrary waits; always wait on real UI conditions.
+- **Run all tests**: `bun run test:e2e`
+- **Update snapshots**: `bun run test:e2e:update-snapshots` (Use this when intentionally changing UI)

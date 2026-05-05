@@ -8,6 +8,7 @@
     "build": "bun --bun tsc -b && bun --bun vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "commit": "sh -c 'git add . && git commit -m \"#$1: $2\"' --",
     "test:e2e": "bun --bun playwright test",
     "test:e2e:update-snapshots": "bun --bun playwright test -u"
   },
