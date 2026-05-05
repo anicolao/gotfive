@@ -223,3 +223,18 @@
 
 
 
+
+## 2026-05-05: Design Document and Mockups for Got Five
+
+**User Prompt:**
+> Review the rules for gotfive. Let's write a design doc specifying the data structures and actions for gotfive in detail, using redux for actions and webrtc for communication. The first user to create a room can be the host for the room, additional players can join and connect via webRTC given the link. Use svelte and/or sveltekit for the initial UI implementation with an eye towards replacing the 2D UI with threlte in the future; use plain svelte-scoped CSS for styling; avoid react and tailwind. 
+>
+> For now, write the design doc only. Use image generation to produce some mockups for UI inspiration as part of the design.
+
+**Action Plan (Orchestration):**
+- Researched Got Five rules from RULES.md and web search.
+- Defined Redux data structures (GameState, Player, Tile) and Actions (drawTile, askClue, etc.).
+- Outlined WebRTC host-client architecture for state synchronization.
+- Generated 70s-inspired SVG mockups (main_board.svg, deduction_board.svg) using a subagent.
+- Created DESIGN.md with the full specification.
+- Planned migration from React to Svelte.
