@@ -202,7 +202,9 @@
 - Update `.github/workflows/e2e.yml` and `.github/workflows/regenerate-screenshots.yml` to use `ubuntu-latest`.
 - Regenerate snapshots on Linux to ensure consistency.
 - Verify that E2E tests pass on the new platform.
-- Delegating implementation to `@coder`.
+- Delegating implementation to @coder.
+- Conductor confirmed platform mismatch: `deploy.yml` uses `ubuntu-latest` while others use `macos-latest`.
+
 
 
 
