@@ -24,7 +24,7 @@ The state is managed in a normalized Redux store. Each client maintains the full
 ```typescript
 interface PlayState {
   status: 'LOBBY' | 'SETUP' | 'PLAYING' | 'FINISHED';
-  deck: number[]; // Full shuffled sequence of 60 tiles (0-59 or 1-60)
+  deck: number[]; // Full shuffled sequence of 60 tiles (IDs 1-60)
   deckIndex: number; // Points to the next tile to be revealed
   publicPool: number[]; // Tile IDs currently face up
   turnOrder: string[]; // List of player IDs
@@ -64,11 +64,7 @@ interface ClueRecord {
 Tiles are identified by an ID from 1 to 60. All properties are derived from this ID:
 
 - **Color**: `(id - 1) % 5`
-  - 0: Red
-  - 1: Blue
-  - 2: Yellow
-  - 3: Green
-  - 4: Purple
+  - 0: Red, 1: Blue, 2: Yellow, 3: Green, 4: Purple
 - **Dots**: `Math.floor((id - 1) / 5) % 3 + 1`
   - Results in a repeating 1-2-3 pattern for each color as numbers increase.
 - **Number**: The ID itself is the number printed on the tile.
@@ -76,16 +72,16 @@ Tiles are identified by an ID from 1 to 60. All properties are derived from this
 ## 4. WebRTC & Communication Protocol
 
 ### 4.1. Fully Transparent Protocol
-The Host shuffles the deck once at the start and broadcasts the entire sequence (or the seed) to all peers.
+The Host shuffles the deck once at the start and broadcasts the entire sequence to all peers.
 
 1. **Initial Shuffle**: The Host generates the deck order and shares it during the `game/start` action.
 2. **Action Sequencing**: The Host acts as the authoritative sequencer. Every action (Reveal, Clue, Guess) is assigned a monotonically increasing `index` by the Host and broadcasted.
 3. **Local Hiding**: While the client state contains all tile positions, the UI component for an opponent's stand will only render face-down tiles unless the game is over.
-4. **Immediate Feedback**: Players can see their own results immediately (e.g., drawing a tile) because their client already knows what it is, but the "official" state update happens when the Host's broadcasted action is received.
+4. **Immediate Feedback**: Players can see their own results immediately locally, but the "official" state update happens when the Host's broadcasted action is received.
 
 ### 4.2. Action Relay Flow
-- **Peer Intent**: Peer sends an `INTENT` (e.g., "I want to Reveal a Tile") to the Host.
-- **Host Broadcast**: Host validates the intent, assigns an `index`, and broadcasts the `ACTION` to all peers.
+- **Peer Intent**: Peer sends an `INTENT` to the Host.
+- **Host Broadcast**: Host validates, assigns an `index`, and broadcasts the `ACTION` to all peers.
 - **State Synchronization**: All clients apply the `ACTION` using the same Redux reducers.
 
 ## 5. Redux Actions
@@ -101,11 +97,16 @@ The Host shuffles the deck once at the start and broadcasts the entire sequence 
 
 ## 6. Svelte Implementation
 
-- **Scoped CSS**: Components encapsulate their own 70s styles using CSS variables defined in a global theme (e.g., `--color-avocado`, `--color-harvest-gold`).
-- **State Subscription**: Svelte components subscribe to the Redux store using a custom wrapper or `svelte-redux` type pattern.
-- **UI Masking**: 
+- **App Structure**:
+  - `/`: Landing page, create/join room.
+  - `/room/[id]`: The game instance.
+- **Components**:
+  - `Table.svelte`: Displays the `publicPool` of revealed tiles.
+  - `PlayerStand.svelte`: Displays the player's 5 hidden tiles (backs facing player) and received clues.
+  - `OpponentStand.svelte`: Displays opponent's tiles (numbers hidden by UI until game over) and their clues.
+  - `DeductionBoard.svelte`: A grid for the player to mark off eliminated numbers (local state only).
+- **UI Masking Strategy**: 
   ```svelte
-  <!-- OpponentTile.svelte -->
   {#if isGameOver || isRevealed}
     <Tile number={tileNumber} />
   {:else}
@@ -115,17 +116,16 @@ The Host shuffles the deck once at the start and broadcasts the entire sequence 
 
 ## 7. Visual Inspiration (AI Mockup Prompts)
 
-Use these prompts in an AI image generator to establish the "Retro 70s Groovy" look:
+Establish the "Retro 70s Groovy" look with these prompts:
 
 ### 7.1. The Game Room Vibe
 > "A high-angle tabletop view of a 1974 board game called 'Got Five!'. The table is dark wood grain. In the center is an avocado green felt circle. On the felt are chunky cream-colored plastic tiles with orange and blue numbers. Around the table are 1970s interior elements like patterned wallpaper in harvest gold and burnt orange. Warm, analog lighting, high detail, retro-futurism aesthetic."
 
 ### 7.2. The Sassy Tiles
-> "Close-up of three thick, rounded plastic game tiles. One is red with the number '1', one is blue with '17', and one is purple with '45'. Each tile has a minimalist 'sassy' face drawn in black ink—one winking, one with star-eyes, one with a smirk. The numbers are in a chunky, 'Cooper Black' inspired font. 1970s toy photography style, soft focus background."
+> "Close-up of three thick, rounded plastic game tiles. One is red with the number '1', one is blue with '17', and one is purple with '45'. Each tile has a minimalist 'sassy' face drawn in black ink—one winking, one with star-eyes, one with a smirk. 1970s toy photography style."
 
 ### 7.3. The Deduction Log
-> "A 'Top Secret' manila folder lying on a wooden table. Inside the folder is a grid of numbers from 1 to 60. Some numbers are crossed out with a red marker, others have a green checkmark. The paper looks aged and slightly yellowed. A chunky orange plastic pen lies next to the folder. 1970s spy movie aesthetic, macro photography."
+> "A 'Top Secret' manila folder lying on a wooden table. Inside the folder is a grid of numbers from 1 to 60. Some numbers are crossed out with a red marker, others have a green checkmark. A chunky orange plastic pen lies next to the folder. 1970s spy movie aesthetic."
 
 ### 7.4. The Player Stand
-> "A 3D render of a dark brown plastic stand holding five hidden game tiles. The tiles are facing away from the viewer. The stand has six distinct notches for placing other tiles. The lighting is warm and directional, casting soft shadows on a green felt surface. Retro-modern product design, high fidelity, 70s colors."
-
+> "A 3D render of a dark brown plastic stand holding five hidden game tiles. The tiles are facing away from the viewer. The stand has six distinct notches for placing other tiles. Warm and directional lighting, soft shadows on a green felt surface. Retro-modern product design."
