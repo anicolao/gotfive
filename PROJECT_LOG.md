@@ -207,8 +207,18 @@
 - **Coder Verification:**
     - Installed Bun and Nix in the local environment.
     - Verified `nix develop --command bun run test:e2e` passes on Linux.
-    - Confirmed that regenerated snapshots match the current committed baselines.
-    - Verified `tests/e2e/001-homepage/README.md` is correctly generated.
+## 2026-05-05: Generate RULES.md from PDF
+
+**User Prompt:**
+> Read the attached PDF and generate RULES.md summarizing the rules of the gotfive game.
+>
+> [GOT_FIVE_RULES_USA.pdf](https://github.com/user-attachments/files/27403730/GOT_FIVE_RULES_USA.pdf)
+
+**Action Plan (Orchestration):**
+- Downloaded and analyzed `GOT_FIVE_RULES_USA.pdf`.
+- Extracted and summarized the game rules, setup, and goal.
+- Prepared instructions for `@coder` to create `RULES.md` based on the summary.
+- Delegating the creation of `RULES.md` to `@coder`.
 
 
 
