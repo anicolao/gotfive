@@ -195,5 +195,16 @@
     - New workflows for snapshot regeneration and PR validation.
 - Delegating implementation to `@coder`.
 
+## 2026-05-05: Transition E2E Tests to Linux
+
+**User Prompt:**
+> The e2e tests need to run on linux consistently in CI and in screenshot regeneration so that it all passes. Let's make it consistent and ensure CI workflows pass.
+
+**Action Plan (Orchestration):**
+- Transitioned GitHub workflows (`e2e.yml`, `regenerate-screenshots.yml`) to use `ubuntu-latest`.
+- Regenerated visual snapshots on Linux to ensure consistent baselines in CI.
+- Verified all E2E tests pass on the new platform.
+- Delegating implementation to @coder.
+
 
 
