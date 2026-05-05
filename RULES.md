@@ -6,7 +6,9 @@ Got Five! is a game of logic and deduction where players compete to be the first
 Be the first to correctly guess your 5 hidden numbers using the clues revealed over the course of the game!
 
 ## Components
-- 60 Tiles: 5 colors, numbered 1 to 60. Each tile has 1, 2, or 3 dots.
+- 60 Tiles: 5 colors (Red, Blue, Yellow, Green, Purple), numbered 1 to 60.
+  - Color mapping: Each color has every 5th number (e.g., Red: 1, 6, 11, ...; Blue: 2, 7, 12, ...).
+  - Dots: Each tile has 1, 2, or 3 dots. The number of dots is calculated as `(number // 5) % 3 + 1`. This results in a repeating 1-2-3 dot pattern for each color as the numbers increase.
 - 4 Stands: Each with 5 tile slots and a sorting zone with 6 notches.
 - 4 Screens: To hide your game board.
 - 4 Game Boards and Dry-Erase Markers: To track your deductions.

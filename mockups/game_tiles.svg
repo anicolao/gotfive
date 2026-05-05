@@ -1,0 +1,54 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#EFEBE9" />
+  
+  <!-- Tile 1: Red 1 (1 Dot) -->
+  <g transform="translate(50, 50)">
+    <!-- Shadow -->
+    <rect x="4" y="4" width="80" height="110" rx="12" fill="rgba(0,0,0,0.2)" />
+    <!-- Plastic Body -->
+    <rect width="80" height="110" rx="12" fill="#FFF9C4" stroke="#795548" stroke-width="2" />
+    <!-- Highlight -->
+    <rect x="5" y="5" width="70" height="50" rx="10" fill="white" opacity="0.3" />
+    
+    <!-- Number -->
+    <text x="40" y="65" font-family="'Cooper Black', 'Arial Black', serif" font-size="48" text-anchor="middle" fill="#D32F2F">1</text>
+    
+    <!-- Dot Pattern (1 dot) -->
+    <circle cx="40" cy="85" r="5" fill="#D32F2F" />
+  </g>
+
+  <!-- Tile 2: Blue 17 (1 Dot) -->
+  <g transform="translate(160, 80) rotate(5)">
+    <!-- Shadow -->
+    <rect x="4" y="4" width="80" height="110" rx="12" fill="rgba(0,0,0,0.2)" />
+    <!-- Plastic Body -->
+    <rect width="80" height="110" rx="12" fill="#FFF9C4" stroke="#795548" stroke-width="2" />
+    
+    <!-- Number -->
+    <text x="40" y="65" font-family="'Cooper Black', 'Arial Black', serif" font-size="42" text-anchor="middle" fill="#1976D2">17</text>
+    
+    <!-- Dot Pattern (1 dot) -->
+    <circle cx="40" cy="85" r="5" fill="#1976D2" />
+  </g>
+
+  <!-- Tile 3: Purple 45 (3 Dots) -->
+  <g transform="translate(270, 40) rotate(-10)">
+    <!-- Shadow -->
+    <rect x="4" y="4" width="80" height="110" rx="12" fill="rgba(0,0,0,0.2)" />
+    <!-- Plastic Body -->
+    <rect width="80" height="110" rx="12" fill="#FFF9C4" stroke="#795548" stroke-width="2" />
+    
+    <!-- Number -->
+    <text x="40" y="65" font-family="'Cooper Black', 'Arial Black', serif" font-size="42" text-anchor="middle" fill="#7B1FA2">45</text>
+    
+    <!-- Dot Pattern (3 dots) -->
+    <circle cx="25" cy="85" r="5" fill="#7B1FA2" />
+    <circle cx="40" cy="85" r="5" fill="#7B1FA2" />
+    <circle cx="55" cy="85" r="5" fill="#7B1FA2" />
+  </g>
+
+  <!-- Title/Label -->
+  <text x="200" y="250" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#5D4037">GOT FIVE! COMPONENT DETAIL: PLASTIC TILES</text>
+  <text x="200" y="275" font-family="Arial" font-size="12" font-style="italic" text-anchor="middle" fill="#795548">Colors correspond to (n-1)%5. Dots correspond to floor((n-1)/5)%3 + 1.</text>
+</svg>

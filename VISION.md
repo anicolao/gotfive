@@ -9,10 +9,13 @@
 - Accessible and fun.
 
 ## Technical Direction
-- Vite + React + TypeScript.
+- Vite + SvelteKit + TypeScript.
 - Bun for package management.
 - Playwright for E2E testing.
+- Redux for state management.
+- WebRTC for P2P multiplayer.
 - Nix for reproducible environments.
+- Plain Svelte-scoped CSS (no Tailwind).
 
 ## Near-term Milestones
 - Repository setup.

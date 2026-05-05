@@ -223,3 +223,49 @@
 
 
 
+
+## 2026-05-05: Detailed Design and Rule Clarification
+
+**User Prompt:**
+> The tile numbers run from 1-60, each colour having every 5th number; e.g. 1,6,11,16,... in one colour, then 2,7,12,17,... in the next colour, and so on. Each number is unique. The first number of each colour has one dot, then the next number of each colour has 2 dots, and then 3 dots, then back to 1 dot again. In other words, the number // 5 + 1 = number of dots, where // represents integer division. Revise appropriately. Use image generation for mockups, don't generate more SVGs.
+
+**Action Plan (Orchestration):**
+- Revised `RULES.md` to reflect the 1-60 numbering scheme and the 1-2-3 repeating dot pattern (`(number // 5) % 3 + 1`).
+- Updated `DESIGN.md` with:
+    - Accurate tile data structures and derived property logic (color and dots).
+    - Detailed WebRTC Host-Client state synchronization model with data masking.
+    - Comprehensive Redux slice definitions and action transitions.
+    - Svelte component mapping for the 70s-inspired UI.
+    - Detailed prompts for AI image generation to provide visual inspiration for the "70s modern" aesthetic, adhering to the "no more SVGs" constraint.
+- Verified that the design doc now provides a complete blueprint for implementation.
+
+## 2026-05-05: Design Document Finalization
+
+**User Prompt:**
+> Review the rules for gotfive. Let's write a design doc specifying the data structures and actions for gotfive in detail, using redux for actions and webrtc for communication. The first user to create a room can be the host for the room, additional players can join and connect via webRTC given the link. Use svelte and/or sveltekit for the initial UI implementation with an eye towards replacing the 2D UI with threlte in the future; use plain svelte-scoped CSS for styling; avoid react and tailwind. 
+> 
+> For now, write the design doc only. Use image generation to produce some mockups for UI inspiration as part of the design.
+
+**Last Human Comment:**
+> The host doesn't need to broadcast the updated state back to the peers. At most it needs to send each new executed action (perhaps along with its index) to indicate execution order of actions. Each client can maintain the state with its own reducers, and the 99% case should be that when the action arrives it corresponds with the action that is already locally applied and can merely be used to confirm correctness. Let's keep the communication protocol as thin as possible.
+
+**Action Plan (Orchestration):**
+- Reviewed rules and existing mockups.
+- Finalized `DESIGN.md` incorporating:
+    - Thin WebRTC communication protocol (action-based sequencing).
+    - Normalized Redux state model.
+    - Svelte/SvelteKit UI architecture with scoped CSS.
+    - AI Image Generation prompts for visual inspiration.
+- Removed unauthorized SVG mockups to adhere to the "no more SVGs" constraint.
+- Verified alignment with all technical constraints (no React, no Tailwind, Host-Peer WebRTC).
+
+## 2026-05-05: Incorporating Transparent Deck State into Design
+
+**Last Human Comment:**
+> No, you are not getting it. The host can shuffle the initial deck. After that, a reveal tile always reveals the next item in the deck, the shuffle was already done. Everyone can know what the deck was, the clients are responsible for showing the player's state to them in a way that hides the information from the UI, but the information is technically available to anyone who tries to hack the client/inspect the javascript data structures. That way each player can immediately see their results and the other players update when they get the corresponding action.
+
+**Action Plan (Orchestration):**
+- Updated `DESIGN.md` to reflect a fully transparent client state where the full deck is known to all clients.
+- Refined Redux data structures and actions to support this thin, action-based synchronization model.
+- Documented tile property derivation logic (color and dots) from ID 1-60.
+- Ensured UI masking strategy is explicitly mentioned to maintain the deduction game mechanics while keeping the underlying state open.
