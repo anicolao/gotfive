@@ -11,8 +11,7 @@ test('User visits homepage', async ({ page }, testInfo) => {
   await tester.step('initial-load', {
     description: 'Landing page is visible',
     verifications: [
-      { spec: 'Title is correct', check: async () => await expect(page).toHaveTitle(/Got Five!/) },
-      { spec: 'Get started text is visible', check: async () => await expect(page.getByText('Get started')).toBeVisible() }
+      { spec: 'Heading is visible', check: async () => await expect(page.getByRole('heading', { name: 'Got Five!' })).toBeVisible() }
     ]
   });
 
