@@ -258,3 +258,14 @@
     - AI Image Generation prompts for visual inspiration.
 - Removed unauthorized SVG mockups to adhere to the "no more SVGs" constraint.
 - Verified alignment with all technical constraints (no React, no Tailwind, Host-Peer WebRTC).
+
+## 2026-05-05: Incorporating Transparent Deck State into Design
+
+**Last Human Comment:**
+> No, you are not getting it. The host can shuffle the initial deck. After that, a reveal tile always reveals the next item in the deck, the shuffle was already done. Everyone can know what the deck was, the clients are responsible for showing the player's state to them in a way that hides the information from the UI, but the information is technically available to anyone who tries to hack the client/inspect the javascript data structures. That way each player can immediately see their results and the other players update when they get the corresponding action.
+
+**Action Plan (Orchestration):**
+- Updated `DESIGN.md` to reflect a fully transparent client state where the full deck is known to all clients.
+- Refined Redux data structures and actions to support this thin, action-based synchronization model.
+- Documented tile property derivation logic (color and dots) from ID 1-60.
+- Ensured UI masking strategy is explicitly mentioned to maintain the deduction game mechanics while keeping the underlying state open.
