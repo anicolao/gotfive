@@ -193,6 +193,15 @@
     - Updated `TestStepHelper` with zero-pixel tolerance.
     - Explicit `E2E_GUIDE.md`.
     - New workflows for snapshot regeneration and PR validation.
+## 2026-05-05: Aligning E2E Platforms to Linux
+
+**User Prompt:**
+> E2E tests are not passing. Ensure that the platform for the workflow that generates screenshots matches the platform that runs in CI to validate screenshots. For this project, it is acceptable if both platforms are Linux, since no local mac development is being done.
+
+**Action Plan (Orchestration):**
+- Update `.github/workflows/e2e.yml` and `.github/workflows/regenerate-screenshots.yml` to use `ubuntu-latest`.
+- Regenerate snapshots on Linux to ensure consistency.
+- Verify that E2E tests pass on the new platform.
 - Delegating implementation to `@coder`.
 
 
