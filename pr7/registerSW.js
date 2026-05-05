@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/gotfive/pr7/sw.js', { scope: '/gotfive/pr7/' })})}
