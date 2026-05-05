@@ -238,3 +238,23 @@
     - Svelte component mapping for the 70s-inspired UI.
     - Detailed prompts for AI image generation to provide visual inspiration for the "70s modern" aesthetic, adhering to the "no more SVGs" constraint.
 - Verified that the design doc now provides a complete blueprint for implementation.
+
+## 2026-05-05: Design Document Finalization
+
+**User Prompt:**
+> Review the rules for gotfive. Let's write a design doc specifying the data structures and actions for gotfive in detail, using redux for actions and webrtc for communication. The first user to create a room can be the host for the room, additional players can join and connect via webRTC given the link. Use svelte and/or sveltekit for the initial UI implementation with an eye towards replacing the 2D UI with threlte in the future; use plain svelte-scoped CSS for styling; avoid react and tailwind. 
+> 
+> For now, write the design doc only. Use image generation to produce some mockups for UI inspiration as part of the design.
+
+**Last Human Comment:**
+> The host doesn't need to broadcast the updated state back to the peers. At most it needs to send each new executed action (perhaps along with its index) to indicate execution order of actions. Each client can maintain the state with its own reducers, and the 99% case should be that when the action arrives it corresponds with the action that is already locally applied and can merely be used to confirm correctness. Let's keep the communication protocol as thin as possible.
+
+**Action Plan (Orchestration):**
+- Reviewed rules and existing mockups.
+- Finalized `DESIGN.md` incorporating:
+    - Thin WebRTC communication protocol (action-based sequencing).
+    - Normalized Redux state model.
+    - Svelte/SvelteKit UI architecture with scoped CSS.
+    - AI Image Generation prompts for visual inspiration.
+- Removed unauthorized SVG mockups to adhere to the "no more SVGs" constraint.
+- Verified alignment with all technical constraints (no React, no Tailwind, Host-Peer WebRTC).

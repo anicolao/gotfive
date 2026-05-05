@@ -1,140 +1,114 @@
 # Got Five! Design Document
 
 ## 1. Overview
-Got Five! is a digital implementation of the logic and deduction board game. This document specifies the technical architecture for a SvelteKit-based PWA utilizing Redux for state management and WebRTC for peer-to-peer multiplayer.
+Got Five! is a digital adaptation of the logic and deduction board game. This document specifies the technical architecture for a SvelteKit-based PWA utilizing Redux for state management and WebRTC for peer-to-peer multiplayer.
+
+### 1.1 Aesthetic & Theme
+- **Retro 70s Groovy**: The UI utilizes a palette of Avocado Green, Harvest Gold, Burnt Orange, and Wood textures.
+- **Sassy Tiles**: Game tiles feature expressive "sassy" faces and star-eyes, adding character to the numbers.
+- **Analog Feel**: Buttons and panels mimic plastic and paper components from the 1970s.
 
 ## 2. Technical Stack
 - **Framework**: SvelteKit (Static Site Generation for PWA compatibility).
 - **State Management**: Redux Toolkit (`@reduxjs/toolkit`).
-- **P2P Communication**: WebRTC via `RTCPeerConnection` (Host-Client Hub).
+- **P2P Communication**: WebRTC via `RTCPeerConnection` (Host-Peer Mesh).
 - **Styling**: Svelte-scoped CSS with CSS Variables for a 70s-inspired color palette.
 - **3D**: Threlte (Future expansion phase).
 - **No-Go List**: No React, no Tailwind, no centralized server for game logic.
 
 ## 3. Data Structures (Redux State)
 
-To simplify synchronization and implementation, **the full game state is shared across all clients**. We rely on player integrity regarding the inspection of the Redux store.
+The state is managed in a normalized Redux store. To maintain the "thin" protocol, each client maintains its own state by applying actions in the same order.
 
 ### 3.1. `game` Slice
 ```typescript
 interface GameState {
-  room: {
-    id: string;
-    hostId: string;
-    status: 'LOBBY' | 'SETUP' | 'PLAYING' | 'FINISHED';
-  };
-  players: Record<string, Player>;
-  // Shuffled at start by the Host
-  deck: Tile[]; 
-  board: {
-    publicPool: Tile[];
-    trash: Tile[];
-  };
-  turn: {
-    activePlayerId: string;
-    phase: 'DRAW' | 'CLUE' | 'WAIT_CLUE';
-    currentClueRequest: ClueRequest | null;
-  };
+  roomId: string;
+  hostId: string;
+  status: 'LOBBY' | 'SETUP' | 'PLAYING' | 'FINISHED';
+  turnIndex: number;
+  // Authoritative only on Host for 'SETUP' phase, 
+  // but public once revealed.
+  supply: number[]; // Tile IDs remaining
+  publicPool: number[]; // Tile IDs face up
+  actionHistory: ActionLog[];
 }
 
-interface Player {
-  id: string;
-  name: string;
-  // All players see these, but the owner should "pretend" not to know the numbers
-  hand: Tile[]; 
-  stand: {
-    sortNotches: (Tile | null)[6]; // 6 slots between/around 5 tiles
-    compareNotes: Record<number, CompareNote[]>; // Per-tile-slot notes (index 0-4)
-  };
-  hasGuessed: boolean;
-  isWinner: boolean;
-  isReady: boolean;
-}
-
-interface Tile {
-  id: string; // uuid for identity
-  number: number; // 1-60
-  // color and dots are derived in the UI:
-  // color = colors[(number - 1) % 5] (Red, Blue, Yellow, Green, Purple)
-  // dots = Math.floor((number - 1) / 5) % 3 + 1 (1, 2, or 3)
-}
-
-interface ClueRequest {
-  type: 'SORT' | 'COMPARE';
-  requesterId: string;
-  targetId: string;
-  poolTileId: string;
-  slotIndex?: number; // For COMPARE
+interface ActionLog {
+  index: number;
+  action: ReduxAction;
+  timestamp: number;
 }
 ```
 
-### 3.2. `ui` Slice (Local only)
+### 3.2. `players` Slice
+```typescript
+interface Player {
+  id: string;
+  name: string;
+  // Hidden tiles: [Red, Blue, Yellow, Green, Purple]
+  // Peer view: numbers are null unless revealed/game over.
+  // Host view: all numbers are known.
+  hand: (number | null)[]; 
+  isConnected: boolean;
+  eliminated: boolean;
+}
+```
+
+### 3.3. `ui` Slice (Local only)
 - `myId`: string
-- `isHost`: boolean
-- `deductionLog`: Record<number, 'KNOWN' | 'POSSIBLE' | 'EXCLUDED'>;
+- `deductionLog`: Record<number, '?' | 'X' | 'OK'>; // Local player's deductions
 - `overlay`: 'RULES' | 'GUESS' | 'NONE';
 
-## 4. WebRTC Architecture
+## 4. WebRTC & Communication Protocol
 
-### 4.1. Host-Client Model
-1. **The Host**: The first user to create a room. Responsible for:
-   - Initializing the game state.
-   - Shuffling the `deck`.
-   - Acting as the signaling hub for WebRTC (via a lightweight signaling service or manual link sharing).
-   - Broadcasting the authoritative state to all clients.
-2. **The Client**: Connects to the Host.
-   - Receives the full state.
-   - Dispatches actions to the Host.
+### 4.1. Thin Communication Model
+The Host does not broadcast the full state. Instead, it acts as the authoritative sequencer of actions.
 
-### 4.2. Action Synchronization
-- **Optimistic UI**: Clients can run the reducer locally for immediate feedback, but the Host's state is authoritative.
-- **Action Relay**: When a client performs an action, it is sent over the WebRTC Data Channel to the Host.
-- **State Broadcast**: The Host applies the action and broadcasts the updated state to all peers.
+1. **Host Authoritarianism**: The Host is responsible for all non-deterministic events (shuffling, drawing tiles).
+2. **Action Sequencing**: Every action is assigned a monotonically increasing `index` by the Host.
+3. **Optimistic Local Execution**: Clients can apply actions locally for immediate UI feedback. If the Host's broadcasted action (with index) matches the local intent, it confirms correctness. If not, the client reconciles with the Host's authoritative action.
+4. **State Maintenance**: Each client runs the same reducers on the same sequence of actions to reach the same state.
 
-## 5. Game Logic & Rules Implementation
+### 4.2. Action Relay Flow
+- **Peer Action**: Peer sends `INTENT` (e.g., "Reveal Tile") to Host.
+- **Host Confirmation**: Host generates the result (e.g., `tileId: 15`), assigns an `index`, and broadcasts the `ACTION` to all peers.
+- **State Update**: All clients apply `ACTION` to their Redux store.
 
-### 5.1. Tile Properties
-- **Colors**: 5 colors (Red, Blue, Yellow, Green, Purple).
-- **Numbers**: 1-60.
-- **Dots**: 1, 2, or 3.
-  - `color = (tile.number - 1) % 5`
-  - `dots = (Math.floor((tile.number - 1) / 5) % 3) + 1`
+## 5. Redux Actions
 
-### 5.2. Sorting Logic
-- Hidden tiles are always sorted ascending (left-to-right) on a player's stand.
-- A "SORT" clue involves placing a tile in one of 6 notches:
-  - Notch 0: Tile < Hand[0]
-  - Notch 1: Hand[0] < Tile < Hand[1]
-  - ...
-  - Notch 5: Tile > Hand[4]
+| Action | Payload | Effect |
+| :--- | :--- | :--- |
+| `game/start` | `{ seed: number }` | Initializes deck and deals tiles (Host only). |
+| `game/reveal` | `{ tileId: number }` | Moves tile from supply to public pool. |
+| `game/clue_sort` | `{ targetId: string, tileId: number, notch: number }` | Records a sort clue on a player's stand. |
+| `game/clue_compare` | `{ targetId: string, tileId: number, slot: number, match: boolean }` | Records a dot-comparison clue. |
+| `game/guess` | `{ playerId: string, guesses: number[] }` | Validates a player's final guess. |
 
-### 5.3. Comparison Logic
-- A "COMPARE" clue checks if `tile.dots === hand[slotIndex].dots`.
+## 6. Svelte Implementation
 
-## 6. Aesthetic & UI Design
+- **Scoped CSS**: Components encapsulate their own 70s styles using CSS variables defined in a global theme (e.g., `--color-avocado`, `--color-harvest-gold`).
+- **Analog Interactions**: Buttons use CSS `:active` states to mimic physical plastic clicks.
+- **Threlte Future**: The 2D component structure (Tabletop -> Stands -> Tiles) is designed to be easily swappable for Threlte 3D components while maintaining the same Redux backing.
 
-The UI utilizes a **"70s Modern/Retro-Futurism"** aesthetic: warm "Harvest Gold" and "Avocado Green" tones, chunky plastic textures, and rounded corners.
+## 7. Visual Inspiration (AI Mockup Prompts)
 
-### 6.1. Visual Mockups (Inspiration)
-The following mockups (located in `/mockups/`) define the visual direction:
+Since the project avoids additional SVGs, use the following prompts in an AI image generator (like Midjourney or DALL-E) to produce visual inspiration for the implementation:
 
-- **Lobby (`lobby.svg`)**: Retro-styled room selection with a patterned background and chunky "Comic Sans-adjacent" typography for a playful feel.
-- **Main Board (`main_board.svg`)**: A top-down view of a wood-grain table with a central avocado-green felt area. Players' stands are arranged around the perimeter.
-- **Deduction Board (`deduction_board.svg`)**: A "Top Secret" folder aesthetic with a grid of numbers 1-60 for tracking exclusions and hits.
-- **Game Tiles (`game_tiles.svg`)**: Close-up detail of the plastic tiles showing chunky numbers, dot patterns, and the 70s color palette.
+### 7.1. The Game Room Vibe
+> "A high-angle tabletop view of a 1974 board game called 'Got Five!'. The table is dark wood grain. In the center is an avocado green felt circle. On the felt are chunky cream-colored plastic tiles with orange and blue numbers. Around the table are 1970s interior elements like patterned wallpaper in harvest gold and burnt orange. Warm, analog lighting, high detail, retro-futurism aesthetic."
 
-### 6.2. UI Components
-- `App.svelte`: Root with WebRTC and Redux providers.
-- `Tabletop.svelte`: Container for the 3D-ish 2D view.
-- `Tile.svelte`: Reusable component with CSS-based "plastic" shading and dot patterns.
-- `DeductionGrid.svelte`: Interactive logic grid.
+### 7.2. The Sassy Tiles
+> "Close-up of three thick, rounded plastic game tiles. One is red with the number '1', one is blue with '17', and one is purple with '45'. Each tile has a minimalist 'sassy' face drawn in black ink—one winking, one with star-eyes, one with a smirk. The numbers are in a chunky, 'Cooper Black' inspired font. 1970s toy photography style, soft focus background."
 
-## 7. Action Manifest (Redux)
+### 7.3. The Deduction Log
+> "A 'Top Secret' manila folder lying on a wooden table. Inside the folder is a grid of numbers from 1 to 60. Some numbers are crossed out with a red marker, others have a green checkmark. The paper looks aged and slightly yellowed. A chunky orange plastic pen lies next to the folder. 1970s spy movie aesthetic, macro photography."
 
-- `room/join(player)`
-- `game/start()`: Shuffles deck, deals tiles.
-- `game/draw(tileId)`: Moves tile from deck to public pool.
-- `game/requestClue(clueRequest)`
-- `game/provideClue(clueResponse)`
-- `game/shoutGotFive(guesses)`
-- `game/endTurn()`
+### 7.4. The Player Stand (Threlte Inspiration)
+> "A 3D render of a dark brown plastic stand holding five hidden game tiles. The tiles are facing away from the viewer. The stand has six distinct notches for placing other tiles. The lighting is warm and directional, casting soft shadows on a green felt surface. Retro-modern product design, high fidelity, 70s colors."
+
+## 8. Existing Mockups (Reference)
+- `mockups/lobby.svg`: Lobby and room setup.
+- `mockups/main_board.svg`: Table layout.
+- `mockups/game_tiles.svg`: Tile color and dot logic.
+- `mockups/deduction_board.svg`: Deduction log layout.
