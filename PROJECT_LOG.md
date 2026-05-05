@@ -232,9 +232,10 @@
 > For now, write the design doc only. Use image generation to produce some mockups for UI inspiration as part of the design.
 
 **Action Plan (Orchestration):**
-- Researched Got Five rules from RULES.md and web search.
-- Defined Redux data structures (GameState, Player, Tile) and Actions (drawTile, askClue, etc.).
-- Outlined WebRTC host-client architecture for state synchronization.
-- Generated 70s-inspired SVG mockups (main_board.svg, deduction_board.svg) using a subagent.
-- Created DESIGN.md with the full specification.
-- Planned migration from React to Svelte.
+- Researched Got Five rules from `RULES.md` and clarified game mechanics (12 tiles per color, 1-60 total).
+- Defined detailed Redux data structures (`GameState`, `Player`, `Tile`) and Actions (`drawTile`, `askClue`, `shoutGotFive`).
+- Outlined a WebRTC host-client architecture for state synchronization without a central authority.
+- Generated 70s-inspired SVG mockups: `main_board.svg`, `deduction_board.svg`, and a new `lobby.svg`.
+- Updated `DESIGN.md` with a full technical blueprint including Svelte component mapping and a Threlte migration roadmap.
+- Updated `VISION.md` to align with the Svelte/SvelteKit and plain CSS direction.
+- Verified all rules are accurately represented in the design.
