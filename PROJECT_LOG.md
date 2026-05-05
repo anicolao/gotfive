@@ -204,7 +204,12 @@
 - Transitioned GitHub workflows (`e2e.yml`, `regenerate-screenshots.yml`) to use `ubuntu-latest`.
 - Regenerated visual snapshots on Linux to ensure consistent baselines in CI.
 - Verified all E2E tests pass on the new platform.
-- Delegating implementation to @coder.
+- **Coder Verification:**
+    - Installed Bun and Nix in the local environment.
+    - Verified `nix develop --command bun run test:e2e` passes on Linux.
+    - Confirmed that regenerated snapshots match the current committed baselines.
+    - Verified `tests/e2e/001-homepage/README.md` is correctly generated.
+
 
 
 
