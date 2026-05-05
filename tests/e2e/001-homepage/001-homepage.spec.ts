@@ -1,28 +1,21 @@
-import { test, expect } from "@playwright/test";
-import { TestStepHelper } from "../helpers/test-step-helper";
+import { test, expect } from '@playwright/test';
+import { TestStepHelper } from '../helpers/test-step-helper';
 
-test("Homepage loads correctly", async ({ page }, testInfo) => {
-	const helper = new TestStepHelper(page, testInfo);
+test('User visits homepage', async ({ page }, testInfo) => {
+  // 1. Initialize
+  const tester = new TestStepHelper(page, testInfo);
+  tester.setMetadata('Homepage', 'As a user, I want to see the landing page.');
 
-	await page.goto("/");
+  // 2. Perform Action & Verify
+  await page.goto('/');
+  await tester.step('initial-load', {
+    description: 'Landing page is visible',
+    verifications: [
+      { spec: 'Title is correct', check: async () => await expect(page).toHaveTitle(/Got Five!/) },
+      { spec: 'Get started text is visible', check: async () => await expect(page.getByText('Get started')).toBeVisible() }
+    ]
+  });
 
-	await helper.step("initial-load", {
-		description: "The homepage should load with the correct title.",
-		verifications: [
-			{
-				spec: "Page title contains 'Got Five!'",
-				check: async () => {
-					await expect(page).toHaveTitle(/Got Five!/);
-				},
-			},
-			{
-				spec: "'Get started' text is visible",
-				check: async () => {
-					await expect(page.getByText("Get started")).toBeVisible();
-				},
-			},
-		],
-	});
-
-	helper.generateDocs();
+  // 3. Conclude
+  tester.generateDocs();
 });

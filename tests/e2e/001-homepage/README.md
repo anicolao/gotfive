@@ -1,12 +1,14 @@
-# Test: Homepage loads correctly
+# Homepage
 
-## The homepage should load with the correct title.
+As a user, I want to see the landing page.
 
-![The homepage should load with the correct title.](./screenshots/000-initial-load.png)
+## Landing page is visible
+
+![Landing page is visible](./screenshots/000-initial-load.png)
 
 **Verifications:**
-- [x] Page title contains 'Got Five!'
-- [x] 'Get started' text is visible
+- [x] Title is correct
+- [x] Get started text is visible
 
 ---
 
