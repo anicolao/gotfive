@@ -199,11 +199,11 @@
 > E2E tests are not passing. Ensure that the platform for the workflow that generates screenshots matches the platform that runs in CI to validate screenshots. For this project, it is acceptable if both platforms are Linux, since no local mac development is being done.
 
 **Action Plan (Orchestration):**
-- Update `.github/workflows/e2e.yml` and `.github/workflows/regenerate-screenshots.yml` to use `ubuntu-latest`.
+- Update `.github/workflows/e2e.yml` and `.github/workflows/regenerate-screenshots.yml` to use `ubuntu-latest` and Nix.
 - Regenerate snapshots on Linux to ensure consistency.
 - Verify that E2E tests pass on the new platform.
 - Delegating implementation to @coder.
-- Conductor confirmed platform mismatch: `deploy.yml` uses `ubuntu-latest` while others use `macos-latest`.
+- Conductor confirmed platform mismatch: `deploy.yml` uses `ubuntu-latest` while others use `macos-latest`. Standardizing all workflows on Linux + Nix.
 
 
 
