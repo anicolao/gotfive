@@ -4,6 +4,8 @@
 	import { start, reveal } from '$lib/store/gameSlice';
 	import { addPlayer, setHand } from '$lib/store/playersSlice';
 	import { setMyId } from '$lib/store/uiSlice';
+	import { createRNG } from '$lib/game/rng';
+	import { createDeck, shuffle } from '$lib/game/deck';
 	import Table from '$lib/components/Table.svelte';
 	import PlayerStand from '$lib/components/PlayerStand.svelte';
 	import '../App.css';
@@ -20,6 +22,11 @@
 	});
 
 	function initGame() {
+		const urlParams = new URLSearchParams(window.location.search);
+		const seedParam = urlParams.get('seed');
+		const seed = seedParam ? parseInt(seedParam, 10) : Math.floor(Math.random() * 1000000);
+		const rng = createRNG(seed);
+
 		const playerIds = ['p1', 'p2', 'p3', 'p4'];
 		store.dispatch(setMyId('p1'));
 
@@ -29,21 +36,12 @@
 		store.dispatch(addPlayer({ id: 'p4', name: 'Charlie' }));
 
 		// Create deck 1-60 and shuffle
-		const deck = Array.from({ length: 60 }, (_, i) => i + 1);
-		for (let i = deck.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[deck[i], deck[j]] = [deck[j], deck[i]];
-		}
+		let deck = createDeck();
+		deck = shuffle(deck, rng);
 
-		// Deal 5 tiles to each player (1 of each color would be better, but for now just 5 random)
-		// Wait, rules say "Each player draws 1 tile of each of the 5 colors at random from the supply."
-		// Let's do that.
-		
+		// Deal 5 tiles to each player (1 of each color)
 		playerIds.forEach(pid => {
 			const hand: number[] = [];
-			const colorsTaken = new Set<number>();
-			
-			// Simple approach: find one of each color in the deck
 			for (let colorIdx = 0; colorIdx < 5; colorIdx++) {
 				const tileIdx = deck.findIndex(id => (id - 1) % 5 === colorIdx);
 				if (tileIdx !== -1) {
@@ -62,14 +60,7 @@
 			}
 		}
 
-		store.dispatch(start({ deck, turnOrder: playerIds }));
-		
-		// Add initial public tiles to pool
-		// In a real game these are revealed one by one or all at once
-		initialPublic.forEach(id => {
-			// We need a way to add specific tiles to public pool in the slice
-			// For now let's just use reveal multiple times or add a new action
-		});
+		store.dispatch(start({ deck, turnOrder: playerIds, initialPublic, seed }));
 	}
 
 	onMount(() => {

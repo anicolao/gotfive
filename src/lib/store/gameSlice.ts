@@ -26,14 +26,15 @@ export const gameSlice = createSlice({
 	name: 'game',
 	initialState,
 	reducers: {
-		start: (state, action: PayloadAction<{ deck: number[]; turnOrder: string[] }>) => {
+		start: (state, action: PayloadAction<{ deck: number[]; turnOrder: string[]; initialPublic: number[]; seed: number }>) => {
 			state.deck = action.payload.deck;
 			state.turnOrder = action.payload.turnOrder;
 			state.status = 'PLAYING';
 			state.deckIndex = 0;
-			state.publicPool = [];
+			state.publicPool = action.payload.initialPublic;
 			state.currentPlayerIndex = 0;
 			state.winnerId = null;
+			state.seed = action.payload.seed;
 		},
 		reveal: (state) => {
 			if (state.deckIndex < state.deck.length) {

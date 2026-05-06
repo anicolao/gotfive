@@ -5,6 +5,8 @@
 	export let hand: number[] = [];
 	export let isLocalPlayer: boolean = false;
 	export let clues: any[] = [];
+	// Prevent unused warning if not used in template yet
+	$: _clues = clues;
 </script>
 
 <div class="stand-container">
