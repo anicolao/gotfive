@@ -7,7 +7,7 @@ test('User visits homepage', async ({ page }, testInfo) => {
   tester.setMetadata('Homepage', 'As a user, I want to see the landing page.');
 
   // 2. Perform Action & Verify
-  await page.goto('/');
+  await page.goto('/?seed=123');
   await tester.step('initial-load', {
     description: 'Landing page is visible',
     verifications: [
