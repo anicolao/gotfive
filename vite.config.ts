@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
-	const basePath = env.PUBLIC_BASE_PATH || '';
+	const basePath = (env.PUBLIC_BASE_PATH || '').replace(/\/$/, '');
 
 	return {
 		base: basePath,

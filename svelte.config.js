@@ -10,7 +10,7 @@ const config = {
 			fallback: '404.html'
 		}),
 		paths: {
-			base: process.env.PUBLIC_BASE_PATH || '',
+			base: (process.env.PUBLIC_BASE_PATH || '').replace(/\/$/, ''),
 		}
 	}
 };
