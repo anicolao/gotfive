@@ -314,3 +314,11 @@
 - Ran a local build with `PUBLIC_BASE_PATH=/gotfive/` and confirmed it succeeds.
 - Created PR #17 to merge the fix into `main`.
 - Moving the task to Human Review.
+
+## 2026-05-06: Fix deployment and versioning (Issue #18)
+
+- Diagnosed deployment failures: E2E tests are failing due to outdated screenshots, blocking deployments.
+- Identified React leftovers in `eslint.config.js` and `src/assets/`.
+- Confirmed version display is implemented but deployment is stale.
+- Planned fixes: regenerate screenshots, fix ESLint config, clean up React leftovers, and ensure base path is correctly handled in Vite.
+- Transitioned to @coder for implementation.
