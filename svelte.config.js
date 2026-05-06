@@ -11,6 +11,17 @@ const config = {
 		}),
 		paths: {
 			base: (process.env.PUBLIC_BASE_PATH || '').replace(/\/$/, ''),
+		},
+		prerender: {
+			handleHttpError: ({ path, referrer, message }) => {
+				// ignore deliberate link to 404 page
+				if (path === '/404') {
+					return;
+				}
+
+				// otherwise fail the build
+				throw new Error(message);
+			}
 		}
 	}
 };

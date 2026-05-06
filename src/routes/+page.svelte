@@ -70,6 +70,9 @@
 	function handleReveal() {
 		store.dispatch(reveal());
 	}
+
+	const version = import.meta.env.VITE_APP_VERSION || 'dev';
+	const gitHash = import.meta.env.VITE_GIT_HASH || 'local';
 </script>
 
 <svelte:head>
@@ -131,6 +134,10 @@
 			{/if}
 		</div>
 	</main>
+
+	<footer class="version-info">
+		{version}@{gitHash}
+	</footer>
 </div>
 
 <style>
@@ -140,6 +147,7 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+		position: relative;
 	}
 
 	header {
@@ -183,5 +191,14 @@
 		flex: 1;
 		display: flex;
 		justify-content: center;
+	}
+
+	.version-info {
+		position: absolute;
+		bottom: 5px;
+		right: 10px;
+		font-size: 0.7rem;
+		opacity: 0.5;
+		font-family: monospace;
 	}
 </style>
