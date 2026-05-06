@@ -283,3 +283,27 @@
     - Implement local game setup (shuffle and deal).
     - Establish the 70s Groovy aesthetic via CSS variables.
 - Delegating the implementation to `@coder`.
+
+## 2026-05-06: Fix Deployment Failure (Base Path Configuration)
+
+**User Prompt:**
+> Run the pages deploy workflow and observe:
+> ```
+> nix develop --command bun run build
+> warning: Git tree '/home/runner/work/gotfive/gotfive' is dirty
+> $ vite build
+> error during build:
+> [Could not load /home/runner/work/gotfive/gotfive/svelte.config.js: config.kit.paths.base option must either be the empty string or a root-relative path that starts but doesn't end with '/'. See https://svelte.dev/docs/kit/configuration#paths
+> ]
+> error: script "build" exited with code 1
+> Error: Process completed with exit code 1.
+> ```
+> fix it so that the game deploys.
+
+**Action Plan (Orchestration):**
+- Identified root cause: `PUBLIC_BASE_PATH` in CI contains a trailing slash, which SvelteKit's `paths.base` forbids.
+- Formulated a robust fix:
+    - Update `svelte.config.js` and `vite.config.ts` to automatically strip trailing slashes from `PUBLIC_BASE_PATH`.
+    - Update `.github/workflows/deploy.yml` to set `path` without a trailing slash.
+- Verified the fix locally by reproducing the error and then confirming the build succeeds with a trailing-slashed environment variable.
+- Delegating the implementation to `@coder`.
