@@ -66,7 +66,9 @@ export class TestStepHelper {
         await waitForAnimations(this.page);
 
         // 4. Capture & Verify (Zero-Pixel Tolerance)
-        await expect(this.page).toHaveScreenshot(filename.replace(/\.png$/, ''));
+        await expect(this.page).toHaveScreenshot(filename.replace(/\.png$/, ''), {
+            mask: [this.page.locator('.version-info')]
+        });
 
         // 5. Record for Docs
         this.steps.push({
