@@ -1,37 +1,50 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-export default defineConfig(({ mode }) => {
-	const env = loadEnv(mode, process.cwd(), '');
-	const basePath = (env.PUBLIC_BASE_PATH || '').replace(/\/$/, '');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
 
-	return {
-		base: basePath,
-		plugins: [
-			sveltekit(),
-			VitePWA({
-				registerType: 'autoUpdate',
-				includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
-				manifest: {
-					name: 'Got Five!',
-					short_name: 'GotFive',
-					description: 'A game of numbers',
-					theme_color: '#ffffff',
-					icons: [
-						{
-							src: 'pwa-192x192.png',
-							sizes: '192x192',
-							type: 'image/png'
-						},
-						{
-							src: 'pwa-512x512.png',
-							sizes: '512x512',
-							type: 'image/png'
-						}
-					]
-				}
-			})
-		]
-	};
+let gitHash = 'unknown';
+try {
+	gitHash = execSync('git rev-parse --short HEAD').toString().trim();
+} catch (e) {
+	console.warn('Failed to get git hash', e);
+}
+
+export default defineConfig({
+	base: (process.env.PUBLIC_BASE_PATH || '').replace(/\/$/, ''),
+	define: {
+		'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
+		'import.meta.env.VITE_GIT_HASH': JSON.stringify(gitHash),
+	},
+	plugins: [
+		sveltekit(),
+		VitePWA({
+			registerType: 'autoUpdate',
+			includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+			manifest: {
+				name: 'Got Five!',
+				short_name: 'GotFive',
+				description: 'A game of numbers',
+				theme_color: '#ffffff',
+				icons: [
+					{
+						src: 'pwa-192x192.png',
+						sizes: '192x192',
+						type: 'image/png'
+					},
+					{
+						src: 'pwa-512x512.png',
+						sizes: '512x512',
+						type: 'image/png'
+					}
+				]
+			}
+		})
+	]
 });
