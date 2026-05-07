@@ -1,4 +1,4 @@
-import Peer from 'simple-peer';
+import { Peer, type DataConnection } from 'peerjs';
 import { writable, type Writable } from 'svelte/store';
 
 export interface NetworkMessage {
@@ -9,87 +9,76 @@ export interface NetworkMessage {
 
 export class PeerManager {
 	public myId: string;
-	public peers: Map<string, Peer.Instance> = new Map();
+	public peer: Peer;
+	public connectionsMap: Map<string, DataConnection> = new Map();
 	public connections: Writable<string[]> = writable([]);
 	public onMessage?: (msg: NetworkMessage) => void;
 	public onConnect?: (id: string) => void;
 
-	constructor(myId: string) {		this.myId = myId;
-	}
+	constructor(myId: string) {
+		this.myId = myId;
+		this.peer = new Peer(myId);
 
-	public createOffer(): Promise<{ peer: Peer.Instance; offer: string }> {
-		return new Promise((resolve) => {
-			const peer = new Peer({ initiator: true, trickle: false });
-			peer.on('signal', (data) => {
-				resolve({ peer, offer: JSON.stringify(data) });
-			});
-			this.setupPeerEvents(peer, 'pending-peer-' + Math.random());
+		this.peer.on('connection', (conn) => {
+			this.setupConnection(conn);
+		});
+
+		this.peer.on('error', (err) => {
+			console.error('PeerJS error:', err);
 		});
 	}
 
-	public acceptOffer(offerStr: string): Promise<{ peer: Peer.Instance; answer: string }> {
-		return new Promise((resolve) => {
-			const peer = new Peer({ initiator: false, trickle: false });
-			peer.on('signal', (data) => {
-				resolve({ peer, answer: JSON.stringify(data) });
-			});
-			this.setupPeerEvents(peer, 'pending-host-' + Math.random());
-			peer.signal(JSON.parse(offerStr));
-		});
+	public connect(targetId: string) {
+		const conn = this.peer.connect(targetId);
+		this.setupConnection(conn);
 	}
 
-	public finalizeConnection(peer: Peer.Instance, id: string, signalStr?: string) {
-		if (signalStr) {
-			peer.signal(JSON.parse(signalStr));
-		}
-		// Replace temporary ID if needed, but here we just track it
-		peer.on('connect', () => {
-			this.peers.set(id, peer);
-			this.connections.update(c => [...new Set([...c, id])]);
-			if (this.onConnect) this.onConnect(id);
+	private setupConnection(conn: DataConnection) {
+		conn.on('open', () => {
+			this.connectionsMap.set(conn.peer, conn);
+			this.connections.update(c => [...new Set([...c, conn.peer])]);
+			if (this.onConnect) this.onConnect(conn.peer);
 		});
-	}
 
-	private setupPeerEvents(peer: Peer.Instance, tempId: string) {
-		peer.on('data', (data) => {
+		conn.on('data', (data) => {
 			if (this.onMessage) {
 				try {
-					this.onMessage(JSON.parse(data.toString()));
+					const msg = typeof data === 'string' ? JSON.parse(data) : data;
+					this.onMessage(msg as NetworkMessage);
 				} catch (e) {
 					console.error('Failed to parse message', e);
 				}
 			}
 		});
 
-		peer.on('close', () => {
-			// Find and remove by instance
-			for (const [id, p] of this.peers.entries()) {
-				if (p === peer) {
-					this.peers.delete(id);
-					this.connections.update(c => c.filter(pid => pid !== id));
-					break;
-				}
-			}
+		conn.on('close', () => {
+			this.connectionsMap.delete(conn.peer);
+			this.connections.update(c => c.filter(pid => pid !== conn.peer));
 		});
 
-		peer.on('error', (err) => {
-			console.error('Peer error:', err);
+		conn.on('error', (err) => {
+			console.error('Connection error:', err);
 		});
 	}
 
 	public broadcast(msg: NetworkMessage, excludeId?: string) {
 		const data = JSON.stringify(msg);
-		this.peers.forEach((peer, id) => {
-			if (peer.connected && id !== excludeId) {
-				peer.send(data);
+		this.connectionsMap.forEach((conn, id) => {
+			if (conn.open && id !== excludeId) {
+				conn.send(data);
 			}
 		});
 	}
 
 	public sendTo(id: string, msg: NetworkMessage) {
-		const peer = this.peers.get(id);
-		if (peer && peer.connected) {
-			peer.send(JSON.stringify(msg));
+		const conn = this.connectionsMap.get(id);
+		if (conn && conn.open) {
+			conn.send(JSON.stringify(msg));
 		}
+	}
+
+	public disconnect() {
+		this.connectionsMap.forEach(conn => conn.close());
+		this.peer.destroy();
 	}
 }

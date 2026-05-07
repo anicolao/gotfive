@@ -10,9 +10,7 @@
 	let peerManager: any = $state(null);
 	let mode: 'CHOOSING' | 'HOSTING' | 'JOINING' = $state('CHOOSING');
 
-	let offerText = $state('');
-	let answerText = $state('');
-	let currentPeer: any = $state(null);
+	let targetHostId = $state('');
 	let connections: string[] = $state([]);
 	onMount(() => {
 		const savedName = localStorage.getItem('playerName');
@@ -35,9 +33,6 @@
 	async function hostGame() {
 		await startLobby(true);
 		mode = 'HOSTING';
-		const { peer, offer } = await peerManager.createOffer();
-		currentPeer = peer;
-		offerText = offer;
 	}
 
 	async function joinGame() {
@@ -45,15 +40,10 @@
 		mode = 'JOINING';
 	}
 
-	async function submitOffer() {
-		const { peer, answer } = await peerManager.acceptOffer(offerText);
-		currentPeer = peer;
-		answerText = answer;
-		peerManager.finalizeConnection(peer, 'host');
-	}
-
-	function submitAnswer() {
-		peerManager.finalizeConnection(currentPeer, 'peer-' + connections.length, answerText);
+	function connectToHost() {
+		if (targetHostId) {
+			peerManager.connect(targetHostId);
+		}
 	}
 
 	function copyToClipboard(text: string) {
@@ -76,28 +66,18 @@
 		</div>
 	{:else if mode === 'HOSTING'}
 		<div class="step">
-			<p>1. Copy this offer and send it to your friend:</p>
-			<textarea readonly value={offerText}></textarea>
-			<button onclick={() => copyToClipboard(offerText)}>Copy Offer</button>
-		</div>
-		<div class="step">
-			<p>2. Paste the answer they send back here:</p>
-			<textarea bind:value={answerText}></textarea>
-			<button onclick={submitAnswer}>Connect</button>
+			<p>Your Game ID (share this with friends):</p>
+			<div class="id-display">
+				<code>{myId}</code>
+				<button onclick={() => copyToClipboard(myId)}>Copy ID</button>
+			</div>
 		</div>
 	{:else if mode === 'JOINING'}
 		<div class="step">
-			<p>1. Paste the offer from the host here:</p>
-			<textarea bind:value={offerText}></textarea>
-			<button onclick={submitOffer}>Generate Answer</button>
+			<p>Enter Host's Game ID:</p>
+			<input type="text" bind:value={targetHostId} placeholder="e.g. abc123" />
+			<button class="groovy-button" onclick={connectToHost} disabled={!targetHostId}>Connect</button>
 		</div>
-		{#if answerText}
-			<div class="step">
-				<p>2. Copy this answer and send it back to the host:</p>
-				<textarea readonly value={answerText}></textarea>
-				<button onclick={() => copyToClipboard(answerText)}>Copy Answer</button>
-			</div>
-		{/if}
 	{/if}
 
 	<div class="status">
@@ -139,18 +119,14 @@
 		font-weight: bold;
 	}
 
-	input, textarea {
+	input {
 		width: 100%;
 		padding: 0.5rem;
 		border: 2px solid var(--color-primary);
 		border-radius: 8px;
 		font-family: inherit;
-	}
-
-	textarea {
-		height: 100px;
-		resize: vertical;
-		font-size: 0.8rem;
+		box-sizing: border-box;
+		margin-bottom: 1rem;
 	}
 
 	.actions {
@@ -165,6 +141,23 @@
 		padding: 1rem;
 		background: rgba(255, 255, 255, 0.5);
 		border-radius: 10px;
+	}
+
+	.id-display {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		background: white;
+		padding: 10px;
+		border-radius: 8px;
+		border: 1px solid var(--color-primary);
+	}
+
+	code {
+		flex: 1;
+		font-family: monospace;
+		font-size: 1.2rem;
+		font-weight: bold;
 	}
 
 	.status {
@@ -185,5 +178,10 @@
 
 	.groovy-button:hover {
 		transform: scale(1.05);
+	}
+
+	.groovy-button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 </style>

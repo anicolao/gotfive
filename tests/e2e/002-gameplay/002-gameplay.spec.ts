@@ -195,26 +195,25 @@ test('User plays the game', async ({ page }, testInfo) => {
   });
 
   // 6. Guessing flow
-  await page.locator('.got-five-btn').click();
-  await expect(page.locator('.overlay .guess-modal')).toBeVisible();
+  const deductionBoard = page.locator('.deduction-board');
+  const guessInputs = deductionBoard.locator('.guess-inputs input');
   
-  // Fill some guesses (just for testing the flow)
-  const inputs = page.locator('.guess-inputs input');
-  await inputs.nth(0).fill('1');
-  await inputs.nth(1).fill('2');
-  await inputs.nth(2).fill('3');
-  await inputs.nth(3).fill('4');
-  await inputs.nth(4).fill('5');
+  // Fill some guesses
+  await guessInputs.nth(0).fill('1');
+  await guessInputs.nth(1).fill('2');
+  await guessInputs.nth(2).fill('3');
+  await guessInputs.nth(3).fill('4');
+  await guessInputs.nth(4).fill('5');
   
-  await page.locator('.modal-actions .primary').click();
+  await deductionBoard.locator('.got-five-btn').click();
   
   await tester.step('guessing-flow', {
-    description: 'Guessing flow shows the modal and processes the guess',
+    description: 'Guessing flow processes the guess from the deduction board',
     verifications: [
       {
-        spec: 'Guess modal is closed after submission',
+        spec: 'End game modal is shown (Eliminated or Winner)',
         check: async () => {
-          await expect(page.locator('.overlay')).toHaveCount(0);
+          await expect(page.locator('.overlay .end-game-modal')).toBeVisible();
         }
       }
     ]
