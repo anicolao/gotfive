@@ -15,7 +15,6 @@
 	let gameState = $state(store.getState().game);
 	let playersState = $state(store.getState().players);
 	let uiState = $state(store.getState().ui);
-	let guessInputs = $state([0, 0, 0, 0, 0]);
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -95,18 +94,6 @@
 	function handleReveal(color: any) {
 		if (!isMyTurn) return;
 		store.dispatch(reveal(color));
-	}
-
-	function submitGuess() {
-		if (!uiState?.myId) return;
-		const playerId = uiState.myId;
-		store.dispatch(guess({ playerId, guessedHand: guessInputs }));
-		
-		const player = playersState.players[playerId];
-		if (!player.eliminated) {
-			store.dispatch(setWinner(playerId));
-		}
-		store.dispatch(setOverlay('NONE'));
 	}
 
 	const version = import.meta.env.VITE_APP_VERSION || 'dev';
@@ -206,9 +193,6 @@
 
 				<div class="bottom-row">
 					<div class="controls-left">
-						<button class="got-five-btn" onclick={() => store.dispatch(setOverlay('GUESS'))}>
-							GOT FIVE!
-						</button>
 					</div>
 					{#if uiState?.myId && playersState?.players[uiState.myId]}
 						<PlayerStand
@@ -239,21 +223,18 @@
 				{/if}
 				</main>
 
-				{#if uiState?.overlay === 'GUESS'}
+				{#if gameState?.status === 'FINISHED' || (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
 				<div class="overlay">
-				<div class="guess-modal">
-				<h2>GOT FIVE!</h2>
-				<p>Enter your 5 numbers in ascending order:</p>
-				<div class="guess-inputs">
-					{#each guessInputs as val, i}
-						<input type="number" min="1" max="60" bind:value={guessInputs[i]} />
-					{/each}
-				</div>
-				<div class="modal-actions">
-					<button onclick={() => store.dispatch(setOverlay('NONE'))}>Cancel</button>
-					<button class="primary" onclick={submitGuess}>Submit Guess</button>
-				</div>
-				</div>
+					<div class="end-game-modal">
+						{#if gameState?.status === 'FINISHED'}
+							<h2>GAME OVER</h2>
+							<p class="winner-msg">Winner: {playersState?.players[gameState.winnerId!]?.name}!</p>
+						{:else}
+							<h2>ELIMINATED</h2>
+							<p>Better luck next time!</p>
+						{/if}
+						<button class="primary" onclick={() => window.location.reload()}>Back to Lobby</button>
+					</div>
 				</div>
 				{/if}
 	<footer class="version-info">
@@ -390,39 +371,30 @@
 		z-index: 1000;
 	}
 
-	.guess-modal {
+	.end-game-modal {
 		background: var(--color-cream);
-		padding: 30px;
+		padding: 40px;
 		border-radius: 12px;
 		border: 8px solid var(--color-gold);
 		text-align: center;
 		color: var(--color-wood);
+		box-shadow: 0 0 50px rgba(0,0,0,0.5);
 	}
 
-	.guess-inputs {
-		display: flex;
-		gap: 10px;
+	.winner-msg {
+		font-size: 1.5rem;
+		font-weight: bold;
+		color: var(--color-gold);
 		margin: 20px 0;
 	}
 
-	.guess-inputs input {
-		width: 50px;
-		height: 50px;
-		font-size: 1.5rem;
-		text-align: center;
-		border: 2px solid var(--color-wood);
-		border-radius: 8px;
-	}
-
-	.modal-actions {
-		display: flex;
-		justify-content: center;
-		gap: 20px;
-	}
-
-	.modal-actions button.primary {
+	.end-game-modal button.primary {
 		background-color: var(--color-gold);
 		font-weight: bold;
+		padding: 10px 20px;
+		border: 2px solid var(--color-wood);
+		border-radius: 8px;
+		cursor: pointer;
 	}
 
 	.middle-row {

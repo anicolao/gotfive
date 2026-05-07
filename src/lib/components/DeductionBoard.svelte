@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { store } from '$lib/store';
 	import { markDeduction, addStroke, clearStrokes as clearStrokesAction } from '$lib/store/uiSlice';
+	import { guess } from '$lib/store/playersSlice';
+	import { setWinner } from '$lib/store/gameSlice';
 	import { getTileData } from '$lib/game/tiles';
 	import { onMount } from 'svelte';
 
@@ -26,6 +28,9 @@
 	let playersState = $state(store.getState().players);
 	let uiState = $state(store.getState().ui);
 	let visibleTiles = $state(new Set<number>());
+
+	let guessInputs = $state([0, 0, 0, 0, 0]);
+	let canGuess = $derived(guessInputs.every(v => v > 0 && v <= 60));
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -171,6 +176,18 @@
 	function clearDrawing() {
 		store.dispatch(clearStrokesAction());
 	}
+
+	function submitGuess() {
+		if (!uiState?.myId) return;
+		const playerId = uiState.myId;
+		store.dispatch(guess({ playerId, guessedHand: guessInputs }));
+		
+		const state = store.getState();
+		const player = state.players.players[playerId];
+		if (player && !player.eliminated) {
+			store.dispatch(setWinner(playerId));
+		}
+	}
 </script>
 
 <div class="deduction-board">
@@ -178,6 +195,18 @@
 		<h2>Top Secret Log</h2>
 		<button onclick={clearDrawing}>Clear Notes</button>
 	</div>
+
+	<div class="guess-area">
+		<div class="guess-inputs">
+			{#each guessInputs as val, i}
+				<input type="number" min="1" max="60" bind:value={guessInputs[i]} placeholder="?" />
+			{/each}
+		</div>
+		<button class="got-five-btn" disabled={!canGuess} onclick={submitGuess}>
+			GOT FIVE!
+		</button>
+	</div>
+
 	<div class="grid-container">
 		<div class="grid">
 			{#each TILE_IDS_BY_COLOR as row, i}
@@ -262,6 +291,53 @@
 		background: rgba(0, 0, 0, 0.05);
 	}
 
+	.guess-area {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 15px;
+		padding: 10px;
+		background: rgba(0,0,0,0.05);
+		border-radius: 8px;
+	}
+
+	.guess-inputs {
+		display: flex;
+		gap: 5px;
+	}
+
+	.guess-inputs input {
+		width: 35px;
+		height: 35px;
+		text-align: center;
+		border: 2px solid var(--color-wood);
+		border-radius: 4px;
+		font-family: 'Courier New', Courier, monospace;
+		font-weight: bold;
+		background: white;
+	}
+
+	.got-five-btn {
+		background-color: var(--color-gold);
+		color: var(--color-wood);
+		font-weight: bold;
+		padding: 5px 15px;
+		border: 2px solid var(--color-wood);
+		border-radius: 4px;
+		cursor: pointer;
+		font-family: 'Courier New', Courier, monospace;
+	}
+
+	.got-five-btn:hover {
+		background-color: #ffd700;
+	}
+
+	.got-five-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
 	.grid-container {
 		position: relative;
 		border: 2px solid var(--color-wood);
@@ -273,6 +349,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+		z-index: 2;
+		position: relative;
 	}
 
 	.row {
@@ -390,10 +468,5 @@
 		pointer-events: auto;
 		cursor: crosshair;
 		z-index: 3;
-	}
-
-	.grid {
-		z-index: 2;
-		position: relative;
 	}
 </style>
