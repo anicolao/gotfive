@@ -5,6 +5,7 @@ import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
@@ -15,19 +16,23 @@ try {
 } catch (e) {
 	console.warn('Failed to get git hash', e);
 }
-
 export default defineConfig({
 	base: (process.env.PUBLIC_BASE_PATH || '').replace(/\/$/, ''),
 	define: {
 		'import.meta.env.VITE_APP_VERSION': JSON.stringify(process.env.VITE_APP_VERSION || pkg.version),
-		'import.meta.env.VITE_GIT_HASH': JSON.stringify(process.env.VITE_GIT_HASH || gitHash),
-		global: 'globalThis',
-		process: {
-			env: {}
-		}
+		'import.meta.env.VITE_GIT_HASH': JSON.stringify(process.env.VITE_GIT_HASH || gitHash)
 	},
 	plugins: [
+		nodePolyfills({
+			include: ['buffer', 'events', 'util', 'stream'],
+			globals: {
+				Buffer: true,
+				global: true,
+				process: true,
+			},
+		}),
 		sveltekit(),
+...
 		VitePWA({
 			registerType: 'autoUpdate',
 			includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],

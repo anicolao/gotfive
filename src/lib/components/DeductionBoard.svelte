@@ -3,7 +3,7 @@
 	import { markDeduction, addStroke, clearStrokes as clearStrokesAction } from '$lib/store/uiSlice';
 	import { onMount } from 'svelte';
 
-	export let deductions: Record<number, '?' | 'X' | 'OK'> = {};
+	let { deductions = {} } = $props();
 
 	const COLORS = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
 	const TILE_IDS_BY_COLOR = COLORS.map((_, i) => {
@@ -21,10 +21,10 @@
 	let startPos = { x: 0, y: 0 };
 	let moved = false;
 
-	let gameState: any;
-	let playersState: any;
-	let uiState: any;
-	let visibleTiles = new Set<number>();
+	let gameState = $state(store.getState().game);
+	let playersState = $state(store.getState().players);
+	let uiState = $state(store.getState().ui);
+	let visibleTiles = $state(new Set<number>());
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -37,9 +37,7 @@
 		} else if (ctx) {
 			redrawStrokes();
 		}
-	});
-
-	function updateVisibleTiles() {
+	});	function updateVisibleTiles() {
 		const visible = new Set<number>();
 		if (gameState?.publicPool) {
 			gameState.publicPool.forEach((id: number) => visible.add(id));
@@ -175,7 +173,7 @@
 <div class="deduction-board">
 	<div class="header">
 		<h2>Top Secret Log</h2>
-		<button on:click={clearDrawing}>Clear Notes</button>
+		<button onclick={clearDrawing}>Clear Notes</button>
 	</div>
 	<div class="grid-container">
 		<div class="grid">
@@ -188,7 +186,7 @@
 						<button
 							class="cell {deductions[id] || 'unknown'} {visibleTiles.has(id) ? 'dimmed' : ''}"
 							data-id={id}
-							on:click|preventDefault={() => {}}
+							onclick={(e) => e.preventDefault()}
 						>
 							<div class="mini-tile {COLORS[i].toLowerCase()}">
 								<span class="num">{id}</span>
@@ -205,17 +203,16 @@
 		</div>
 		<canvas
 			bind:this={canvas}
-			on:mousedown={handleMouseDown}
-			on:mousemove={handleMouseMove}
-			on:mouseup={handleMouseUp}
-			on:mouseleave={stopDrawing}
-			on:touchstart|preventDefault={handleMouseDown}
-			on:touchmove|preventDefault={handleMouseMove}
-			on:touchend|preventDefault={handleMouseUp}
+			onmousedown={handleMouseDown}
+			onmousemove={handleMouseMove}
+			onmouseup={handleMouseUp}
+			onmouseleave={stopDrawing}
+			ontouchstart={(e) => { e.preventDefault(); handleMouseDown(e); }}
+			ontouchmove={(e) => { e.preventDefault(); handleMouseMove(e); }}
+			ontouchend={(e) => { e.preventDefault(); handleMouseUp(e); }}
 		></canvas>
 	</div>
 </div>
-
 <style>
 	.deduction-board {
 		background-color: var(--color-cream);

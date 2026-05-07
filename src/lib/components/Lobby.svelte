@@ -5,16 +5,15 @@
 	import { setMyId } from '../store/uiSlice';
 	import { onMount } from 'svelte';
 
-	let myName = '';
+	let myName = $state('');
 	let myId = Math.random().toString(36).substring(7);
-	let peerManager: any = null;
-	let mode: 'CHOOSING' | 'HOSTING' | 'JOINING' = 'CHOOSING';
-	
-	let offerText = '';
-	let answerText = '';
-	let currentPeer: any = null;
-	let connections: string[] = [];
+	let peerManager: any = $state(null);
+	let mode: 'CHOOSING' | 'HOSTING' | 'JOINING' = $state('CHOOSING');
 
+	let offerText = $state('');
+	let answerText = $state('');
+	let currentPeer: any = $state(null);
+	let connections: string[] = $state([]);
 	onMount(() => {
 		const savedName = localStorage.getItem('playerName');
 		if (savedName) myName = savedName;
@@ -65,38 +64,38 @@
 
 <div class="lobby groovy-panel">
 	<h2>Lobby</h2>
-	
+
 	{#if mode === 'CHOOSING'}
 		<div class="input-group">
 			<label for="name">Your Name:</label>
 			<input type="text" id="name" bind:value={myName} placeholder="Enter your name" />
 		</div>
 		<div class="actions">
-			<button class="groovy-button" on:click={hostGame}>Host Game</button>
-			<button class="groovy-button" on:click={joinGame}>Join Game</button>
+			<button class="groovy-button" onclick={hostGame}>Host Game</button>
+			<button class="groovy-button" onclick={joinGame}>Join Game</button>
 		</div>
 	{:else if mode === 'HOSTING'}
 		<div class="step">
 			<p>1. Copy this offer and send it to your friend:</p>
 			<textarea readonly value={offerText}></textarea>
-			<button on:click={() => copyToClipboard(offerText)}>Copy Offer</button>
+			<button onclick={() => copyToClipboard(offerText)}>Copy Offer</button>
 		</div>
 		<div class="step">
 			<p>2. Paste the answer they send back here:</p>
 			<textarea bind:value={answerText}></textarea>
-			<button on:click={submitAnswer}>Connect</button>
+			<button onclick={submitAnswer}>Connect</button>
 		</div>
 	{:else if mode === 'JOINING'}
 		<div class="step">
 			<p>1. Paste the offer from the host here:</p>
 			<textarea bind:value={offerText}></textarea>
-			<button on:click={submitOffer}>Generate Answer</button>
+			<button onclick={submitOffer}>Generate Answer</button>
 		</div>
 		{#if answerText}
 			<div class="step">
 				<p>2. Copy this answer and send it back to the host:</p>
 				<textarea readonly value={answerText}></textarea>
-				<button on:click={() => copyToClipboard(answerText)}>Copy Answer</button>
+				<button onclick={() => copyToClipboard(answerText)}>Copy Answer</button>
 			</div>
 		{/if}
 	{/if}
