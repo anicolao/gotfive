@@ -71,6 +71,16 @@ export const gameSlice = createSlice({
 			state.winnerId = action.payload;
 			state.status = 'FINISHED';
 		}
+	},
+	extraReducers: (builder) => {
+		builder.addCase('players/clue_sort', (state, action: any) => {
+			const { tileId } = action.payload;
+			state.publicPool = state.publicPool.filter((id) => id !== tileId);
+		});
+		builder.addCase('players/clue_compare', (state, action: any) => {
+			const { tileId } = action.payload;
+			state.publicPool = state.publicPool.filter((id) => id !== tileId);
+		});
 	}
 });
 

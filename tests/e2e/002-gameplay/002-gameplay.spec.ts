@@ -76,18 +76,34 @@ test('User plays the game', async ({ page }, testInfo) => {
 
   // 4. Ask for a clue
   const firstPublicTile = page.locator('.pool-tiles .tile-btn').first();
+  const firstPublicTileId = await firstPublicTile.locator('.number').innerText();
   await firstPublicTile.click();
   
   const aliceStand = page.locator('.stand-container').filter({ hasText: 'Alice' });
   await aliceStand.click();
 
   await tester.step('ask-clue', {
-    description: 'Asking for a clue records it on the stand',
+    description: 'Asking for a clue records it on the stand and consumes the tile',
     verifications: [
       {
         spec: 'Alice stand has one active sorting notch',
         check: async () => {
           await expect(aliceStand.locator('.notch.active')).toHaveCount(1);
+        }
+      },
+      {
+        spec: 'The active notch contains a MiniTile representation of the consumed tile',
+        check: async () => {
+          const notch = aliceStand.locator('.notch.active');
+          await expect(notch.locator('.mini-tile')).toBeVisible();
+          await expect(notch.locator('.mini-tile .number')).toHaveText(firstPublicTileId);
+        }
+      },
+      {
+        spec: 'The consumed tile is removed from the public pool',
+        check: async () => {
+          await expect(page.locator(`.pool-tiles .tile-btn:has-text("${firstPublicTileId}")`)).toHaveCount(0);
+          await expect(page.locator('.pool-tiles .tile-btn')).toHaveCount(5); // Was 6, now 5
         }
       },
       {
@@ -99,7 +115,43 @@ test('User plays the game', async ({ page }, testInfo) => {
     ]
   });
 
-  // 5. Use deduction board
+  // Advance turn back to 'You' to allow another action
+  await page.evaluate(() => {
+    (window as any).store.dispatch({ type: 'game/nextTurn' });
+  });
+
+  // 5. Ask for a compare clue
+  const secondPublicTile = page.locator('.pool-tiles .tile-btn').nth(1);
+  const secondPublicTileId = await secondPublicTile.locator('.number').innerText();
+  await secondPublicTile.click();
+  
+  // Click on Alice's first slot
+  const aliceFirstSlot = aliceStand.locator('.slot').first();
+  await aliceFirstSlot.evaluate(el => (el as HTMLElement).click());
+
+  await tester.step('ask-compare-clue', {
+    description: 'Asking for a dot clue records it above the slot and consumes the tile',
+    verifications: [
+      {
+        spec: 'Alice stand has a compare clue above the first slot',
+        check: async () => {
+          const indicator = aliceFirstSlot.locator('.compare-indicators .compare-clue');
+          await expect(indicator).toBeVisible();
+          await expect(indicator.locator('.mini-tile')).toBeVisible();
+          await expect(indicator.locator('.mini-tile .number')).toHaveText(secondPublicTileId);
+        }
+      },
+      {
+        spec: 'The consumed tile is removed from the public pool',
+        check: async () => {
+          await expect(page.locator(`.pool-tiles .tile-btn:has-text("${secondPublicTileId}")`)).toHaveCount(0);
+          await expect(page.locator('.pool-tiles .tile-btn')).toHaveCount(4);
+        }
+      }
+    ]
+  });
+
+  // 6. Use deduction board
   const canvas = page.locator('.deduction-board canvas');
   const boardCell = page.locator('.deduction-board .cell').first();
   
@@ -116,8 +168,14 @@ test('User plays the game', async ({ page }, testInfo) => {
   }
   
   await tester.step('deduction-board', {
-    description: 'Deduction board cells can be toggled and show automated marking',
+    description: 'Deduction board cells show dots and automated marking',
     verifications: [
+      {
+        spec: 'Cells show dot counts',
+        check: async () => {
+          await expect(boardCell.locator('.dots .dot')).toHaveCount(1); // Tile 1 has 1 dot
+        }
+      },
       {
         spec: 'First cell shows a strike (X)',
         check: async () => {
@@ -127,6 +185,7 @@ test('User plays the game', async ({ page }, testInfo) => {
       {
         spec: 'Public tiles are dimmed on the deduction board',
         check: async () => {
+          // Find a tile that is still in the pool
           const publicTileId = await page.locator('.pool-tiles .number').first().innerText();
           const boardTile = page.locator(`.deduction-board .cell[data-id="${publicTileId}"]`);
           await expect(boardTile).toHaveClass(/dimmed/);

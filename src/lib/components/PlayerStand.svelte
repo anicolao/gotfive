@@ -1,25 +1,28 @@
 <script lang="ts">
 	import Tile from './Tile.svelte';
+	import MiniTile from './MiniTile.svelte';
 
-	export let id: string;
-	export let name: string;
-	export let hand: number[] = [];
-	export let isLocalPlayer: boolean = false;
-	export let isCurrentTurn: boolean = false;
-	export let clues: any[] = [];
-	export let canBeTarget: boolean = false;
-	export let onSelectTarget: (id: string) => void = () => {};
-	export let onSelectSlot: (id: string, slot: number) => void = () => {};
+	let { 
+		id, 
+		name, 
+		hand = [], 
+		isLocalPlayer = false, 
+		isCurrentTurn = false, 
+		clues = [], 
+		canBeTarget = false, 
+		onSelectTarget = () => {}, 
+		onSelectSlot = () => {} 
+	} = $props();
 
-	$: sortClues = clues.filter((c) => c.type === 'SORT');
-	$: compareClues = clues.filter((c) => c.type === 'COMPARE');
+	let sortClues = $derived(clues.filter((c: any) => c.type === 'SORT'));
+	let compareClues = $derived(clues.filter((c: any) => c.type === 'COMPARE'));
 
 	function getSortClueTiles(notch: number) {
-		return sortClues.filter((c) => c.result === notch).map((c) => c.tileId);
+		return sortClues.filter((c: any) => c.result === notch).map((c: any) => c.tileId);
 	}
 
 	function getCompareCluesForSlot(slot: number) {
-		return compareClues.filter((c) => c.targetSlot === slot);
+		return compareClues.filter((c: any) => c.targetSlot === slot);
 	}
 </script>
 
@@ -34,7 +37,7 @@
 					{#if getSortClueTiles(i).length > 0}
 						<div class="clue-stack">
 							{#each getSortClueTiles(i) as tileId}
-								<div class="clue-pill">{tileId}</div>
+								<MiniTile id={tileId} size="small" />
 							{/each}
 						</div>
 					{/if}
@@ -47,7 +50,9 @@
 					{/if}
 					<div class="compare-indicators">
 						{#each getCompareCluesForSlot(i) as clue}
-							<div class="compare-dot" class:match={clue.result} title="Tile {clue.tileId}"></div>
+							<div class="compare-clue" class:no-match={!clue.result}>
+								<MiniTile id={clue.tileId} size="small" />
+							</div>
 						{/each}
 					</div>
 				</div>
@@ -56,7 +61,7 @@
 				{#if getSortClueTiles(5).length > 0}
 					<div class="clue-stack">
 						{#each getSortClueTiles(5) as tileId}
-							<div class="clue-pill">{tileId}</div>
+							<MiniTile id={tileId} size="small" />
 						{/each}
 					</div>
 				{/if}
@@ -169,40 +174,26 @@
 		flex-direction: column-reverse;
 		align-items: center;
 		gap: 2px;
-	}
-
-	.clue-pill {
-		background: var(--color-cream);
-		color: var(--color-wood);
-		font-size: 9px;
-		font-weight: bold;
-		padding: 1px 4px;
-		border-radius: 4px;
-		border: 1px solid var(--color-wood);
-		white-space: nowrap;
+		z-index: 10;
 	}
 
 	.compare-indicators {
 		position: absolute;
-		top: -8px;
+		top: -20px;
 		left: 0;
 		right: 0;
 		display: flex;
 		justify-content: center;
 		gap: 3px;
+		z-index: 10;
 	}
 
-	.compare-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: var(--color-orange);
-		border: 1px solid rgba(0, 0, 0, 0.3);
+	.compare-clue {
+		transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	}
 
-	.compare-dot.match {
-		background: var(--color-avocado);
-		box-shadow: 0 0 5px var(--color-avocado);
+	.compare-clue.no-match {
+		transform: rotate(-15deg) translateY(2px);
 	}
 
 	.base {

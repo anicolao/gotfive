@@ -23,21 +23,34 @@ As a user, I want to play through a game with deterministic results.
 
 ---
 
-## Asking for a clue records it on the stand
+## Asking for a clue records it on the stand and consumes the tile
 
-![Asking for a clue records it on the stand](./screenshots/002-ask-clue.png)
+![Asking for a clue records it on the stand and consumes the tile](./screenshots/002-ask-clue.png)
 
 **Verifications:**
 - [x] Alice stand has one active sorting notch
+- [x] The active notch contains a MiniTile representation of the consumed tile
+- [x] The consumed tile is removed from the public pool
 - [x] Public tile is deselected after action
 
 ---
 
-## Deduction board cells can be toggled and show automated marking
+## Asking for a dot clue records it above the slot and consumes the tile
 
-![Deduction board cells can be toggled and show automated marking](./screenshots/003-deduction-board.png)
+![Asking for a dot clue records it above the slot and consumes the tile](./screenshots/003-ask-compare-clue.png)
 
 **Verifications:**
+- [x] Alice stand has a compare clue above the first slot
+- [x] The consumed tile is removed from the public pool
+
+---
+
+## Deduction board cells show dots and automated marking
+
+![Deduction board cells show dots and automated marking](./screenshots/004-deduction-board.png)
+
+**Verifications:**
+- [x] Cells show dot counts
 - [x] First cell shows a strike (X)
 - [x] Public tiles are dimmed on the deduction board
 
@@ -45,7 +58,7 @@ As a user, I want to play through a game with deterministic results.
 
 ## Guessing flow shows the modal and processes the guess
 
-![Guessing flow shows the modal and processes the guess](./screenshots/004-guessing-flow.png)
+![Guessing flow shows the modal and processes the guess](./screenshots/005-guessing-flow.png)
 
 **Verifications:**
 - [x] Guess modal is closed after submission
