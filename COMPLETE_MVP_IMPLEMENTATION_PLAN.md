@@ -42,23 +42,23 @@ This document outlines the logical order for completing the Got Five! MVP, incor
 - [x] **Game Flow Resilience**
     - [x] Ensure that a game can be gracefully restarted and that peer connections persist or reset cleanly.
 
-## Phase IV: Playability & Logic Refinement (⏳ PENDING)
+## Phase IV: Playability & Logic Refinement (✅ COMPLETED)
 **Goal:** Address human feedback to ensure the game logic follows the official rules and provides clear visual feedback for deductions.
 
-- [ ] **Public Pool Consumption**
-    - [ ] Update `clue_sort` and `clue_compare` in `playersSlice.ts` to handle tile consumption from the `game` slice.
-    - [ ] Implement `consumeTile` in `gameSlice.ts` to remove a tile from `publicPool` and add it to a `consumedTiles` or similar tracking set if needed for visibility.
-    - [ ] Ensure the used clue tile is removed from the public pool in the UI.
-- [ ] **Sorted Tile Visibility (PlayerStand)**
-    - [ ] Update `PlayerStand.svelte` to render sorted tiles as mini-tiles (with color and dots) in the notches.
-    - [ ] Improve the visualization of the "notch" so it's clear the tile sits *between* two hidden tiles.
-- [ ] **Deduction Grid Enhancement**
-    - [ ] Update `DeductionBoard.svelte` to display dots (1, 2, or 3) on every cell/mini-tile.
-    - [ ] Ensure the dot count is legible for quick reference.
-- [ ] **Dot Clue Consumption & Visibility (PlayerStand)**
-    - [ ] Update `clue_compare` (the dot clue) to consume the shared tile.
-    - [ ] Update `PlayerStand.svelte` to display the consumed tile near the compared slot.
-    - [ ] Implement "Match/No-Match" visualization (e.g., straight vs. angled placement or specific icons) using the consumed tile itself rather than a generic orange dot.
+- [x] **Public Pool Consumption**
+    - [x] Update `clue_sort` and `clue_compare` in `playersSlice.ts` to handle tile consumption from the `game` slice.
+    - [x] Implement `consumeTile` in `gameSlice.ts` to remove a tile from `publicPool` and add it to a `consumedTiles` or similar tracking set if needed for visibility.
+    - [x] Ensure the used clue tile is removed from the public pool in the UI.
+- [x] **Sorted Tile Visibility (PlayerStand)**
+    - [x] Update `PlayerStand.svelte` to render sorted tiles as mini-tiles (with color and dots) in the notches.
+    - [x] Improve the visualization of the "notch" so it's clear the tile sits *between* two hidden tiles.
+- [x] **Deduction Grid Enhancement**
+    - [x] Update `DeductionBoard.svelte` to display dots (1, 2, or 3) on every cell/mini-tile.
+    - [x] Ensure the dot count is legible for quick reference.
+- [x] **Dot Clue Consumption & Visibility (PlayerStand)**
+    - [x] Update `clue_compare` (the dot clue) to consume the shared tile.
+    - [x] Update `PlayerStand.svelte` to display the consumed tile near the compared slot.
+    - [x] Implement "Match/No-Match" visualization (e.g., straight vs. angled placement or specific icons) using the consumed tile itself rather than a generic orange dot.
 
 ## Phase V: Polish & PWA (⏳ PENDING)
 **Goal:** Finalize the "Retro 70s Groovy" look and ensure it works offline.
