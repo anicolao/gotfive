@@ -21,6 +21,10 @@ export default defineConfig({
 	define: {
 		'import.meta.env.VITE_APP_VERSION': JSON.stringify(process.env.VITE_APP_VERSION || pkg.version),
 		'import.meta.env.VITE_GIT_HASH': JSON.stringify(process.env.VITE_GIT_HASH || gitHash),
+		global: 'globalThis',
+		process: {
+			env: {}
+		}
 	},
 	plugins: [
 		sveltekit(),
