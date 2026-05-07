@@ -27,7 +27,7 @@ export default defineConfig({
                 '--disable-partial-raster',
             ],
         },
-        viewport: { width: 1280, height: 800 },
+        viewport: { width: 1280, height: 1000 },
         deviceScaleFactor: 1, 
         timezoneId: 'America/New_York',
         locale: 'en-CA', 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { store } from '$lib/store';
 	import { markDeduction, addStroke, clearStrokes as clearStrokesAction } from '$lib/store/uiSlice';
+	import { getTileData } from '$lib/game/tiles';
 	import { onMount } from 'svelte';
 
 	let { deductions = {} } = $props();
@@ -37,7 +38,9 @@
 		} else if (ctx) {
 			redrawStrokes();
 		}
-	});	function updateVisibleTiles() {
+	});
+
+	function updateVisibleTiles() {
 		const visible = new Set<number>();
 		if (gameState?.publicPool) {
 			gameState.publicPool.forEach((id: number) => visible.add(id));
@@ -190,6 +193,11 @@
 						>
 							<div class="mini-tile {COLORS[i].toLowerCase()}">
 								<span class="num">{id}</span>
+								<div class="dots">
+									{#each Array(getTileData(id).dots) as _}
+										<div class="dot"></div>
+									{/each}
+								</div>
 								{#if deductions[id] === 'X'}
 									<div class="strike"></div>
 								{:else if deductions[id] === 'OK'}
@@ -213,6 +221,7 @@
 		></canvas>
 	</div>
 </div>
+
 <style>
 	.deduction-board {
 		background-color: var(--color-cream);
@@ -291,6 +300,7 @@
 		height: 34px;
 		border-radius: 3px;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		font-size: 10px;
@@ -299,6 +309,8 @@
 		position: relative;
 		box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 		transition: transform 0.1s;
+		padding: 2px 0;
+		box-sizing: border-box;
 	}
 
 	.mini-tile:hover {
@@ -315,6 +327,21 @@
 	.num {
 		z-index: 1;
 		text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+		line-height: 1;
+	}
+
+	.dots {
+		display: flex;
+		gap: 1px;
+		margin-top: 1px;
+	}
+
+	.dot {
+		width: 4px;
+		height: 4px;
+		background-color: white;
+		border-radius: 50%;
+		box-shadow: 1px 1px 1px rgba(0,0,0,0.2);
 	}
 
 	.strike {
@@ -324,6 +351,7 @@
 		background-color: white;
 		transform: rotate(45deg);
 		z-index: 2;
+		top: 16px;
 	}
 
 	.strike::after {
@@ -345,6 +373,7 @@
 		border-radius: 3px;
 		box-sizing: border-box;
 		z-index: 2;
+		top: 0;
 	}
 
 	.dimmed {
