@@ -341,3 +341,17 @@
     - Update `Table.svelte` to show 5 draw piles with color-coded buttons.
     - Update E2E tests to handle the new reveal mechanism.
 - Delegating implementation to `@coder`.
+
+## 2026-05-07: MVP Implementation Planning
+
+**User Prompt:**
+> Review the current MVP baseline and draft a COMPLETE_MVP_IMPLEMENTATION_PLAN that reflects a logical order in which to complete all remaining work for review.
+
+**Last Human Comment:**
+> Let's get Phase I and II implemented, but use a 5x12 grid so that each colour is one row of the deduction grid. The deduction grid should look like the tiles and it should be possible for the user to 'write' on it with the mouse or a stylus as well as any formatted/automatic deductions.
+
+**Action Plan (Orchestration):**
+- Analyzed current codebase (SvelteKit + Redux).
+- Identified missing features: Clue actions, Deduction Board (5x12), Guessing mechanism, Multiplayer (WebRTC).
+- Drafted `COMPLETE_MVP_IMPLEMENTATION_PLAN.md`.
+- Delegating Phase I and II implementation to @coder.
