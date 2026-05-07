@@ -60,6 +60,7 @@ export const networkMiddleware = (store: any) => (next: any) => (action: any) =>
 			'game/nextTurn',
 			'game/setWinner',
 			'players/addPlayer',
+			'players/setHand',
 			'players/clue_sort',
 			'players/clue_compare',
 			'players/eliminatePlayer',
