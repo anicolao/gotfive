@@ -101,17 +101,51 @@ test('User plays the game', async ({ page }, testInfo) => {
   }
   
   await tester.step('deduction-board', {
-    description: 'Deduction board cells can be toggled',
+    description: 'Deduction board cells can be toggled and show automated marking',
     verifications: [
       {
         spec: 'First cell shows a strike (X)',
         check: async () => {
           await expect(boardCell.locator('.strike')).toBeVisible();
         }
+      },
+      {
+        spec: 'Public tiles are dimmed on the deduction board',
+        check: async () => {
+          const publicTileId = await page.locator('.pool-tiles .number').first().innerText();
+          const boardTile = page.locator(`.deduction-board .cell[data-id="${publicTileId}"]`);
+          await expect(boardTile).toHaveClass(/dimmed/);
+        }
       }
     ]
   });
 
-  // 6. Conclude
+  // 6. Guessing flow
+  await page.locator('.got-five-btn').click();
+  await expect(page.locator('.overlay .guess-modal')).toBeVisible();
+  
+  // Fill some guesses (just for testing the flow)
+  const inputs = page.locator('.guess-inputs input');
+  await inputs.nth(0).fill('1');
+  await inputs.nth(1).fill('2');
+  await inputs.nth(2).fill('3');
+  await inputs.nth(3).fill('4');
+  await inputs.nth(4).fill('5');
+  
+  await page.locator('.modal-actions .primary').click();
+  
+  await tester.step('guessing-flow', {
+    description: 'Guessing flow shows the modal and processes the guess',
+    verifications: [
+      {
+        spec: 'Guess modal is closed after submission',
+        check: async () => {
+          await expect(page.locator('.overlay')).toHaveCount(0);
+        }
+      }
+    ]
+  });
+
+  // 7. Conclude
   tester.generateDocs();
 });

@@ -3,6 +3,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 export interface UIState {
 	myId: string | null;
 	deductionBoard: Record<number, '?' | 'X' | 'OK'>;
+	strokes: number[][][]; // [strokeIndex][pointIndex][x, y]
 	overlay: 'RULES' | 'GUESS' | 'NONE';
 	selectedTileId: number | null;
 }
@@ -10,6 +11,7 @@ export interface UIState {
 const initialState: UIState = {
 	myId: null,
 	deductionBoard: {},
+	strokes: [],
 	overlay: 'NONE',
 	selectedTileId: null
 };
@@ -24,6 +26,12 @@ export const uiSlice = createSlice({
 		markDeduction: (state, action: PayloadAction<{ id: number; mark: '?' | 'X' | 'OK' }>) => {
 			state.deductionBoard[action.payload.id] = action.payload.mark;
 		},
+		addStroke: (state, action: PayloadAction<number[][]>) => {
+			state.strokes.push(action.payload);
+		},
+		clearStrokes: (state) => {
+			state.strokes = [];
+		},
 		setOverlay: (state, action: PayloadAction<'RULES' | 'GUESS' | 'NONE'>) => {
 			state.overlay = action.payload;
 		},
@@ -33,5 +41,5 @@ export const uiSlice = createSlice({
 	}
 });
 
-export const { setMyId, markDeduction, setOverlay, selectTile } = uiSlice.actions;
+export const { setMyId, markDeduction, addStroke, clearStrokes, setOverlay, selectTile } = uiSlice.actions;
 export default uiSlice.reducer;
