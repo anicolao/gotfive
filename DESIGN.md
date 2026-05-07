@@ -24,8 +24,8 @@ The state is managed in a normalized Redux store. Each client maintains the full
 ```typescript
 interface PlayState {
   status: 'LOBBY' | 'SETUP' | 'PLAYING' | 'FINISHED';
-  deck: number[]; // Full shuffled sequence of 60 tiles (IDs 1-60)
-  deckIndex: number; // Points to the next tile to be revealed
+  // 5 draw piles, one for each color
+  decks: Record<TileColor, number[]>;
   publicPool: number[]; // Tile IDs currently face up
   turnOrder: string[]; // List of player IDs
   currentPlayerIndex: number;
@@ -68,6 +68,12 @@ Tiles are identified by an ID from 1 to 60. All properties are derived from this
 - **Dots**: `Math.floor((id - 1) / 5) % 3 + 1`
   - Results in a repeating 1-2-3 pattern for each color as numbers increase.
 - **Number**: The ID itself is the number printed on the tile.
+- **Sassy Face**: Maps one-to-one to the **Color**. Printed on the **back** of the tile for colorblind accessibility.
+  - Red: Winking
+  - Blue: Smirking
+  - Yellow: Star-eyes
+  - Green: Surprised (round mouth)
+  - Purple: Straight mouth
 
 ## 4. WebRTC & Communication Protocol
 
@@ -90,7 +96,7 @@ The Host shuffles the deck once at the start and broadcasts the entire sequence 
 | :--- | :--- | :--- |
 | `room/join` | `{ id: string, name: string }` | Adds a player to the lobby. |
 | `game/start` | `{ deck: number[], turnOrder: string[] }` | Initializes game state with the shuffled deck. |
-| `game/reveal` | `void` | Increments `deckIndex` and adds the tile to `publicPool`. |
+| `game/reveal` | `TileColor` | Pops a tile from the corresponding color deck and adds to `publicPool`. |
 | `game/clue_sort` | `{ targetId: string, tileId: number, notch: number }` | Adds a SORT clue to a player's record. |
 | `game/clue_compare` | `{ targetId: string, tileId: number, slot: number, match: boolean }` | Adds a COMPARE clue to a player's record. |
 | `game/guess` | `{ playerId: string, guesses: number[] }` | Checks guesses against the player's `hand`. |

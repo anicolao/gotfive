@@ -322,3 +322,22 @@
 - Confirmed version display is implemented but deployment is stale.
 - Planned fixes: regenerate screenshots, fix ESLint config, clean up React leftovers, and ensure base path is correctly handled in Vite.
 - Transitioned to @coder for implementation.
+
+## 2026-05-07: Fix Tile Color Interpretation and Draw Piles (Issue #20)
+
+**User Prompt:**
+> OK there are several things wrong with the current MVP but the most prominent is a misinterpretation of tile colour. The whole tile has a colour, which is visible from the front and back. The faces should map one-to-one to the colour so that someone who can't perceive the colour can still differentiate the tiles from the back; the faces therefore need to be printed on the back, not the front. There need to be 5 draw piles too, since the user can choose what colour they are revealing.
+>
+> So let's correct those thiings in the actions, state, and UI.
+
+**Action Plan (Orchestration):**
+- Analyzed the current tile and game state implementation.
+- Identified that tiles are currently colored based on ID, but the "face" (sassy face) is on the front and doesn't map one-to-one with color.
+- Formulated a plan:
+    - Update `DESIGN.md` to reflect 5 separate draw piles (one per color).
+    - Map 5 distinct sassy faces one-to-one with the 5 colors.
+    - Move sassy faces to the back of the tiles for colorblind accessibility.
+    - Update `gameSlice` to manage 5 decks and handle color-specific reveal actions.
+    - Update `Table.svelte` to show 5 draw piles with color-coded buttons.
+    - Update E2E tests to handle the new reveal mechanism.
+- Delegating implementation to `@coder`.
