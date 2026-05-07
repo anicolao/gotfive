@@ -9,7 +9,7 @@ As a user, I want to play through a game with deterministic results.
 **Verifications:**
 - [x] Player "You" has 5 tiles
 - [x] Public pool has 5 initial tiles
-- [x] Deck has 35 tiles remaining (60 - 4*5 players - 5 initial public)
+- [x] Each of the 5 colored decks has 7 tiles remaining
 
 ---
 
@@ -19,7 +19,7 @@ As a user, I want to play through a game with deterministic results.
 
 **Verifications:**
 - [x] Public pool now has 6 tiles
-- [x] Deck has 34 tiles remaining
+- [x] Red deck has 6 tiles remaining
 
 ---
 

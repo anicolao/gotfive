@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { type TileColor } from '../game/tiles';
 
 export interface GameState {
 	status: 'LOBBY' | 'SETUP' | 'PLAYING' | 'FINISHED';
-	deck: number[];
-	deckIndex: number;
+	decks: Record<TileColor, number[]>;
 	publicPool: number[];
 	turnOrder: string[];
 	currentPlayerIndex: number;
@@ -13,8 +13,13 @@ export interface GameState {
 
 const initialState: GameState = {
 	status: 'LOBBY',
-	deck: [],
-	deckIndex: 0,
+	decks: {
+		Red: [],
+		Blue: [],
+		Yellow: [],
+		Green: [],
+		Purple: []
+	},
 	publicPool: [],
 	turnOrder: [],
 	currentPlayerIndex: 0,
@@ -27,19 +32,36 @@ export const gameSlice = createSlice({
 	initialState,
 	reducers: {
 		start: (state, action: PayloadAction<{ deck: number[]; turnOrder: string[]; initialPublic: number[]; seed: number }>) => {
-			state.deck = action.payload.deck;
 			state.turnOrder = action.payload.turnOrder;
 			state.status = 'PLAYING';
-			state.deckIndex = 0;
 			state.publicPool = action.payload.initialPublic;
 			state.currentPlayerIndex = 0;
 			state.winnerId = null;
 			state.seed = action.payload.seed;
+
+			// Partition deck into 5 decks by color
+			const COLORS: TileColor[] = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
+			state.decks = {
+				Red: [],
+				Blue: [],
+				Yellow: [],
+				Green: [],
+				Purple: []
+			};
+			action.payload.deck.forEach(id => {
+				const colorIndex = (id - 1) % 5;
+				const color = COLORS[colorIndex];
+				state.decks[color].push(id);
+			});
 		},
-		reveal: (state) => {
-			if (state.deckIndex < state.deck.length) {
-				state.publicPool.push(state.deck[state.deckIndex]);
-				state.deckIndex++;
+		reveal: (state, action: PayloadAction<TileColor>) => {
+			const color = action.payload;
+			const deck = state.decks[color];
+			if (deck.length > 0) {
+				const tileId = deck.shift();
+				if (tileId !== undefined) {
+					state.publicPool.push(tileId);
+				}
 			}
 		},
 		nextTurn: (state) => {
