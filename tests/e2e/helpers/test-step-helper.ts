@@ -22,7 +22,12 @@ interface DocStep {
 export async function waitForAnimations(page: Page) {
     await page.evaluate(() => {
         return Promise.all(
-            document.getAnimations().map(animation => animation.finished)
+            document.getAnimations()
+                .filter(animation => {
+                    const timing = animation.effect?.getTiming();
+                    return timing?.iterations !== Infinity && timing?.duration !== 'infinite';
+                })
+                .map(animation => animation.finished)
         );
     });
 }

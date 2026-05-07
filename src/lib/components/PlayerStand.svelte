@@ -5,6 +5,7 @@
 	export let name: string;
 	export let hand: number[] = [];
 	export let isLocalPlayer: boolean = false;
+	export let isCurrentTurn: boolean = false;
 	export let clues: any[] = [];
 	export let canBeTarget: boolean = false;
 	export let onSelectTarget: (id: string) => void = () => {};
@@ -24,8 +25,8 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="stand-container" class:can-target={canBeTarget} on:click={() => canBeTarget && onSelectTarget(id)}>
-	<div class="name-tag">{name}</div>
+<div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} on:click={() => canBeTarget && onSelectTarget(id)}>
+	<div class="name-tag">{name} {isCurrentTurn ? '★' : ''}</div>
 	<div class="stand">
 		<div class="tiles-area">
 			{#each Array(5) as _, i}
@@ -71,7 +72,22 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 10px;
-		transition: transform 0.2s;
+		transition: transform 0.2s, filter 0.2s;
+	}
+
+	.current-turn .name-tag {
+		background-color: var(--color-avocado);
+		animation: pulse 2s infinite;
+	}
+
+	.current-turn .stand {
+		filter: drop-shadow(0 0 10px var(--color-avocado));
+	}
+
+	@keyframes pulse {
+		0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+		70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+		100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 	}
 
 	.can-target {

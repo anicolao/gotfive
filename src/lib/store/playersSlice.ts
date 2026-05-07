@@ -85,9 +85,23 @@ export const playersSlice = createSlice({
 			if (state.players[action.payload]) {
 				state.players[action.payload].eliminated = true;
 			}
+		},
+		guess: (state, action: PayloadAction<{ playerId: string; guessedHand: number[] }>) => {
+			const player = state.players[action.payload.playerId];
+			if (!player) return;
+			
+			const actualHandSorted = [...player.hand].sort((a, b) => a - b);
+			const guessedHandSorted = [...action.payload.guessedHand].sort((a, b) => a - b);
+			
+			const isCorrect = actualHandSorted.length === guessedHandSorted.length && 
+				actualHandSorted.every((val, index) => val === guessedHandSorted[index]);
+			
+			if (!isCorrect) {
+				player.eliminated = true;
+			}
 		}
 	}
 });
 
-export const { addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer } = playersSlice.actions;
+export const { addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer, guess } = playersSlice.actions;
 export default playersSlice.reducer;

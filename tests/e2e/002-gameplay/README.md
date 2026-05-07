@@ -33,12 +33,22 @@ As a user, I want to play through a game with deterministic results.
 
 ---
 
-## Deduction board cells can be toggled
+## Deduction board cells can be toggled and show automated marking
 
-![Deduction board cells can be toggled](./screenshots/003-deduction-board.png)
+![Deduction board cells can be toggled and show automated marking](./screenshots/003-deduction-board.png)
 
 **Verifications:**
 - [x] First cell shows a strike (X)
+- [x] Public tiles are dimmed on the deduction board
+
+---
+
+## Guessing flow shows the modal and processes the guess
+
+![Guessing flow shows the modal and processes the guess](./screenshots/004-guessing-flow.png)
+
+**Verifications:**
+- [x] Guess modal is closed after submission
 
 ---
 

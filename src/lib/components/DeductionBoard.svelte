@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { store } from '$lib/store';
-	import { markDeduction } from '$lib/store/uiSlice';
+	import { markDeduction, addStroke, clearStrokes as clearStrokesAction } from '$lib/store/uiSlice';
 	import { onMount } from 'svelte';
 
 	export let deductions: Record<number, '?' | 'X' | 'OK'> = {};
@@ -17,8 +17,42 @@
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 	let drawing = false;
+	let currentStroke: number[][] = [];
 	let startPos = { x: 0, y: 0 };
 	let moved = false;
+
+	let gameState: any;
+	let playersState: any;
+	let uiState: any;
+	let visibleTiles = new Set<number>();
+
+	store.subscribe(() => {
+		const state = store.getState();
+		gameState = state.game;
+		playersState = state.players;
+		uiState = state.ui;
+		updateVisibleTiles();
+		if (uiState.strokes.length === 0 && ctx) {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		} else if (ctx) {
+			redrawStrokes();
+		}
+	});
+
+	function updateVisibleTiles() {
+		const visible = new Set<number>();
+		if (gameState?.publicPool) {
+			gameState.publicPool.forEach((id: number) => visible.add(id));
+		}
+		if (playersState?.players && uiState?.myId) {
+			Object.values(playersState.players).forEach((p: any) => {
+				if (p.id !== uiState.myId) {
+					p.hand.forEach((id: number) => visible.add(id));
+				}
+			});
+		}
+		visibleTiles = visible;
+	}
 
 	onMount(() => {
 		const context = canvas.getContext('2d');
@@ -33,46 +67,77 @@
 	function resizeCanvas() {
 		if (!canvas) return;
 		const rect = canvas.getBoundingClientRect();
-		const tempCanvas = document.createElement('canvas');
-		tempCanvas.width = canvas.width;
-		tempCanvas.height = canvas.height;
-		const tempCtx = tempCanvas.getContext('2d');
-		tempCtx?.drawImage(canvas, 0, 0);
-
 		canvas.width = rect.width;
 		canvas.height = rect.height;
 
 		if (ctx) {
-			ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, canvas.width, canvas.height);
 			ctx.lineWidth = 2;
 			ctx.lineCap = 'round';
 			ctx.strokeStyle = 'rgba(62, 39, 35, 0.6)';
+			redrawStrokes();
 		}
 	}
 
+	function redrawStrokes() {
+		if (!ctx || !canvas || !uiState?.strokes) return;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		uiState.strokes.forEach((stroke: number[][]) => {
+			if (stroke.length === 0) return;
+			ctx.beginPath();
+			ctx.moveTo(stroke[0][0], stroke[0][1]);
+			for (let i = 1; i < stroke.length; i++) {
+				ctx.lineTo(stroke[i][0], stroke[i][1]);
+			}
+			ctx.stroke();
+		});
+	}
+
 	function handleMouseDown(e: MouseEvent | TouchEvent) {
+		const rect = canvas.getBoundingClientRect();
 		const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
 		const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+		const x = clientX - rect.left;
+		const y = clientY - rect.top;
+
 		startPos = { x: clientX, y: clientY };
 		moved = false;
 		drawing = true;
-		draw(e);
+		currentStroke = [[x, y]];
+
+		if (ctx) {
+			ctx.beginPath();
+			ctx.moveTo(x, y);
+		}
 	}
 
 	function handleMouseMove(e: MouseEvent | TouchEvent) {
 		if (drawing) {
+			const rect = canvas.getBoundingClientRect();
 			const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
 			const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+			const x = clientX - rect.left;
+			const y = clientY - rect.top;
+
 			if (Math.abs(clientX - startPos.x) > 5 || Math.abs(clientY - startPos.y) > 5) {
 				moved = true;
 			}
-			draw(e);
+
+			currentStroke.push([x, y]);
+			if (ctx) {
+				ctx.lineTo(x, y);
+				ctx.stroke();
+			}
 		}
 	}
 
 	function handleMouseUp(e: MouseEvent | TouchEvent) {
-		stopDrawing();
-		if (!moved) {
+		if (!drawing) return;
+		drawing = false;
+
+		if (moved && currentStroke.length > 1) {
+			store.dispatch(addStroke(currentStroke));
+		} else if (!moved) {
+			// Small click, toggle deduction
 			canvas.style.pointerEvents = 'none';
 			const el = document.elementFromPoint(startPos.x, startPos.y);
 			canvas.style.pointerEvents = 'auto';
@@ -82,26 +147,15 @@
 				const id = parseInt(cell.getAttribute('data-id') || '0');
 				if (id) toggleDeduction(id);
 			}
+			redrawStrokes(); // Clear the "dot" created during mousedown
 		}
+		currentStroke = [];
 	}
 
 	function stopDrawing() {
-		drawing = false;
-		if (ctx) ctx.beginPath();
-	}
-
-	function draw(e: MouseEvent | TouchEvent) {
-		if (!drawing || !ctx) return;
-		const rect = canvas.getBoundingClientRect();
-		const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
-		const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
-		const x = clientX - rect.left;
-		const y = clientY - rect.top;
-
-		ctx.lineTo(x, y);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(x, y);
+		if (drawing) {
+			handleMouseUp({} as any);
+		}
 	}
 
 	function toggleDeduction(id: number) {
@@ -114,7 +168,7 @@
 	}
 
 	function clearDrawing() {
-		if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+		store.dispatch(clearStrokesAction());
 	}
 </script>
 
@@ -132,7 +186,7 @@
 					</div>
 					{#each row as id}
 						<button
-							class="cell {deductions[id] || 'unknown'}"
+							class="cell {deductions[id] || 'unknown'} {visibleTiles.has(id) ? 'dimmed' : ''}"
 							data-id={id}
 							on:click|preventDefault={() => {}}
 						>
@@ -296,6 +350,11 @@
 		z-index: 2;
 	}
 
+	.dimmed {
+		opacity: 0.3;
+		filter: grayscale(0.5);
+	}
+
 	canvas {
 		position: absolute;
 		top: 0;
@@ -304,26 +363,11 @@
 		height: 100%;
 		pointer-events: auto;
 		cursor: crosshair;
-	}
-
-	/* Ensure canvas doesn't block clicks to cells if not drawing? 
-	   Actually, we want to draw everywhere. To toggle deduction, 
-	   maybe we should use a modifier key or just allow clicks through if no movement.
-	   Wait, if we have a canvas on top, it will capture all events.
-	*/
-	
-	.grid-container canvas {
 		z-index: 3;
 	}
-	
+
 	.grid {
 		z-index: 2;
 		position: relative;
 	}
-	
-	/* To allow clicking cells through canvas, we could make cells higher z-index,
-	   but then we can't draw ON them. 
-	   Better approach: handle clicks on canvas and find which cell was clicked.
-	   OR: handle mousedown/up for drawing, and click for toggling.
-	*/
 </style>
