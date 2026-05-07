@@ -9,6 +9,7 @@
 	import Table from '$lib/components/Table.svelte';
 	import PlayerStand from '$lib/components/PlayerStand.svelte';
 	import DeductionBoard from '$lib/components/DeductionBoard.svelte';
+	import Lobby from '$lib/components/Lobby.svelte';
 	import '../App.css';
 
 	let gameState: any;
@@ -23,20 +24,11 @@
 		uiState = state.ui;
 	});
 
-	function initGame() {
-		const urlParams = new URLSearchParams(window.location.search);
-		const seedParam = urlParams.get('seed');
-		const seed = seedParam ? parseInt(seedParam, 10) : Math.floor(Math.random() * 1000000);
+	function handleStartGame() {
+		const seed = Math.floor(Math.random() * 1000000);
 		const rng = createRNG(seed);
-
-		const playerIds = ['p1', 'p2', 'p3', 'p4'];
-		store.dispatch(setMyId('p1'));
-
-		store.dispatch(addPlayer({ id: 'p1', name: 'You' }));
-		store.dispatch(addPlayer({ id: 'p2', name: 'Alice' }));
-		store.dispatch(addPlayer({ id: 'p3', name: 'Bob' }));
-		store.dispatch(addPlayer({ id: 'p4', name: 'Charlie' }));
-
+		const playerIds = Object.keys(playersState.players);
+		
 		// Create deck 1-60 and shuffle
 		let deck = createDeck();
 		deck = shuffle(deck, rng);
@@ -65,12 +57,15 @@
 		store.dispatch(start({ deck, turnOrder: playerIds, initialPublic, seed }));
 	}
 
-	onMount(() => {
-		initGame();
-	});
-
 	$: currentPlayerId = gameState?.turnOrder[gameState?.currentPlayerIndex];
 	$: isMyTurn = currentPlayerId === uiState?.myId;
+	$: isHost = uiState?.myId && gameState?.status === 'LOBBY' && Object.keys(playersState?.players || {}).length > 0; // Simplified host check
+
+	// Sort other players for display around the table
+	$: otherPlayerIds = gameState?.turnOrder.filter((id: string) => id !== uiState?.myId) || [];
+	$: topPlayerId = otherPlayerIds[1] || null;
+	$: leftPlayerId = otherPlayerIds[0] || null;
+	$: rightPlayerId = otherPlayerIds[2] || null;
 
 	function handleSelectTile(id: number) {
 		if (!isMyTurn) return;
@@ -138,31 +133,25 @@
 	</header>
 
 	<main>
-		<div class="main-play-area">
-			<div class="top-row">
-				{#if playersState?.players['p3']}
-					<PlayerStand
-						id="p3"
-						name={playersState.players['p3'].name}
-						hand={playersState.players['p3'].hand}
-						clues={playersState.players['p3'].clues}
-						isCurrentTurn={currentPlayerId === 'p3'}
-						canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
-						onSelectTarget={handleAskSort}
-						onSelectSlot={handleAskCompare}
-					/>
+		{#if gameState?.status === 'LOBBY'}
+			<div class="lobby-wrapper">
+				<Lobby />
+				{#if isHost && Object.keys(playersState?.players || {}).length >= 2}
+					<div class="host-actions">
+						<button class="got-five-btn" on:click={handleStartGame}>START GAME</button>
+					</div>
 				{/if}
 			</div>
-
-			<div class="middle-row">
-				<div class="side-col">
-					{#if playersState?.players['p2']}
+		{:else}
+			<div class="main-play-area">
+				<div class="top-row">
+					{#if topPlayerId && playersState?.players[topPlayerId]}
 						<PlayerStand
-							id="p2"
-							name={playersState.players['p2'].name}
-							hand={playersState.players['p2'].hand}
-							clues={playersState.players['p2'].clues}
-							isCurrentTurn={currentPlayerId === 'p2'}
+							id={topPlayerId}
+							name={playersState.players[topPlayerId].name}
+							hand={playersState.players[topPlayerId].hand}
+							clues={playersState.players[topPlayerId].clues}
+							isCurrentTurn={currentPlayerId === topPlayerId}
 							canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
 							onSelectTarget={handleAskSort}
 							onSelectSlot={handleAskCompare}
@@ -170,66 +159,83 @@
 					{/if}
 				</div>
 
-				<div class="center-col">
-					{#if gameState}
-						<Table
-							publicPool={gameState.publicPool}
-							decks={gameState.decks}
-							onReveal={handleReveal}
-							selectedTileId={uiState?.selectedTileId}
-							onSelectTile={handleSelectTile}
-						/>
-					{/if}
+				<div class="middle-row">
+					<div class="side-col">
+						{#if leftPlayerId && playersState?.players[leftPlayerId]}
+							<PlayerStand
+								id={leftPlayerId}
+								name={playersState.players[leftPlayerId].name}
+								hand={playersState.players[leftPlayerId].hand}
+								clues={playersState.players[leftPlayerId].clues}
+								isCurrentTurn={currentPlayerId === leftPlayerId}
+								canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
+								onSelectTarget={handleAskSort}
+								onSelectSlot={handleAskCompare}
+							/>
+						{/if}
+					</div>
+
+					<div class="center-col">
+						{#if gameState}
+							<Table
+								publicPool={gameState.publicPool}
+								decks={gameState.decks}
+								onReveal={handleReveal}
+								selectedTileId={uiState?.selectedTileId}
+								onSelectTile={handleSelectTile}
+							/>
+						{/if}
+					</div>
+
+					<div class="side-col">
+						{#if rightPlayerId && playersState?.players[rightPlayerId]}
+							<PlayerStand
+								id={rightPlayerId}
+								name={playersState.players[rightPlayerId].name}
+								hand={playersState.players[rightPlayerId].hand}
+								clues={playersState.players[rightPlayerId].clues}
+								isCurrentTurn={currentPlayerId === rightPlayerId}
+								canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
+								onSelectTarget={handleAskSort}
+								onSelectSlot={handleAskCompare}
+							/>
+						{/if}
+					</div>
 				</div>
 
-				<div class="side-col">
-					{#if playersState?.players['p4']}
-						<PlayerStand
-							id="p4"
-							name={playersState.players['p4'].name}
-							hand={playersState.players['p4'].hand}
-							clues={playersState.players['p4'].clues}
-							isCurrentTurn={currentPlayerId === 'p4'}
-							canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
-							onSelectTarget={handleAskSort}
-							onSelectSlot={handleAskCompare}
-						/>
-					{/if}
-				</div>
-			</div>
-
-			<div class="bottom-row">
-				<div class="controls-left">
-					<button class="got-five-btn" on:click={() => store.dispatch(setOverlay('GUESS'))}>
-						GOT FIVE!
-					</button>
-				</div>
-				{#if playersState?.players['p1']}
-					<PlayerStand
-						id="p1"
-						name={playersState.players['p1'].name}
-						hand={playersState.players['p1'].hand}
-						clues={playersState.players['p1'].clues}
-						isLocalPlayer={true}
-						isCurrentTurn={currentPlayerId === 'p1'}
-						canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
-						onSelectTarget={handleAskSort}
-						onSelectSlot={handleAskCompare}
-					/>
-				{/if}
-				<div class="controls-right">
-					{#if isMyTurn}
-						<button class="next-turn-btn" on:click={() => store.dispatch(nextTurn())}>
-							Pass Turn
+				<div class="bottom-row">
+					<div class="controls-left">
+						<button class="got-five-btn" on:click={() => store.dispatch(setOverlay('GUESS'))}>
+							GOT FIVE!
 						</button>
+					</div>
+					{#if uiState?.myId && playersState?.players[uiState.myId]}
+						<PlayerStand
+							id={uiState.myId}
+							name={playersState.players[uiState.myId].name}
+							hand={playersState.players[uiState.myId].hand}
+							clues={playersState.players[uiState.myId].clues}
+							isLocalPlayer={true}
+							isCurrentTurn={currentPlayerId === uiState.myId}
+							canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
+							onSelectTarget={handleAskSort}
+							onSelectSlot={handleAskCompare}
+						/>
 					{/if}
+					<div class="controls-right">
+						{#if isMyTurn}
+							<button class="next-turn-btn" on:click={() => store.dispatch(nextTurn())}>
+								Pass Turn
+							</button>
+						{/if}
+					</div>
 				</div>
 			</div>
-		</div>
 
-		<aside class="sidebar">
-			<DeductionBoard deductions={uiState?.deductionBoard} />
-		</aside>
+			<aside class="sidebar">
+				<DeductionBoard deductions={uiState?.deductionBoard} />
+			</aside>
+		{/if}
 	</main>
 
 	{#if uiState?.overlay === 'GUESS'}
@@ -445,5 +451,19 @@
 		font-size: 0.7rem;
 		opacity: 0.5;
 		font-family: monospace;
+	}
+
+	.lobby-wrapper {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 2rem;
+	}
+
+	.host-actions {
+		display: flex;
+		justify-content: center;
 	}
 </style>

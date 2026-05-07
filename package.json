@@ -17,6 +17,7 @@
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.59.1",
     "@sveltejs/vite-plugin-svelte": "^7.1.0",
+    "simple-peer": "^9.11.1",
     "svelte": "^5.55.5",
     "svelte-check": "^4.4.8"
   },
@@ -24,6 +25,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
     "@types/node": "^24.12.2",
+    "@types/simple-peer": "^9.11.9",
     "eslint": "^10.2.1",
     "globals": "^17.5.0",
     "typescript": "~6.0.2",
