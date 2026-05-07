@@ -341,3 +341,20 @@
     - Update `Table.svelte` to show 5 draw piles with color-coded buttons.
     - Update E2E tests to handle the new reveal mechanism.
 - Delegating implementation to `@coder`.
+
+## 2026-05-07: Draft COMPLETE_MVP_IMPLEMENTATION_PLAN (Issue #22)
+
+**User Prompt:**
+> Review the current MVP baseline and draft a COMPLETE_MVP_IMPLEMENTATION_PLAN that reflects a logical order in which to complete all remaining work for review.
+
+**Last Human Comment:**
+> Let's get Phase I and II implemented, but use a 5x12 grid so that each colour is one row of the deduction grid. The deduction grid should look like the tiles and it should be possible for the user to 'write' on it with the mouse or a stylus as well as any formatted/automatic deductions.
+
+**Action Plan (Orchestration):**
+- Reviewed the current MVP state (SvelteKit, Redux, 1-60 tile logic, 5 draw piles).
+- Drafted `COMPLETE_MVP_IMPLEMENTATION_PLAN.md` covering:
+    - Phase I: Core Game & Local Deduction (Deduction Board with 5x12 grid, writing layer, automated marking, and core game actions like SORT/COMPARE).
+    - Phase II: P2P Multiplayer (WebRTC signaling and Host-Peer action relay).
+    - Phase III: Polish & PWA.
+- Defined specific requirements for the Deduction Board (Tile-like aesthetic, stylus support).
+- Delegating Phase I implementation to `@coder`.
