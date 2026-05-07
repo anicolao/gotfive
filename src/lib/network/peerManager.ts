@@ -12,9 +12,9 @@ export class PeerManager {
 	public peers: Map<string, Peer.Instance> = new Map();
 	public connections: Writable<string[]> = writable([]);
 	public onMessage?: (msg: NetworkMessage) => void;
+	public onConnect?: (id: string) => void;
 
-	constructor(myId: string) {
-		this.myId = myId;
+	constructor(myId: string) {		this.myId = myId;
 	}
 
 	public createOffer(): Promise<{ peer: Peer.Instance; offer: string }> {

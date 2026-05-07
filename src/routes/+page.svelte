@@ -12,10 +12,10 @@
 	import Lobby from '$lib/components/Lobby.svelte';
 	import '../App.css';
 
-	let gameState: any;
-	let playersState: any;
-	let uiState: any;
-	let guessInputs: number[] = [0, 0, 0, 0, 0];
+	let gameState = $state(store.getState().game);
+	let playersState = $state(store.getState().players);
+	let uiState = $state(store.getState().ui);
+	let guessInputs = $state([0, 0, 0, 0, 0]);
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -25,10 +25,12 @@
 	});
 
 	function handleStartGame() {
-		const seed = Math.floor(Math.random() * 1000000);
+		const urlParams = new URLSearchParams(window.location.search);
+		const seedParam = urlParams.get('seed');
+		const seed = seedParam ? parseInt(seedParam) : Math.floor(Math.random() * 1000000);
 		const rng = createRNG(seed);
 		const playerIds = Object.keys(playersState.players);
-		
+
 		// Create deck 1-60 and shuffle
 		let deck = createDeck();
 		deck = shuffle(deck, rng);
@@ -57,15 +59,15 @@
 		store.dispatch(start({ deck, turnOrder: playerIds, initialPublic, seed }));
 	}
 
-	$: currentPlayerId = gameState?.turnOrder[gameState?.currentPlayerIndex];
-	$: isMyTurn = currentPlayerId === uiState?.myId;
-	$: isHost = uiState?.myId && gameState?.status === 'LOBBY' && Object.keys(playersState?.players || {}).length > 0; // Simplified host check
+	let currentPlayerId = $derived(gameState?.turnOrder[gameState?.currentPlayerIndex]);
+	let isMyTurn = $derived(currentPlayerId === uiState?.myId);
+	let isHost = $derived(uiState?.myId && gameState?.status === 'LOBBY' && Object.keys(playersState?.players || {}).length > 0); // Simplified host check
 
 	// Sort other players for display around the table
-	$: otherPlayerIds = gameState?.turnOrder.filter((id: string) => id !== uiState?.myId) || [];
-	$: topPlayerId = otherPlayerIds[1] || null;
-	$: leftPlayerId = otherPlayerIds[0] || null;
-	$: rightPlayerId = otherPlayerIds[2] || null;
+	let otherPlayerIds = $derived(gameState?.turnOrder.filter((id: string) => id !== uiState?.myId) || []);
+	let topPlayerId = $derived(otherPlayerIds[1] || null);
+	let leftPlayerId = $derived(otherPlayerIds[0] || null);
+	let rightPlayerId = $derived(otherPlayerIds[2] || null);
 
 	function handleSelectTile(id: number) {
 		if (!isMyTurn) return;
@@ -125,25 +127,24 @@
 				{#if isMyTurn}
 					<span class="your-turn-badge">YOUR TURN!</span>
 				{/if}
-			{:else if gameState?.status === 'FINISHED'}
+				{:else if gameState?.status === 'FINISHED' && gameState.winnerId}
 				<span class="winner-label">Winner: {playersState?.players[gameState.winnerId]?.name}!</span>
-				<button on:click={() => window.location.reload()}>Play Again</button>
-			{/if}
-		</div>
-	</header>
-
-	<main>
-		{#if gameState?.status === 'LOBBY'}
-			<div class="lobby-wrapper">
-				<Lobby />
-				{#if isHost && Object.keys(playersState?.players || {}).length >= 2}
-					<div class="host-actions">
-						<button class="got-five-btn" on:click={handleStartGame}>START GAME</button>
-					</div>
+				<button onclick={() => window.location.reload()}>Play Again</button>
 				{/if}
-			</div>
-		{:else}
-			<div class="main-play-area">
+				</div>
+				</header>
+
+				<main>
+				{#if gameState?.status === 'LOBBY'}
+				<div class="lobby-wrapper">
+					<Lobby />
+					{#if isHost && Object.keys(playersState?.players || {}).length >= 1}
+						<div class="host-actions">
+							<button class="got-five-btn" onclick={handleStartGame}>START GAME</button>
+						</div>
+					{/if}
+				</div>				{:else}
+				<div class="main-play-area">
 				<div class="top-row">
 					{#if topPlayerId && playersState?.players[topPlayerId]}
 						<PlayerStand
@@ -205,7 +206,7 @@
 
 				<div class="bottom-row">
 					<div class="controls-left">
-						<button class="got-five-btn" on:click={() => store.dispatch(setOverlay('GUESS'))}>
+						<button class="got-five-btn" onclick={() => store.dispatch(setOverlay('GUESS'))}>
 							GOT FIVE!
 						</button>
 					</div>
@@ -224,23 +225,23 @@
 					{/if}
 					<div class="controls-right">
 						{#if isMyTurn}
-							<button class="next-turn-btn" on:click={() => store.dispatch(nextTurn())}>
+							<button class="next-turn-btn" onclick={() => store.dispatch(nextTurn())}>
 								Pass Turn
 							</button>
 						{/if}
 					</div>
 				</div>
-			</div>
+				</div>
 
-			<aside class="sidebar">
+				<aside class="sidebar">
 				<DeductionBoard deductions={uiState?.deductionBoard} />
-			</aside>
-		{/if}
-	</main>
+				</aside>
+				{/if}
+				</main>
 
-	{#if uiState?.overlay === 'GUESS'}
-		<div class="overlay">
-			<div class="guess-modal">
+				{#if uiState?.overlay === 'GUESS'}
+				<div class="overlay">
+				<div class="guess-modal">
 				<h2>GOT FIVE!</h2>
 				<p>Enter your 5 numbers in ascending order:</p>
 				<div class="guess-inputs">
@@ -249,13 +250,12 @@
 					{/each}
 				</div>
 				<div class="modal-actions">
-					<button on:click={() => store.dispatch(setOverlay('NONE'))}>Cancel</button>
-					<button class="primary" on:click={submitGuess}>Submit Guess</button>
+					<button onclick={() => store.dispatch(setOverlay('NONE'))}>Cancel</button>
+					<button class="primary" onclick={submitGuess}>Submit Guess</button>
 				</div>
-			</div>
-		</div>
-	{/if}
-
+				</div>
+				</div>
+				{/if}
 	<footer class="version-info">
 		{version}@{gitHash}
 	</footer>

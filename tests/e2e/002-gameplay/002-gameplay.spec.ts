@@ -6,8 +6,23 @@ test('User plays the game', async ({ page }, testInfo) => {
   const tester = new TestStepHelper(page, testInfo);
   tester.setMetadata('Gameplay', 'As a user, I want to play through a game with deterministic results.');
 
-  // 2. Load the game with seed 42
+  // 2. Load the game
   await page.goto('/?seed=42');
+
+  // Handle Lobby
+  await page.getByLabel('Your Name:').fill('You');
+  await page.getByRole('button', { name: 'Host Game' }).click();
+
+  // Add Alice via store
+  await page.evaluate(() => {
+    (window as any).store.dispatch({ 
+      type: 'players/addPlayer', 
+      payload: { id: 'alice-id', name: 'Alice' } 
+    });
+  });
+
+  // Start Game
+  await page.getByRole('button', { name: 'START GAME' }).click();
   
   await tester.step('initial-state', {
     description: 'Game initializes with correct number of tiles',
@@ -26,12 +41,12 @@ test('User plays the game', async ({ page }, testInfo) => {
         }
       },
       {
-        spec: 'Each of the 5 colored decks has 7 tiles remaining',
+        spec: 'Each of the 5 colored decks has 9 tiles remaining',
         check: async () => {
           const deckCounts = page.locator('.deck-count');
           await expect(deckCounts).toHaveCount(5);
           for (let i = 0; i < 5; i++) {
-            await expect(deckCounts.nth(i)).toHaveText('7');
+            await expect(deckCounts.nth(i)).toHaveText('9');
           }
         }
       }
@@ -51,9 +66,9 @@ test('User plays the game', async ({ page }, testInfo) => {
         }
       },
       {
-        spec: 'Red deck has 6 tiles remaining',
+        spec: 'Red deck has 8 tiles remaining',
         check: async () => {
-          await expect(page.locator('.deck-btn.red .deck-count')).toHaveText('6');
+          await expect(page.locator('.deck-btn.red .deck-count')).toHaveText('8');
         }
       }
     ]
