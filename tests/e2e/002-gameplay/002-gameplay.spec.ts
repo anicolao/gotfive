@@ -26,16 +26,20 @@ test('User plays the game', async ({ page }, testInfo) => {
         }
       },
       {
-        spec: 'Deck has 35 tiles remaining (60 - 4*5 players - 5 initial public)',
+        spec: 'Each of the 5 colored decks has 7 tiles remaining',
         check: async () => {
-          await expect(page.locator('.deck-count')).toHaveText('35');
+          const deckCounts = page.locator('.deck-count');
+          await expect(deckCounts).toHaveCount(5);
+          for (let i = 0; i < 5; i++) {
+            await expect(deckCounts.nth(i)).toHaveText('7');
+          }
         }
       }
     ]
   });
 
-  // 3. Reveal a tile from the deck
-  await page.locator('.deck').click();
+  // 3. Reveal a tile from the red deck
+  await page.locator('.deck-btn.red').click();
 
   await tester.step('reveal-tile', {
     description: 'Revealing a tile updates the public pool and deck count',
@@ -47,9 +51,9 @@ test('User plays the game', async ({ page }, testInfo) => {
         }
       },
       {
-        spec: 'Deck has 34 tiles remaining',
+        spec: 'Red deck has 6 tiles remaining',
         check: async () => {
-          await expect(page.locator('.deck-count')).toHaveText('34');
+          await expect(page.locator('.deck-btn.red .deck-count')).toHaveText('6');
         }
       }
     ]

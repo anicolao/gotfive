@@ -67,10 +67,6 @@
 		initGame();
 	});
 
-	function handleReveal() {
-		store.dispatch(reveal());
-	}
-
 	const version = import.meta.env.VITE_APP_VERSION || 'dev';
 	const gitHash = import.meta.env.VITE_GIT_HASH || 'local';
 </script>
@@ -108,8 +104,8 @@
 				{#if gameState}
 					<Table 
 						publicPool={gameState.publicPool} 
-						deckSize={gameState.deck.length - gameState.deckIndex} 
-						onReveal={handleReveal}
+						decks={gameState.decks} 
+						onReveal={(color) => store.dispatch(reveal(color))}
 					/>
 				{/if}
 			</div>
