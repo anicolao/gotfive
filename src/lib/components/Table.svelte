@@ -3,6 +3,7 @@
 	import type { TileColor } from '../game/tiles';
 
 	export let publicPool: number[] = [];
+	export let selectedTileId: number | null = null;
 	export let decks: Record<TileColor, number[]> = {
 		Red: [],
 		Blue: [],
@@ -11,6 +12,7 @@
 		Purple: []
 	};
 	export let onReveal: (color: TileColor) => void;
+	export let onSelectTile: (id: number) => void;
 
 	const COLORS: TileColor[] = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
 </script>
@@ -33,7 +35,13 @@
 		<h2>Public Pool</h2>
 		<div class="pool-tiles">
 			{#each publicPool as id}
-				<Tile {id} />
+				<button
+					class="tile-btn"
+					class:selected={id === selectedTileId}
+					on:click={() => onSelectTile(id)}
+				>
+					<Tile {id} />
+				</button>
 			{/each}
 		</div>
 	</div>
@@ -117,6 +125,25 @@
 		gap: 10px;
 		justify-content: center;
 		min-height: 100px;
+	}
+
+	.tile-btn {
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		transition: transform 0.2s;
+	}
+
+	.tile-btn:hover {
+		transform: scale(1.05);
+	}
+
+	.tile-btn.selected {
+		outline: 4px solid var(--color-gold);
+		outline-offset: 4px;
+		border-radius: 8px;
+		transform: scale(1.1);
 	}
 
 	.empty-deck {

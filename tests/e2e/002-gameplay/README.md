@@ -23,3 +23,22 @@ As a user, I want to play through a game with deterministic results.
 
 ---
 
+## Asking for a clue records it on the stand
+
+![Asking for a clue records it on the stand](./screenshots/002-ask-clue.png)
+
+**Verifications:**
+- [x] Alice stand has one active sorting notch
+- [x] Public tile is deselected after action
+
+---
+
+## Deduction board cells can be toggled
+
+![Deduction board cells can be toggled](./screenshots/003-deduction-board.png)
+
+**Verifications:**
+- [x] First cell shows a strike (X)
+
+---
+

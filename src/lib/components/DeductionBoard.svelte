@@ -1,0 +1,329 @@
+<script lang="ts">
+	import { store } from '$lib/store';
+	import { markDeduction } from '$lib/store/uiSlice';
+	import { onMount } from 'svelte';
+
+	export let deductions: Record<number, '?' | 'X' | 'OK'> = {};
+
+	const COLORS = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
+	const TILE_IDS_BY_COLOR = COLORS.map((_, i) => {
+		const ids = [];
+		for (let j = 0; j < 12; j++) {
+			ids.push(i + 1 + j * 5);
+		}
+		return ids;
+	});
+
+	let canvas: HTMLCanvasElement;
+	let ctx: CanvasRenderingContext2D;
+	let drawing = false;
+	let startPos = { x: 0, y: 0 };
+	let moved = false;
+
+	onMount(() => {
+		const context = canvas.getContext('2d');
+		if (context) {
+			ctx = context;
+			resizeCanvas();
+		}
+		window.addEventListener('resize', resizeCanvas);
+		return () => window.removeEventListener('resize', resizeCanvas);
+	});
+
+	function resizeCanvas() {
+		if (!canvas) return;
+		const rect = canvas.getBoundingClientRect();
+		const tempCanvas = document.createElement('canvas');
+		tempCanvas.width = canvas.width;
+		tempCanvas.height = canvas.height;
+		const tempCtx = tempCanvas.getContext('2d');
+		tempCtx?.drawImage(canvas, 0, 0);
+
+		canvas.width = rect.width;
+		canvas.height = rect.height;
+
+		if (ctx) {
+			ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, canvas.width, canvas.height);
+			ctx.lineWidth = 2;
+			ctx.lineCap = 'round';
+			ctx.strokeStyle = 'rgba(62, 39, 35, 0.6)';
+		}
+	}
+
+	function handleMouseDown(e: MouseEvent | TouchEvent) {
+		const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+		const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+		startPos = { x: clientX, y: clientY };
+		moved = false;
+		drawing = true;
+		draw(e);
+	}
+
+	function handleMouseMove(e: MouseEvent | TouchEvent) {
+		if (drawing) {
+			const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+			const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+			if (Math.abs(clientX - startPos.x) > 5 || Math.abs(clientY - startPos.y) > 5) {
+				moved = true;
+			}
+			draw(e);
+		}
+	}
+
+	function handleMouseUp(e: MouseEvent | TouchEvent) {
+		stopDrawing();
+		if (!moved) {
+			canvas.style.pointerEvents = 'none';
+			const el = document.elementFromPoint(startPos.x, startPos.y);
+			canvas.style.pointerEvents = 'auto';
+
+			const cell = el?.closest('.cell');
+			if (cell) {
+				const id = parseInt(cell.getAttribute('data-id') || '0');
+				if (id) toggleDeduction(id);
+			}
+		}
+	}
+
+	function stopDrawing() {
+		drawing = false;
+		if (ctx) ctx.beginPath();
+	}
+
+	function draw(e: MouseEvent | TouchEvent) {
+		if (!drawing || !ctx) return;
+		const rect = canvas.getBoundingClientRect();
+		const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+		const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+		const x = clientX - rect.left;
+		const y = clientY - rect.top;
+
+		ctx.lineTo(x, y);
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+	}
+
+	function toggleDeduction(id: number) {
+		const current = deductions[id] || '?';
+		let next: '?' | 'X' | 'OK';
+		if (current === '?') next = 'X';
+		else if (current === 'X') next = 'OK';
+		else next = '?';
+		store.dispatch(markDeduction({ id, mark: next }));
+	}
+
+	function clearDrawing() {
+		if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+	}
+</script>
+
+<div class="deduction-board">
+	<div class="header">
+		<h2>Top Secret Log</h2>
+		<button on:click={clearDrawing}>Clear Notes</button>
+	</div>
+	<div class="grid-container">
+		<div class="grid">
+			{#each TILE_IDS_BY_COLOR as row, i}
+				<div class="row">
+					<div class="color-label" style="color: var(--color-{COLORS[i].toLowerCase()}, {COLORS[i]})">
+						{COLORS[i][0]}
+					</div>
+					{#each row as id}
+						<button
+							class="cell {deductions[id] || 'unknown'}"
+							data-id={id}
+							on:click|preventDefault={() => {}}
+						>
+							<div class="mini-tile {COLORS[i].toLowerCase()}">
+								<span class="num">{id}</span>
+								{#if deductions[id] === 'X'}
+									<div class="strike"></div>
+								{:else if deductions[id] === 'OK'}
+									<div class="check"></div>
+								{/if}
+							</div>
+						</button>
+					{/each}
+				</div>
+			{/each}
+		</div>
+		<canvas
+			bind:this={canvas}
+			on:mousedown={handleMouseDown}
+			on:mousemove={handleMouseMove}
+			on:mouseup={handleMouseUp}
+			on:mouseleave={stopDrawing}
+			on:touchstart|preventDefault={handleMouseDown}
+			on:touchmove|preventDefault={handleMouseMove}
+			on:touchend|preventDefault={handleMouseUp}
+		></canvas>
+	</div>
+</div>
+
+<style>
+	.deduction-board {
+		background-color: var(--color-cream);
+		padding: 15px;
+		border-radius: 8px;
+		border: 4px solid var(--color-gold);
+		box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+		color: var(--color-wood);
+		width: fit-content;
+		position: relative;
+	}
+
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+
+	h2 {
+		margin: 0;
+		font-family: 'Courier New', Courier, monospace;
+		text-transform: uppercase;
+		font-size: 1.2rem;
+		letter-spacing: 2px;
+	}
+
+	button {
+		font-family: 'Courier New', Courier, monospace;
+		background: none;
+		border: 1px solid var(--color-wood);
+		cursor: pointer;
+		padding: 2px 8px;
+		font-size: 0.8rem;
+	}
+
+	button:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+	.grid-container {
+		position: relative;
+		border: 2px solid var(--color-wood);
+		padding: 10px;
+		background: white;
+	}
+
+	.grid {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.row {
+		display: flex;
+		gap: 4px;
+		align-items: center;
+	}
+
+	.color-label {
+		width: 20px;
+		font-weight: bold;
+		text-align: center;
+	}
+
+	.cell {
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+		position: relative;
+	}
+
+	.mini-tile {
+		width: 24px;
+		height: 34px;
+		border-radius: 3px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 10px;
+		font-weight: bold;
+		color: white;
+		position: relative;
+		box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+		transition: transform 0.1s;
+	}
+
+	.mini-tile:hover {
+		transform: scale(1.1);
+		z-index: 2;
+	}
+
+	.red { background-color: #D84315; }
+	.blue { background-color: #1565C0; }
+	.yellow { background-color: #F9A825; }
+	.green { background-color: #2E7D32; }
+	.purple { background-color: #6A1B9A; }
+
+	.num {
+		z-index: 1;
+		text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+	}
+
+	.strike {
+		position: absolute;
+		width: 100%;
+		height: 2px;
+		background-color: white;
+		transform: rotate(45deg);
+		z-index: 2;
+	}
+
+	.strike::after {
+		content: '';
+		position: absolute;
+		width: 100%;
+		height: 2px;
+		background-color: white;
+		transform: rotate(-90deg);
+		top: 0;
+		left: 0;
+	}
+
+	.check {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		border: 3px solid var(--color-gold);
+		border-radius: 3px;
+		box-sizing: border-box;
+		z-index: 2;
+	}
+
+	canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: auto;
+		cursor: crosshair;
+	}
+
+	/* Ensure canvas doesn't block clicks to cells if not drawing? 
+	   Actually, we want to draw everywhere. To toggle deduction, 
+	   maybe we should use a modifier key or just allow clicks through if no movement.
+	   Wait, if we have a canvas on top, it will capture all events.
+	*/
+	
+	.grid-container canvas {
+		z-index: 3;
+	}
+	
+	.grid {
+		z-index: 2;
+		position: relative;
+	}
+	
+	/* To allow clicking cells through canvas, we could make cells higher z-index,
+	   but then we can't draw ON them. 
+	   Better approach: handle clicks on canvas and find which cell was clicked.
+	   OR: handle mousedown/up for drawing, and click for toggling.
+	*/
+</style>

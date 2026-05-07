@@ -2,12 +2,13 @@
 	import { onMount } from 'svelte';
 	import { store } from '$lib/store';
 	import { start, reveal } from '$lib/store/gameSlice';
-	import { addPlayer, setHand } from '$lib/store/playersSlice';
-	import { setMyId } from '$lib/store/uiSlice';
+	import { addPlayer, setHand, clue_sort, clue_compare } from '$lib/store/playersSlice';
+	import { setMyId, selectTile } from '$lib/store/uiSlice';
 	import { createRNG } from '$lib/game/rng';
 	import { createDeck, shuffle } from '$lib/game/deck';
 	import Table from '$lib/components/Table.svelte';
 	import PlayerStand from '$lib/components/PlayerStand.svelte';
+	import DeductionBoard from '$lib/components/DeductionBoard.svelte';
 	import '../App.css';
 
 	let gameState: any;
@@ -67,6 +68,28 @@
 		initGame();
 	});
 
+	function handleSelectTile(id: number) {
+		if (uiState.selectedTileId === id) {
+			store.dispatch(selectTile(null));
+		} else {
+			store.dispatch(selectTile(id));
+		}
+	}
+
+	function handleAskSort(targetId: string) {
+		if (uiState.selectedTileId !== null) {
+			store.dispatch(clue_sort({ targetId, tileId: uiState.selectedTileId }));
+			store.dispatch(selectTile(null));
+		}
+	}
+
+	function handleAskCompare(targetId: string, slot: number) {
+		if (uiState.selectedTileId !== null) {
+			store.dispatch(clue_compare({ targetId, tileId: uiState.selectedTileId, targetSlot: slot }));
+			store.dispatch(selectTile(null));
+		}
+	}
+
 	const version = import.meta.env.VITE_APP_VERSION || 'dev';
 	const gitHash = import.meta.env.VITE_GIT_HASH || 'local';
 </script>
@@ -81,54 +104,82 @@
 	</header>
 
 	<main>
-		<div class="top-row">
-			{#if playersState?.players['p3']}
-				<PlayerStand 
-					name={playersState.players['p3'].name} 
-					hand={playersState.players['p3'].hand} 
-				/>
-			{/if}
-		</div>
-
-		<div class="middle-row">
-			<div class="side-col">
-				{#if playersState?.players['p2']}
-					<PlayerStand 
-						name={playersState.players['p2'].name} 
-						hand={playersState.players['p2'].hand} 
+		<div class="main-play-area">
+			<div class="top-row">
+				{#if playersState?.players['p3']}
+					<PlayerStand
+						id="p3"
+						name={playersState.players['p3'].name}
+						hand={playersState.players['p3'].hand}
+						clues={playersState.players['p3'].clues}
+						canBeTarget={uiState?.selectedTileId !== null}
+						onSelectTarget={handleAskSort}
+						onSelectSlot={handleAskCompare}
 					/>
 				{/if}
 			</div>
 
-			<div class="center-col">
-				{#if gameState}
-					<Table 
-						publicPool={gameState.publicPool} 
-						decks={gameState.decks} 
-						onReveal={(color) => store.dispatch(reveal(color))}
-					/>
-				{/if}
+			<div class="middle-row">
+				<div class="side-col">
+					{#if playersState?.players['p2']}
+						<PlayerStand
+							id="p2"
+							name={playersState.players['p2'].name}
+							hand={playersState.players['p2'].hand}
+							clues={playersState.players['p2'].clues}
+							canBeTarget={uiState?.selectedTileId !== null}
+							onSelectTarget={handleAskSort}
+							onSelectSlot={handleAskCompare}
+						/>
+					{/if}
+				</div>
+
+				<div class="center-col">
+					{#if gameState}
+						<Table
+							publicPool={gameState.publicPool}
+							decks={gameState.decks}
+							onReveal={(color) => store.dispatch(reveal(color))}
+							selectedTileId={uiState?.selectedTileId}
+							onSelectTile={handleSelectTile}
+						/>
+					{/if}
+				</div>
+
+				<div class="side-col">
+					{#if playersState?.players['p4']}
+						<PlayerStand
+							id="p4"
+							name={playersState.players['p4'].name}
+							hand={playersState.players['p4'].hand}
+							clues={playersState.players['p4'].clues}
+							canBeTarget={uiState?.selectedTileId !== null}
+							onSelectTarget={handleAskSort}
+							onSelectSlot={handleAskCompare}
+						/>
+					{/if}
+				</div>
 			</div>
 
-			<div class="side-col">
-				{#if playersState?.players['p4']}
-					<PlayerStand 
-						name={playersState.players['p4'].name} 
-						hand={playersState.players['p4'].hand} 
+			<div class="bottom-row">
+				{#if playersState?.players['p1']}
+					<PlayerStand
+						id="p1"
+						name={playersState.players['p1'].name}
+						hand={playersState.players['p1'].hand}
+						clues={playersState.players['p1'].clues}
+						isLocalPlayer={true}
+						canBeTarget={uiState?.selectedTileId !== null}
+						onSelectTarget={handleAskSort}
+						onSelectSlot={handleAskCompare}
 					/>
 				{/if}
 			</div>
 		</div>
 
-		<div class="bottom-row">
-			{#if playersState?.players['p1']}
-				<PlayerStand 
-					name={playersState.players['p1'].name} 
-					hand={playersState.players['p1'].hand} 
-					isLocalPlayer={true}
-				/>
-			{/if}
-		</div>
+		<aside class="sidebar">
+			<DeductionBoard deductions={uiState?.deductionBoard} />
+		</aside>
 	</main>
 
 	<footer class="version-info">
@@ -160,9 +211,25 @@
 	main {
 		flex: 1;
 		display: flex;
+		flex-direction: row;
+		padding: 20px;
+		gap: 20px;
+		overflow: hidden;
+	}
+
+	.main-play-area {
+		flex: 1;
+		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-		padding: 20px;
+	}
+
+	.sidebar {
+		width: auto;
+		display: flex;
+		align-items: center;
+		max-height: 100%;
+		overflow-y: auto;
 	}
 
 	.top-row, .bottom-row {
