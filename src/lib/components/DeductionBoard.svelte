@@ -29,8 +29,11 @@
 	let uiState = $state(store.getState().ui);
 	let visibleTiles = $state(new Set<number>());
 
-	let guessInputs = $state([0, 0, 0, 0, 0]);
-	let canGuess = $derived(guessInputs.every(v => v > 0 && v <= 60));
+	let guessInputs = $state<string[]>(['', '', '', '', '']);
+	let canGuess = $derived(guessInputs.every(v => {
+		const num = parseInt(v);
+		return !isNaN(num) && num > 0 && num <= 60;
+	}));
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -180,7 +183,7 @@
 	function submitGuess() {
 		if (!uiState?.myId) return;
 		const playerId = uiState.myId;
-		store.dispatch(guess({ playerId, guessedHand: guessInputs }));
+		store.dispatch(guess({ playerId, guessedHand: guessInputs.map(v => parseInt(v)) }));
 		
 		const state = store.getState();
 		const player = state.players.players[playerId];

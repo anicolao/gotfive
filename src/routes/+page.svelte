@@ -96,6 +96,22 @@
 		store.dispatch(reveal(color));
 	}
 
+	let acknowledgedEliminations = $state(new Set<string>());
+	let newlyEliminatedPlayer = $derived.by(() => {
+		for (const id in playersState?.players || {}) {
+			if (playersState.players[id].eliminated && !acknowledgedEliminations.has(id) && id !== uiState?.myId) {
+				return playersState.players[id];
+			}
+		}
+		return null;
+	});
+
+	function acknowledgeElimination(id: string) {
+		const newSet = new Set(acknowledgedEliminations);
+		newSet.add(id);
+		acknowledgedEliminations = newSet;
+	}
+
 	const version = import.meta.env.VITE_APP_VERSION || 'dev';
 	const gitHash = import.meta.env.VITE_GIT_HASH || 'local';
 </script>
@@ -223,17 +239,22 @@
 				{/if}
 				</main>
 
-				{#if gameState?.status === 'FINISHED' || (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
+				{#if gameState?.status === 'FINISHED' || (uiState?.myId && playersState?.players[uiState.myId]?.eliminated) || newlyEliminatedPlayer}
 				<div class="overlay">
 					<div class="end-game-modal">
 						{#if gameState?.status === 'FINISHED'}
 							<h2>GAME OVER</h2>
 							<p class="winner-msg">Winner: {playersState?.players[gameState.winnerId!]?.name}!</p>
-						{:else}
+							<button class="primary" onclick={() => window.location.reload()}>Back to Lobby</button>
+						{:else if (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
 							<h2>ELIMINATED</h2>
 							<p>Better luck next time!</p>
+							<button class="primary" onclick={() => window.location.reload()}>Back to Lobby</button>
+						{:else if newlyEliminatedPlayer}
+							<h2>PLAYER ELIMINATED</h2>
+							<p class="winner-msg">{newlyEliminatedPlayer.name} guessed incorrectly and was eliminated!</p>
+							<button class="primary" onclick={() => acknowledgeElimination(newlyEliminatedPlayer.id)}>Continue</button>
 						{/if}
-						<button class="primary" onclick={() => window.location.reload()}>Back to Lobby</button>
 					</div>
 				</div>
 				{/if}

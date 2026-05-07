@@ -8,13 +8,20 @@
 	let myName = $state('');
 	let myId = Math.random().toString(36).substring(7);
 	let peerManager: any = $state(null);
-	let mode: 'CHOOSING' | 'HOSTING' | 'JOINING' = $state('CHOOSING');
+	let mode: 'CHOOSING' | 'HOSTING' | 'JOINING' | 'JOINING_FROM_LINK' = $state('CHOOSING');
 
 	let targetHostId = $state('');
 	let connections: string[] = $state([]);
 	onMount(() => {
 		const savedName = localStorage.getItem('playerName');
 		if (savedName) myName = savedName;
+
+		const urlParams = new URLSearchParams(window.location.search);
+		const peerId = urlParams.get('peerId');
+		if (peerId) {
+			targetHostId = peerId;
+			mode = 'JOINING_FROM_LINK';
+		}
 	});
 
 	async function startLobby(host: boolean) {
@@ -40,15 +47,30 @@
 		mode = 'JOINING';
 	}
 
+	async function joinGameFromLink() {
+		await startLobby(false);
+		connectToHost();
+		mode = 'JOINING';
+	}
+
 	function connectToHost() {
 		if (targetHostId) {
-			peerManager.connect(targetHostId);
+			setTimeout(() => {
+				peerManager.connect(targetHostId);
+			}, 500);
 		}
 	}
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
 		alert('Copied to clipboard!');
+	}
+
+	function copyInviteLink() {
+		const url = new URL(window.location.href);
+		url.searchParams.set('peerId', myId);
+		navigator.clipboard.writeText(url.toString());
+		alert('Invite link copied to clipboard!');
 	}
 </script>
 
@@ -64,12 +86,21 @@
 			<button class="groovy-button" onclick={hostGame}>Host Game</button>
 			<button class="groovy-button" onclick={joinGame}>Join Game</button>
 		</div>
+	{:else if mode === 'JOINING_FROM_LINK'}
+		<div class="input-group">
+			<label for="name">Your Name:</label>
+			<input type="text" id="name" bind:value={myName} placeholder="Enter your name" />
+		</div>
+		<div class="actions">
+			<button class="groovy-button" onclick={joinGameFromLink}>Join Game</button>
+		</div>
 	{:else if mode === 'HOSTING'}
 		<div class="step">
 			<p>Your Game ID (share this with friends):</p>
 			<div class="id-display">
 				<code>{myId}</code>
 				<button onclick={() => copyToClipboard(myId)}>Copy ID</button>
+				<button onclick={copyInviteLink}>Copy Invite Link</button>
 			</div>
 		</div>
 	{:else if mode === 'JOINING'}
@@ -151,6 +182,7 @@
 		padding: 10px;
 		border-radius: 8px;
 		border: 1px solid var(--color-primary);
+		flex-wrap: wrap;
 	}
 
 	code {
