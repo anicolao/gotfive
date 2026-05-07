@@ -56,12 +56,12 @@ As a user, I want to play through a game with deterministic results.
 
 ---
 
-## Guessing flow shows the modal and processes the guess
+## Guessing flow processes the guess from the deduction board
 
-![Guessing flow shows the modal and processes the guess](./screenshots/005-guessing-flow.png)
+![Guessing flow processes the guess from the deduction board](./screenshots/005-guessing-flow.png)
 
 **Verifications:**
-- [x] Guess modal is closed after submission
+- [x] End game modal is shown (Eliminated or Winner)
 
 ---
 
