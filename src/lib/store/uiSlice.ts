@@ -4,12 +4,14 @@ export interface UIState {
 	myId: string | null;
 	deductionBoard: Record<number, '?' | 'X' | 'OK'>;
 	overlay: 'RULES' | 'GUESS' | 'NONE';
+	selectedTileId: number | null;
 }
 
 const initialState: UIState = {
 	myId: null,
 	deductionBoard: {},
-	overlay: 'NONE'
+	overlay: 'NONE',
+	selectedTileId: null
 };
 
 export const uiSlice = createSlice({
@@ -24,9 +26,12 @@ export const uiSlice = createSlice({
 		},
 		setOverlay: (state, action: PayloadAction<'RULES' | 'GUESS' | 'NONE'>) => {
 			state.overlay = action.payload;
+		},
+		selectTile: (state, action: PayloadAction<number | null>) => {
+			state.selectedTileId = action.payload;
 		}
 	}
 });
 
-export const { setMyId, markDeduction, setOverlay } = uiSlice.actions;
+export const { setMyId, markDeduction, setOverlay, selectTile } = uiSlice.actions;
 export default uiSlice.reducer;

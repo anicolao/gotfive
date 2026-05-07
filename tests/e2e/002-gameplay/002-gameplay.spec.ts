@@ -59,6 +59,59 @@ test('User plays the game', async ({ page }, testInfo) => {
     ]
   });
 
-  // 4. Conclude
+  // 4. Ask for a clue
+  const firstPublicTile = page.locator('.pool-tiles .tile-btn').first();
+  await firstPublicTile.click();
+  
+  const aliceStand = page.locator('.stand-container').filter({ hasText: 'Alice' });
+  await aliceStand.click();
+
+  await tester.step('ask-clue', {
+    description: 'Asking for a clue records it on the stand',
+    verifications: [
+      {
+        spec: 'Alice stand has one active sorting notch',
+        check: async () => {
+          await expect(aliceStand.locator('.notch.active')).toHaveCount(1);
+        }
+      },
+      {
+        spec: 'Public tile is deselected after action',
+        check: async () => {
+          await expect(page.locator('.tile-btn.selected')).toHaveCount(0);
+        }
+      }
+    ]
+  });
+
+  // 5. Use deduction board
+  const canvas = page.locator('.deduction-board canvas');
+  const boardCell = page.locator('.deduction-board .cell').first();
+  
+  const cellBox = await boardCell.boundingBox();
+  const canvasBox = await canvas.boundingBox();
+  
+  if (cellBox && canvasBox) {
+    await canvas.click({
+      position: {
+        x: cellBox.x + cellBox.width / 2 - canvasBox.x,
+        y: cellBox.y + cellBox.height / 2 - canvasBox.y
+      }
+    });
+  }
+  
+  await tester.step('deduction-board', {
+    description: 'Deduction board cells can be toggled',
+    verifications: [
+      {
+        spec: 'First cell shows a strike (X)',
+        check: async () => {
+          await expect(boardCell.locator('.strike')).toBeVisible();
+        }
+      }
+    ]
+  });
+
+  // 6. Conclude
   tester.generateDocs();
 });
