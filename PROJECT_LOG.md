@@ -341,3 +341,47 @@
     - Update `Table.svelte` to show 5 draw piles with color-coded buttons.
     - Update E2E tests to handle the new reveal mechanism.
 - Delegating implementation to `@coder`.
+
+## 2026-05-07: Draft COMPLETE_MVP_IMPLEMENTATION_PLAN (Issue #22)
+
+**User Prompt:**
+> Review the current MVP baseline and draft a COMPLETE_MVP_IMPLEMENTATION_PLAN that reflects a logical order in which to complete all remaining work for review.
+
+**Last Human Comment:**
+> Let's get Phase I and II implemented, but use a 5x12 grid so that each colour is one row of the deduction grid. The deduction grid should look like the tiles and it should be possible for the user to 'write' on it with the mouse or a stylus as well as any formatted/automatic deductions.
+
+**Action Plan (Orchestration):**
+- Reviewed the current MVP state (SvelteKit, Redux, 1-60 tile logic, 5 draw piles).
+- Drafted `COMPLETE_MVP_IMPLEMENTATION_PLAN.md` covering:
+    - Phase I: Core Game & Local Deduction (Deduction Board with 5x12 grid, writing layer, automated marking, and core game actions like SORT/COMPARE).
+    - Phase II: P2P Multiplayer (WebRTC signaling and Host-Peer action relay).
+    - Phase III: Polish & PWA.
+- Defined specific requirements for the Deduction Board (Tile-like aesthetic, stylus support).
+- Delegating Phase I implementation to `@coder`.
+
+## 2026-05-07: Phase I Implementation Completion (Issue #22)
+
+**Action Plan (Coder):**
+- Implemented **Deduction Board** enhancements:
+    - Added **Automated Marking**: Tiles revealed in the public pool or visible in opponent hands are automatically dimmed.
+    - Added **Stroke Persistence**: Freehand drawings are now stored in Redux (`uiSlice`) and persisted across re-renders and canvas resizing.
+    - Added **Structured Marks**: Clicking cells toggles between Unknown, X, and OK.
+- Implemented **Game Logic & Turn Management**:
+    - Added `guess` action in `playersSlice.ts` to validate player guesses and handle elimination.
+    - Implemented **Turn Enforcement** in `+page.svelte`: only the current player can perform actions.
+    - Added **Visual Highlights**: The current player's stand is highlighted with a pulse effect and star indicator.
+- Implemented **UI Integration**:
+    - Added **"GOT FIVE!"** button and guessing modal for entering the 5 hidden numbers.
+    - Added **"Pass Turn"** button for the local player.
+- **Testing & Quality**:
+    - Fixed E2E test timeout caused by infinite animations by updating `waitForAnimations` helper to ignore them.
+    - Updated E2E screenshots to reflect the new UI and layout changes.
+    - Added E2E verifications for automated marking and the guessing flow.
+    - Verified that `npm run build` and `npm run test:e2e` pass.
+
+**P2P Multiplayer (Phase II) Initial Research:**
+- Strategy: Use `simple-peer` for WebRTC mesh connectivity.
+- Protocol: "Thin Protocol" using action-based synchronization.
+- Since all clients share the same seed and RNG, they only need to broadcast high-level actions (e.g., "Player 1 revealed Red", "Player 1 asked Player 2 for SORT clue with Tile 15").
+- The host will be responsible for the initial seed and managing the connection relay.
+
