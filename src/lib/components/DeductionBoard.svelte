@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { store } from '$lib/store';
 	import { markDeduction, addStroke, clearStrokes as clearStrokesAction } from '$lib/store/uiSlice';
-	import { guess } from '$lib/store/playersSlice';
-	import { setWinner } from '$lib/store/gameSlice';
+	import { guess, eliminatePlayer } from '$lib/store/playersSlice';
+	import { setWinner, nextTurn } from '$lib/store/gameSlice';
 	import { getTileData } from '$lib/game/tiles';
 	import { onMount } from 'svelte';
 
@@ -187,7 +187,21 @@
 		
 		const state = store.getState();
 		const player = state.players.players[playerId];
-		if (player && !player.eliminated) {
+		
+		if (player && player.eliminated) {
+			// Notify game slice about elimination (it tracks this in its own state for turn skip logic)
+			store.dispatch(eliminatePlayer(playerId));
+			
+			// If we guessed wrong and were eliminated, move to next turn
+			store.dispatch(nextTurn());
+			
+			// Check if only one player remains
+			const activePlayers = Object.values(state.players.players).filter(p => !p.eliminated);
+			if (activePlayers.length === 1) {
+				store.dispatch(setWinner(activePlayers[0].id));
+			}
+		} else if (player) {
+			// Correct guess!
 			store.dispatch(setWinner(playerId));
 		}
 	}

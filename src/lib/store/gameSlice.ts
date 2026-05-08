@@ -9,6 +9,7 @@ export interface GameState {
 	currentPlayerIndex: number;
 	winnerId: string | null;
 	seed: number;
+	eliminated: string[];
 }
 
 const initialState: GameState = {
@@ -24,13 +25,17 @@ const initialState: GameState = {
 	turnOrder: [],
 	currentPlayerIndex: 0,
 	winnerId: null,
-	seed: 0
+	seed: 0,
+	eliminated: []
 };
 
 export const gameSlice = createSlice({
 	name: 'game',
 	initialState,
 	reducers: {
+		sync: (state, action: PayloadAction<GameState>) => {
+			return { ...action.payload };
+		},
 		start: (state, action: PayloadAction<{ deck: number[]; turnOrder: string[]; initialPublic: number[]; seed: number }>) => {
 			state.turnOrder = action.payload.turnOrder;
 			state.status = 'PLAYING';
@@ -38,6 +43,7 @@ export const gameSlice = createSlice({
 			state.currentPlayerIndex = 0;
 			state.winnerId = null;
 			state.seed = action.payload.seed;
+			state.eliminated = [];
 
 			// Partition deck into 5 decks by color
 			const COLORS: TileColor[] = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
@@ -65,7 +71,16 @@ export const gameSlice = createSlice({
 			}
 		},
 		nextTurn: (state) => {
-			state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.turnOrder.length;
+			if (state.turnOrder.length === 0) return;
+			let nextIndex = (state.currentPlayerIndex + 1) % state.turnOrder.length;
+			const startIndex = nextIndex;
+			
+			// Loop to skip eliminated players
+			while (state.eliminated.includes(state.turnOrder[nextIndex])) {
+				nextIndex = (nextIndex + 1) % state.turnOrder.length;
+				if (nextIndex === startIndex) break; // Avoid infinite loop if everyone is eliminated
+			}
+			state.currentPlayerIndex = nextIndex;
 		},
 		setWinner: (state, action: PayloadAction<string>) => {
 			state.winnerId = action.payload;
@@ -81,8 +96,20 @@ export const gameSlice = createSlice({
 			const { tileId } = action.payload;
 			state.publicPool = state.publicPool.filter((id) => id !== tileId);
 		});
+		builder.addCase('players/eliminatePlayer', (state, action: any) => {
+			if (!state.eliminated.includes(action.payload)) {
+				state.eliminated.push(action.payload);
+			}
+		});
+		builder.addCase('players/guess', (state, action: any) => {
+			// Note: We need the result of the guess. 
+			// For now, we'll rely on the UI to dispatch eliminatePlayer if guess is wrong,
+			// or we'll need to update playersSlice to include the result in the action.
+			// Re-reading conductor: "Handle players/eliminatePlayer in extraReducers to track eliminations."
+			// So I'll stick to that.
+		});
 	}
 });
 
-export const { start, reveal, nextTurn, setWinner } = gameSlice.actions;
+export const { start, reveal, nextTurn, setWinner, sync } = gameSlice.actions;
 export default gameSlice.reducer;

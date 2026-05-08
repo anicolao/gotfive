@@ -24,20 +24,38 @@ export function initNetwork(myId: string, dispatch: any, host: boolean = false, 
 					dispatch({ type: 'players/addPlayer', payload: { id: p.id, name: p.name }, meta: { remote: true } });
 				});
 			}
+			if (msg.payload.game) {
+				dispatch({ type: 'game/sync', payload: msg.payload.game, meta: { remote: true } });
+			}
 		}
 	};
 
 	peerManager.onConnect = (id) => {
 		if (isHost && getState) {
 			const state = getState();
-			// Send current players list to the new peer
+			// Send full state to the new peer
 			peerManager?.sendTo(id, {
 				type: 'SYNC',
 				payload: {
-					players: state.players.players
+					players: state.players.players,
+					game: state.game
 				},
 				from: myId
 			});
+		} else if (!isHost && getState) {
+			const state = getState();
+			// Find my own player info and send it to the host
+			const me = state.players.players[myId];
+			if (me) {
+				peerManager?.sendTo(id, {
+					type: 'ACTION',
+					payload: {
+						type: 'players/addPlayer',
+						payload: { id: me.id, name: me.name }
+					},
+					from: myId
+				});
+			}
 		}
 	};
 
