@@ -62,6 +62,22 @@
 		box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2);
 	}
 
+	@media (max-width: 600px) {
+		.table {
+			padding: 10px;
+			border-width: 4px;
+			border-radius: 20px;
+		}
+
+		.decks-area {
+			gap: 5px;
+		}
+
+		.pool-tiles {
+			gap: 5px;
+		}
+	}
+
 	.decks-area {
 		display: flex;
 		gap: 10px;

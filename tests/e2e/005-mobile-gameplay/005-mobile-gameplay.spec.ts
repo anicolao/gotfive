@@ -36,26 +36,52 @@ test.describe('Mobile Gameplay', () => {
     await page.getByRole('button', { name: 'START GAME' }).click();
 
     await tester.step('mobile-portrait-layout', {
-      description: 'Main play area and sidebar stack in portrait',
+      description: 'Main play area is visible, board is hidden by default',
       verifications: [
         {
-          spec: 'Main play area is above the sidebar (DeductionBoard)',
+          spec: 'Main play area is visible',
           check: async () => {
-            const mainBox = await page.locator('.main-play-area').boundingBox();
-            const sidebarBox = await page.locator('.sidebar').boundingBox();
-            expect(mainBox!.y).toBeLessThan(sidebarBox!.y);
+            await expect(page.locator('.main-play-area')).toBeVisible();
           }
         },
         {
-          spec: 'Header title is smaller on mobile',
+          spec: 'Sidebar is hidden by default',
           check: async () => {
-            const fontSize = await page.locator('header h1').evaluate(el => getComputedStyle(el).fontSize);
-            // 1.5rem at 16px base is 24px. Original was 2.5rem (40px).
-            expect(parseFloat(fontSize)).toBeLessThan(30);
+            const sidebar = page.locator('.sidebar');
+            await expect(sidebar).not.toBeVisible();
+          }
+        },
+        {
+          spec: 'Toggle button exists',
+          check: async () => {
+            await expect(page.locator('.toggle-sidebar-btn')).toBeVisible();
           }
         }
       ]
     });
+
+    await page.locator('.toggle-sidebar-btn').click();
+
+    await tester.step('mobile-portrait-board-open', {
+      description: 'Deduction board opens when toggled',
+      verifications: [
+        {
+          spec: 'Sidebar is now visible',
+          check: async () => {
+            await expect(page.locator('.sidebar')).toBeVisible();
+          }
+        },
+        {
+          spec: 'Deduction board title is visible',
+          check: async () => {
+            await expect(page.locator('.deduction-board h2')).toContainText('Top Secret Log');
+          }
+        }
+      ]
+    });
+
+    // Toggle back
+    await page.locator('.toggle-sidebar-btn').click();
 
     // 2. Play Again Flow
     // Force a win for Player 2 to trigger game over
@@ -136,20 +162,27 @@ test.describe('Mobile Gameplay', () => {
     await page.getByRole('button', { name: 'START GAME' }).click();
 
     await tester.step('mobile-landscape-layout', {
-      description: 'Main play area and sidebar are side-by-side in landscape',
+      description: 'Main play area is visible, board is hidden by default in landscape',
       verifications: [
         {
-          spec: 'Main play area and sidebar have similar Y coordinates',
+          spec: 'Main play area is visible',
           check: async () => {
-            const mainBox = await page.locator('.main-play-area').boundingBox();
-            const sidebarBox = await page.locator('.sidebar').boundingBox();
-            // In landscape they should be roughly on the same horizontal line
-            expect(Math.abs(mainBox!.y - sidebarBox!.y)).toBeLessThan(100);
+            await expect(page.locator('.main-play-area')).toBeVisible();
+          }
+        },
+        {
+          spec: 'Sidebar is hidden by default',
+          check: async () => {
+            const sidebar = page.locator('.sidebar');
+            await expect(sidebar).not.toBeVisible();
           }
         }
       ]
     });
     
+    await page.locator('.toggle-sidebar-btn').click();
+    await expect(page.locator('.sidebar')).toBeVisible();
+
     tester.generateDocs();
   });
 });

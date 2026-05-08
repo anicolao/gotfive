@@ -86,8 +86,8 @@
 
 <style>
 	.tile {
-		width: 60px;
-		height: 84px;
+		width: var(--tile-width, 60px);
+		height: var(--tile-height, 84px);
 		background-color: var(--tile-color);
 		border: 2px solid #795548;
 		border-radius: 8px;
@@ -101,6 +101,61 @@
 		box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 		user-select: none;
 		color: white;
+	}
+
+	@media (max-width: 600px) {
+		.tile {
+			--tile-width: 45px;
+			--tile-height: 63px;
+			border-width: 1px;
+			border-radius: 4px;
+		}
+
+		.number {
+			font-size: 16px !important;
+		}
+
+		.dot {
+			width: 6px !important;
+			height: 6px !important;
+		}
+
+		.sassy-face {
+			height: 30px !important;
+		}
+
+		.eyes {
+			gap: 4px !important;
+		}
+
+		.eye {
+			width: 4px !important;
+			height: 4px !important;
+		}
+
+		.mouth {
+			width: 10px !important;
+		}
+	}
+
+	@media (max-width: 350px) {
+		.tile {
+			--tile-width: 35px;
+			--tile-height: 49px;
+		}
+
+		.number {
+			font-size: 12px !important;
+		}
+
+		.dot {
+			width: 4px !important;
+			height: 4px !important;
+		}
+		
+		.color-symbol {
+			font-size: 10px !important;
+		}
 	}
 
 	.front-content, .back-content {
