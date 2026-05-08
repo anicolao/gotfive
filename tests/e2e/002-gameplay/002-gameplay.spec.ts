@@ -80,7 +80,7 @@ test('User plays the game', async ({ page }, testInfo) => {
   await firstPublicTile.click();
   
   const aliceStand = page.locator('.stand-container').filter({ hasText: 'Alice' });
-  await aliceStand.click();
+  await aliceStand.locator('.name-tag').click();
 
   await tester.step('ask-clue', {
     description: 'Asking for a clue records it on the stand and consumes the tile',

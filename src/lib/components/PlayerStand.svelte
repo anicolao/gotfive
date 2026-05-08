@@ -82,18 +82,19 @@
 	}
 
 	.current-turn .name-tag {
-		background-color: var(--color-avocado);
+		background-color: var(--color-neon-cyan);
+		color: #000;
 		animation: pulse 2s infinite;
 	}
 
 	.current-turn .stand {
-		filter: drop-shadow(0 0 10px var(--color-avocado));
+		filter: drop-shadow(0 0 10px var(--color-neon-cyan));
 	}
 
 	@keyframes pulse {
-		0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-		70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
-		100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+		0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
+		70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+		100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
 	}
 
 	.can-target {
@@ -105,17 +106,18 @@
 	}
 
 	.can-target .stand {
-		filter: drop-shadow(0 0 15px var(--color-gold));
+		filter: drop-shadow(0 0 15px var(--color-neon-yellow));
 	}
 
 	.name-tag {
-		background-color: var(--color-gold);
-		color: var(--color-wood);
+		background-color: rgba(0, 0, 0, 0.6);
+		color: var(--color-neon-yellow);
 		padding: 4px 12px;
 		border-radius: 4px;
 		font-weight: bold;
 		text-transform: uppercase;
-		border: 2px solid var(--color-wood);
+		border: 1px solid var(--color-neon-yellow);
+		box-shadow: 0 0 5px rgba(255, 234, 0, 0.3);
 	}
 
 	.stand {
@@ -128,9 +130,11 @@
 		display: grid;
 		grid-template-columns: repeat(5, auto 60px) auto;
 		align-items: center;
-		background-color: #4e342e;
+		background: rgba(31, 40, 51, 0.8);
+		backdrop-filter: blur(10px);
+		border: 1px solid var(--color-glass-border);
 		padding: 12px 8px 8px 8px;
-		border-radius: 8px 8px 0 0;
+		border-radius: 12px 12px 0 0;
 		gap: 4px;
 	}
 
@@ -184,14 +188,16 @@
 	.empty-slot {
 		width: 100%;
 		height: 100%;
-		background-color: rgba(0, 0, 0, 0.2);
+		background-color: rgba(0, 0, 0, 0.5);
+		border: 1px dashed var(--color-text-muted);
 		border-radius: 8px;
 	}
 
 	.notch {
 		width: 10px;
 		height: 10px;
-		background: #3e2723;
+		background: rgba(0, 0, 0, 0.5);
+		border: 1px solid var(--color-text-muted);
 		border-radius: 50%;
 		position: relative;
 		display: flex;
@@ -201,8 +207,9 @@
 	}
 
 	.notch.active {
-		background: var(--color-gold);
-		box-shadow: 0 0 8px var(--color-gold);
+		background: var(--color-neon-yellow);
+		box-shadow: 0 0 8px var(--color-neon-yellow);
+		border-color: var(--color-neon-yellow);
 	}
 
 	.clue-stack {
@@ -236,9 +243,12 @@
 
 	.base {
 		height: 15px;
-		background-color: var(--color-wood);
+		background: rgba(0, 0, 0, 0.7);
+		border-left: 1px solid var(--color-glass-border);
+		border-right: 1px solid var(--color-glass-border);
+		border-bottom: 1px solid var(--color-glass-border);
 		width: 100%;
-		border-radius: 0 0 4px 4px;
+		border-radius: 0 0 12px 12px;
 		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 	}
 </style>

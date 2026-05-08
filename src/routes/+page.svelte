@@ -157,47 +157,34 @@
 
 				<main>
 				{#if gameState?.status === 'LOBBY'}
-				<div class="lobby-wrapper">
+				<div class="lobby-wrapper glass-panel">
 					<Lobby />
 					{#if isHost && Object.keys(playersState?.players || {}).length >= 1}
 						<div class="host-actions">
 							<button class="got-five-btn" onclick={handleStartGame}>START GAME</button>
 						</div>
 					{/if}
-				</div>				{:else}
-				<div class="main-play-area">
-				<div class="top-row">
-					{#if topPlayerId && playersState?.players[topPlayerId]}
-						<PlayerStand
-							id={topPlayerId}
-							name={playersState.players[topPlayerId].name}
-							hand={playersState.players[topPlayerId].hand}
-							clues={playersState.players[topPlayerId].clues}
-							isCurrentTurn={currentPlayerId === topPlayerId}
-							canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
-							onSelectTarget={handleAskSort}
-							onSelectSlot={handleAskCompare}
-						/>
-					{/if}
 				</div>
-
-				<div class="middle-row">
-					<div class="side-col">
-						{#if leftPlayerId && playersState?.players[leftPlayerId]}
-							<PlayerStand
-								id={leftPlayerId}
-								name={playersState.players[leftPlayerId].name}
-								hand={playersState.players[leftPlayerId].hand}
-								clues={playersState.players[leftPlayerId].clues}
-								isCurrentTurn={currentPlayerId === leftPlayerId}
-								canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
-								onSelectTarget={handleAskSort}
-								onSelectSlot={handleAskCompare}
-							/>
-						{/if}
+				{:else}
+				<div class="main-play-area">
+					<div class="opponents-area">
+						{#each otherPlayerIds as id}
+							{#if playersState?.players[id]}
+								<PlayerStand
+									id={id}
+									name={playersState.players[id].name}
+									hand={playersState.players[id].hand}
+									clues={playersState.players[id].clues}
+									isCurrentTurn={currentPlayerId === id}
+									canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
+									onSelectTarget={handleAskSort}
+									onSelectSlot={handleAskCompare}
+								/>
+							{/if}
+						{/each}
 					</div>
 
-					<div class="center-col">
+					<div class="public-area">
 						{#if gameState}
 							<Table
 								publicPool={gameState.publicPool}
@@ -209,57 +196,34 @@
 						{/if}
 					</div>
 
-					<div class="side-col">
-						{#if rightPlayerId && playersState?.players[rightPlayerId]}
+					<div class="player-area">
+						<div class="controls-left"></div>
+						{#if uiState?.myId && playersState?.players[uiState.myId]}
 							<PlayerStand
-								id={rightPlayerId}
-								name={playersState.players[rightPlayerId].name}
-								hand={playersState.players[rightPlayerId].hand}
-								clues={playersState.players[rightPlayerId].clues}
-								isCurrentTurn={currentPlayerId === rightPlayerId}
+								id={uiState.myId}
+								name={playersState.players[uiState.myId].name}
+								hand={playersState.players[uiState.myId].hand}
+								clues={playersState.players[uiState.myId].clues}
+								isLocalPlayer={true}
+								isCurrentTurn={currentPlayerId === uiState.myId}
 								canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
 								onSelectTarget={handleAskSort}
 								onSelectSlot={handleAskCompare}
 							/>
 						{/if}
+						<div class="controls-right">
+							{#if isMyTurn}
+								<button class="next-turn-btn" onclick={() => store.dispatch(nextTurn())}>
+									Pass Turn
+								</button>
+							{/if}
+						</div>
 					</div>
 				</div>
 
-				<div class="bottom-row">
-					<div class="controls-left">
-					</div>
-					{#if uiState?.myId && playersState?.players[uiState.myId]}
-						<PlayerStand
-							id={uiState.myId}
-							name={playersState.players[uiState.myId].name}
-							hand={playersState.players[uiState.myId].hand}
-							clues={playersState.players[uiState.myId].clues}
-							isLocalPlayer={true}
-							isCurrentTurn={currentPlayerId === uiState.myId}
-							canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
-							onSelectTarget={handleAskSort}
-							onSelectSlot={handleAskCompare}
-						/>
-					{/if}
-					<div class="controls-right">
-						{#if isMyTurn}
-							<button class="next-turn-btn" onclick={() => store.dispatch(nextTurn())}>
-								Pass Turn
-							</button>
-						{/if}
-					</div>
+				<div class="deduction-area">
+					<DeductionBoard deductions={uiState?.deductionBoard} />
 				</div>
-				</div>
-
-				<aside class="sidebar" class:open={showSidebar}>
-				<DeductionBoard deductions={uiState?.deductionBoard} />
-				</aside>
-
-				{#if gameState?.status === 'PLAYING'}
-					<button class="toggle-sidebar-btn" onclick={() => showSidebar = !showSidebar}>
-						{showSidebar ? 'GAME' : 'BOARD'}
-					</button>
-				{/if}
 				{/if}
 				</main>
 
@@ -301,89 +265,15 @@
 	header {
 		text-align: center;
 		padding: 10px;
+		flex-shrink: 0;
+		z-index: 10;
 	}
 
 	h1 {
 		margin: 0;
-		font-size: 2.5rem;
-		text-shadow: 2px 2px #000;
-	}
-
-	@media (max-width: 768px) {
-		h1 {
-			font-size: 1.5rem;
-		}
-	}
-
-	main {
-		flex: 1;
-		display: flex;
-		flex-direction: row;
-		padding: 20px;
-		gap: 20px;
-		overflow: hidden;
-	}
-
-	.main-play-area {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-	}
-
-	.sidebar {
-		width: auto;
-		display: flex;
-		align-items: center;
-		max-height: 100%;
-		overflow-y: auto;
-	}
-
-	@media (max-width: 768px) {
-		.sidebar {
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			z-index: 1000;
-			background: rgba(0,0,0,0.9);
-			display: none;
-			justify-content: center;
-			align-items: center;
-			padding: 10px;
-			box-sizing: border-box;
-		}
-
-		.sidebar.open {
-			display: flex;
-		}
-	}
-
-	.top-row, .bottom-row {
-		display: flex;
-		justify-content: center;
-		position: relative;
-		align-items: center;
-		width: 100%;
-	}
-
-	.controls-left, .controls-right {
-		position: absolute;
-		display: flex;
-		gap: 10px;
-	}
-
-	.controls-left { left: 50px; }
-	.controls-right { right: 50px; }
-
-	.next-turn-btn {
-		background-color: var(--color-cream);
-		color: var(--color-wood);
-		padding: 8px 16px;
-		border: 2px solid var(--color-wood);
-		border-radius: 4px;
-		cursor: pointer;
+		font-size: 2rem;
+		text-shadow: 0 0 10px var(--color-neon-cyan);
+		color: var(--color-text-main);
 	}
 
 	.turn-indicator {
@@ -391,27 +281,129 @@
 		align-items: center;
 		gap: 10px;
 		justify-content: center;
-		margin-top: 10px;
+		margin-top: 5px;
 		font-family: 'Courier New', Courier, monospace;
 	}
 
 	.player-name {
 		font-weight: bold;
-		color: var(--color-gold);
+		color: var(--color-neon-yellow);
 		font-size: 1.2rem;
 	}
 
 	.your-turn-badge {
-		background-color: var(--color-avocado);
-		color: white;
+		background-color: var(--color-neon-cyan);
+		color: #000;
 		padding: 2px 8px;
 		border-radius: 4px;
 		font-size: 0.8rem;
+		font-weight: bold;
 		animation: blink 1s infinite;
 	}
 
 	@keyframes blink {
 		50% { opacity: 0; }
+	}
+
+	main {
+		flex: 1;
+		display: flex;
+		flex-direction: row;
+		padding: 10px;
+		gap: 10px;
+		overflow: hidden;
+		box-sizing: border-box;
+	}
+
+	.main-play-area {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+
+	.deduction-area {
+		width: 320px;
+		flex-shrink: 0;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.opponents-area {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 10px;
+		flex-wrap: wrap;
+	}
+
+	.public-area {
+		display: flex;
+		justify-content: center;
+		flex: 1;
+		align-items: center;
+		min-height: 150px;
+	}
+
+	.player-area {
+		display: flex;
+		justify-content: center;
+		align-items: flex-end;
+		position: relative;
+		padding-bottom: 10px;
+		min-height: 120px;
+	}
+
+	.controls-left, .controls-right {
+		position: absolute;
+		bottom: 10px;
+	}
+
+	.controls-left { left: 10px; }
+	.controls-right { right: 10px; }
+
+	@media (orientation: portrait) {
+		main {
+			flex-direction: column;
+			overflow-y: auto;
+			padding: 5px;
+		}
+
+		.main-play-area {
+			overflow-y: visible;
+		}
+
+		.deduction-area {
+			width: 100%;
+			align-items: center;
+			overflow-y: visible;
+			padding-bottom: 30px;
+		}
+
+		h1 {
+			font-size: 1.5rem;
+		}
+	}
+
+	.lobby-wrapper {
+		width: 100%;
+		max-width: 500px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 2rem;
+		padding: 2rem;
+		align-self: center;
+	}
+
+	.host-actions {
+		display: flex;
+		justify-content: center;
 	}
 
 	.overlay {
@@ -420,7 +412,8 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0,0,0,0.8);
+		background: rgba(11, 12, 16, 0.85);
+		backdrop-filter: blur(5px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -428,39 +421,28 @@
 	}
 
 	.end-game-modal {
-		background: var(--color-cream);
+		background: var(--color-bg-panel);
 		padding: 40px;
 		border-radius: 12px;
-		border: 8px solid var(--color-gold);
+		border: 1px solid var(--color-neon-magenta);
 		text-align: center;
-		color: var(--color-wood);
-		box-shadow: 0 0 50px rgba(0,0,0,0.5);
+		color: var(--color-text-main);
+		box-shadow: 0 0 30px rgba(255, 0, 212, 0.4);
+		backdrop-filter: blur(10px);
+	}
+
+	.end-game-modal h2 {
+		margin-top: 0;
+		color: var(--color-neon-magenta);
+		text-shadow: 0 0 10px rgba(255, 0, 212, 0.5);
 	}
 
 	.winner-msg {
 		font-size: 1.5rem;
 		font-weight: bold;
-		color: var(--color-gold);
+		color: var(--color-neon-yellow);
 		margin: 20px 0;
-	}
-
-	.middle-row {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		flex: 1;
-	}
-
-	.side-col {
-		width: 200px;
-		display: flex;
-		justify-content: center;
-	}
-
-	.center-col {
-		flex: 1;
-		display: flex;
-		justify-content: center;
+		text-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
 	}
 
 	.version-info {
@@ -470,19 +452,5 @@
 		font-size: 0.7rem;
 		opacity: 0.5;
 		font-family: monospace;
-	}
-
-	.lobby-wrapper {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 2rem;
-	}
-
-	.host-actions {
-		display: flex;
-		justify-content: center;
 	}
 </style>

@@ -49,7 +49,8 @@
 
 <style>
 	.table {
-		background-color: var(--color-avocado);
+		background: var(--color-bg-panel);
+		backdrop-filter: blur(8px);
 		padding: 20px;
 		border-radius: 40px;
 		width: 100%;
@@ -58,14 +59,13 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		border: 8px solid #2e7d32;
-		box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2);
+		border: 1px solid var(--color-glass-border);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(0, 229, 255, 0.1);
 	}
 
 	@media (max-width: 600px) {
 		.table {
 			padding: 10px;
-			border-width: 4px;
 			border-radius: 20px;
 		}
 
@@ -108,8 +108,8 @@
 		position: absolute;
 		bottom: -10px;
 		right: -10px;
-		background: #3e2723;
-		color: white;
+		background: rgba(0, 0, 0, 0.8);
+		color: var(--color-text-main);
 		border-radius: 50%;
 		width: 24px;
 		height: 24px;
@@ -118,7 +118,7 @@
 		justify-content: center;
 		font-weight: bold;
 		font-size: 12px;
-		border: 2px solid white;
+		border: 1px solid var(--color-glass-border);
 		z-index: 2;
 	}
 
@@ -130,9 +130,10 @@
 	h2 {
 		margin: 0 0 10px 0;
 		font-size: 1.2rem;
-		color: #2e7d32;
+		color: var(--color-neon-cyan);
 		text-transform: uppercase;
 		letter-spacing: 2px;
+		text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
 	}
 
 	.pool-tiles {
@@ -156,22 +157,23 @@
 	}
 
 	.tile-btn.selected {
-		outline: 4px solid var(--color-gold);
+		outline: 2px solid var(--color-neon-yellow);
 		outline-offset: 4px;
 		border-radius: 8px;
 		transform: scale(1.1);
+		box-shadow: 0 0 15px var(--color-neon-yellow);
 	}
 
 	.empty-deck {
 		width: 60px;
 		height: 84px;
-		border: 2px dashed #3e2723;
+		border: 1px dashed var(--color-text-muted);
 		border-radius: 8px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: #3e2723;
+		color: var(--color-text-muted);
 		font-weight: bold;
-		background: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.05);
 	}
 </style>
