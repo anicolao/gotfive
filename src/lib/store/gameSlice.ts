@@ -85,6 +85,9 @@ export const gameSlice = createSlice({
 		setWinner: (state, action: PayloadAction<string>) => {
 			state.winnerId = action.payload;
 			state.status = 'FINISHED';
+		},
+		resetGame: (state) => {
+			return { ...initialState, status: 'LOBBY' };
 		}
 	},
 	extraReducers: (builder) => {
@@ -111,5 +114,5 @@ export const gameSlice = createSlice({
 	}
 });
 
-export const { start, reveal, nextTurn, setWinner, sync } = gameSlice.actions;
+export const { start, reveal, nextTurn, setWinner, sync, resetGame } = gameSlice.actions;
 export default gameSlice.reducer;

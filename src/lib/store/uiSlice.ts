@@ -42,9 +42,15 @@ export const uiSlice = createSlice({
 		},
 		selectTile: (state, action: PayloadAction<number | null>) => {
 			state.selectedTileId = action.payload;
+		},
+		resetUI: (state) => {
+			state.deductionBoard = {};
+			state.strokes = [];
+			state.overlay = 'NONE';
+			state.selectedTileId = null;
 		}
 	}
 });
 
-export const { setMyId, setIsHost, markDeduction, addStroke, clearStrokes, setOverlay, selectTile } = uiSlice.actions;
+export const { setMyId, setIsHost, markDeduction, addStroke, clearStrokes, setOverlay, selectTile, resetUI } = uiSlice.actions;
 export default uiSlice.reducer;
