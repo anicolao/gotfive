@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Tile from './Tile.svelte';
 	import MiniTile from './MiniTile.svelte';
+	import type { ClueRecord } from '../store/playersSlice';
 
 	let { 
 		id, 
@@ -8,27 +9,27 @@
 		hand = [], 
 		isLocalPlayer = false, 
 		isCurrentTurn = false, 
-		clues = [], 
+		clues = [] as ClueRecord[], 
 		canBeTarget = false, 
 		onSelectTarget = () => {}, 
 		onSelectSlot = () => {} 
 	} = $props();
 
-	let sortClues = $derived(clues.filter((c: any) => c.type === 'SORT'));
-	let compareClues = $derived(clues.filter((c: any) => c.type === 'COMPARE'));
+	let sortClues = $derived(clues.filter((c: ClueRecord) => c.type === 'SORT'));
+	let compareClues = $derived(clues.filter((c: ClueRecord) => c.type === 'COMPARE'));
 
 	function getSortClueTiles(notch: number) {
-		return sortClues.filter((c: any) => c.result === notch).map((c: any) => c.tileId);
+		return sortClues.filter((c: ClueRecord) => c.result === notch).map((c: ClueRecord) => c.tileId);
 	}
 
 	function getCompareCluesForSlot(slot: number) {
-		return compareClues.filter((c: any) => c.targetSlot === slot);
+		return compareClues.filter((c: ClueRecord) => c.targetSlot === slot);
 	}
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} on:click={() => canBeTarget && onSelectTarget(id)}>
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} onclick={() => canBeTarget && onSelectTarget(id)}>
 	<div class="name-tag">{name} {isCurrentTurn ? '★' : ''}</div>
 	<div class="stand">
 		<div class="tiles-area">
@@ -42,7 +43,7 @@
 						</div>
 					{/if}
 				</div>
-				<div class="slot" on:click|stopPropagation={() => canBeTarget && onSelectSlot(id, i)}>
+				<div class="slot" onclick={(e) => { e.stopPropagation(); canBeTarget && onSelectSlot(id, i); }}>
 					{#if hand[i]}
 						<Tile id={hand[i]} faceDown={isLocalPlayer} />
 					{:else}
