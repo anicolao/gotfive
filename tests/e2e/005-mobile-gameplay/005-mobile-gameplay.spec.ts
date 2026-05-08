@@ -55,10 +55,26 @@ test.describe('Mobile Gameplay', () => {
           }
         },
         {
+          spec: 'Opponents are in viewport',
+          check: async () => {
+            await expect(page.locator('.opponents-area')).toBeInViewport();
+          }
+        },
+        {
+          spec: 'Table is in viewport',
+          check: async () => {
+            await expect(page.locator('.public-area')).toBeInViewport();
+          }
+        },
+        {
+          spec: 'Player stand is in viewport',
+          check: async () => {
+            await expect(page.locator('.player-area')).toBeInViewport();
+          }
+        },
+        {
           spec: 'Deduction area is in viewport',
           check: async () => {
-            // Scroll to it to ensure it is in the viewport if it overflows slightly
-            await page.locator('.deduction-area').scrollIntoViewIfNeeded();
             await expect(page.locator('.deduction-area')).toBeInViewport();
           }
         }
@@ -156,7 +172,6 @@ test.describe('Mobile Gameplay', () => {
           spec: 'Deduction board is visible horizontally',
           check: async () => {
             await expect(page.locator('.deduction-area')).toBeVisible();
-            await page.locator('.deduction-area').scrollIntoViewIfNeeded();
             await expect(page.locator('.deduction-area')).toBeInViewport();
           }
         }

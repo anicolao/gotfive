@@ -367,23 +367,87 @@
 	@media (orientation: portrait) {
 		main {
 			flex-direction: column;
-			overflow-y: auto;
+			overflow: hidden;
 			padding: 5px;
+			gap: 5px;
+			height: calc(100vh - 60px);
 		}
 
 		.main-play-area {
-			overflow-y: visible;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			min-height: 0;
+			overflow: hidden;
+		}
+
+		.opponents-area {
+			flex: 0 0 auto;
+			max-height: 100px;
+			overflow-y: auto;
+		}
+
+		.public-area {
+			flex: 1;
+			min-height: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.player-area {
+			flex: 0 0 auto;
+			min-height: 100px;
+			padding-bottom: 2px;
 		}
 
 		.deduction-area {
+			flex: 0 0 35%;
 			width: 100%;
+			max-height: 35vh;
+			overflow-y: auto;
+			padding-bottom: 5px;
 			align-items: center;
-			overflow-y: visible;
-			padding-bottom: 30px;
 		}
 
+		.status-banner {
+			flex: 0 0 auto;
+			padding: 8px;
+			margin-bottom: 4px;
+		}
+
+		.status-banner h2 { font-size: 1rem; margin-bottom: 2px; }
+		.status-banner p { font-size: 0.9rem; margin: 4px 0; }
+		.status-banner .winner-msg { font-size: 1.1rem; }
+
 		h1 {
-			font-size: 1.5rem;
+			font-size: 1.2rem;
+		}
+	}
+
+	@media (orientation: landscape) {
+		main {
+			padding: 5px;
+			gap: 5px;
+		}
+
+		.main-play-area {
+			gap: 5px;
+			overflow: hidden;
+		}
+
+		.deduction-area {
+			width: 280px;
+			max-height: 100%;
+		}
+
+		.public-area {
+			min-height: 120px;
+		}
+
+		.player-area {
+			min-height: 90px;
 		}
 	}
 
