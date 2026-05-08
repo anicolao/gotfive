@@ -64,11 +64,11 @@ test.describe('Multiplayer Turn-Taking', () => {
 
 		// Should show game over
 		await expect(currentPlayerPage.getByText('GAME OVER')).toBeVisible();
-		await expect(currentPlayerPage.locator('.end-game-modal').getByText('Winner: ' + otherPlayerName + '!')).toBeVisible();
+		await expect(currentPlayerPage.locator('.status-banner').getByText('Winner: ' + otherPlayerName + '!')).toBeVisible();
 		
 		// The other player should also see they won
 		await expect(otherPlayerPage.getByText('GAME OVER')).toBeVisible();
-		await expect(otherPlayerPage.locator('.end-game-modal').getByText('Winner: ' + otherPlayerName + '!')).toBeVisible();
+		await expect(otherPlayerPage.locator('.status-banner').getByText('Winner: ' + otherPlayerName + '!')).toBeVisible();
 		
 		await hostContext.close();
 		await clientContext.close();

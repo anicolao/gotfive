@@ -167,6 +167,26 @@
 				</div>
 				{:else}
 				<div class="main-play-area">
+					{#if gameState?.status === 'FINISHED'}
+						<div class="status-banner finished glass-panel">
+							<h2>GAME OVER</h2>
+							<p class="winner-msg">Winner: {playersState?.players[gameState.winnerId!]?.name}!</p>
+							<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
+						</div>
+					{:else if (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
+						<div class="status-banner eliminated glass-panel">
+							<h2>ELIMINATED</h2>
+							<p>Better luck next time!</p>
+							<button class="groovy-button" onclick={handleResetGame}>Back to Lobby</button>
+						</div>
+					{:else if newlyEliminatedPlayer}
+						<div class="status-banner newly-eliminated glass-panel">
+							<h2>PLAYER ELIMINATED</h2>
+							<p class="winner-msg">{newlyEliminatedPlayer.name} guessed incorrectly and was eliminated!</p>
+							<button class="groovy-button" onclick={() => acknowledgeElimination(newlyEliminatedPlayer.id)}>Continue</button>
+						</div>
+					{/if}
+
 					<div class="opponents-area">
 						{#each otherPlayerIds as id}
 							{#if playersState?.players[id]}
@@ -226,27 +246,6 @@
 				</div>
 				{/if}
 				</main>
-
-				{#if gameState?.status === 'FINISHED' || (uiState?.myId && playersState?.players[uiState.myId]?.eliminated) || newlyEliminatedPlayer}
-				<div class="overlay">
-					<div class="end-game-modal">
-						{#if gameState?.status === 'FINISHED'}
-							<h2>GAME OVER</h2>
-							<p class="winner-msg">Winner: {playersState?.players[gameState.winnerId!]?.name}!</p>
-							<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
-						{:else if (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
-							<h2>ELIMINATED</h2>
-							<p>Better luck next time!</p>
-							<button class="groovy-button" onclick={handleResetGame}>Back to Lobby</button>
-						{:else if newlyEliminatedPlayer}
-							<h2>PLAYER ELIMINATED</h2>
-							<p class="winner-msg">{newlyEliminatedPlayer.name} guessed incorrectly and was eliminated!</p>
-							<button class="groovy-button" onclick={() => acknowledgeElimination(newlyEliminatedPlayer.id)}>Continue</button>
-						{/if}
-
-					</div>
-				</div>
-				{/if}
 	<footer class="version-info">
 		{version}@{gitHash}
 	</footer>
@@ -406,32 +405,15 @@
 		justify-content: center;
 	}
 
-	.overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(11, 12, 16, 0.85);
-		backdrop-filter: blur(5px);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-	}
-
-	.end-game-modal {
-		background: var(--color-bg-panel);
-		padding: 40px;
-		border-radius: 12px;
-		border: 1px solid var(--color-neon-magenta);
+	.status-banner {
+		padding: 20px;
 		text-align: center;
-		color: var(--color-text-main);
-		box-shadow: 0 0 30px rgba(255, 0, 212, 0.4);
-		backdrop-filter: blur(10px);
+		border: 1px solid var(--color-neon-magenta);
+		box-shadow: 0 0 15px rgba(255, 0, 212, 0.3);
+		margin-bottom: 10px;
 	}
 
-	.end-game-modal h2 {
+	.status-banner h2 {
 		margin-top: 0;
 		color: var(--color-neon-magenta);
 		text-shadow: 0 0 10px rgba(255, 0, 212, 0.5);

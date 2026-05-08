@@ -211,9 +211,9 @@ test('User plays the game', async ({ page }, testInfo) => {
     description: 'Guessing flow processes the guess from the deduction board',
     verifications: [
       {
-        spec: 'End game modal is shown (Eliminated or Winner)',
+        spec: 'End game status is shown (Eliminated or Winner)',
         check: async () => {
-          await expect(page.locator('.overlay .end-game-modal')).toBeVisible();
+          await expect(page.locator('.status-banner')).toBeVisible();
         }
       }
     ]

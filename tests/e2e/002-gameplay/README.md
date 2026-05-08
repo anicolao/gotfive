@@ -61,7 +61,7 @@ As a user, I want to play through a game with deterministic results.
 ![Guessing flow processes the guess from the deduction board](./screenshots/005-guessing-flow.png)
 
 **Verifications:**
-- [x] End game modal is shown (Eliminated or Winner)
+- [x] End game status is shown (Eliminated or Winner)
 
 ---
 
