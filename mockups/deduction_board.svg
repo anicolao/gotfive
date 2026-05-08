@@ -1,78 +1,47 @@
-<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background: 70s Pattern -->
-  <rect width="800" height="600" fill="#FFB74D" />
-  <circle cx="0" cy="0" r="100" fill="#FF8C00" opacity="0.3" />
-  <circle cx="800" cy="0" r="150" fill="#FF8C00" opacity="0.3" />
-  <circle cx="400" cy="600" r="200" fill="#FF8C00" opacity="0.3" />
+<svg viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1920" fill="#1E1E24" />
+  <text x="540" y="120" font-family="sans-serif" font-weight="bold" font-size="64" fill="#FFFFFF" text-anchor="middle">Deduction Board</text>
+  <rect x="440" y="30" width="200" height="16" rx="8" fill="#555566" />
+  <path d="M510,70 L540,90 L570,70" stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round" />
 
-  <!-- Deduction Screen (Paper/Folder look) -->
-  <rect x="50" y="50" width="700" height="500" rx="10" fill="#F5F5DC" stroke="#795548" stroke-width="4" />
-  <line x1="50" y1="120" x2="750" y2="120" stroke="#795548" stroke-width="2" />
+  <!-- Board Grid -->
+  <g transform="translate(40, 200)">
+    <!-- Column Backgrounds -->
+    <rect x="0" y="0" width="190" height="1600" rx="32" fill="#1B3320" stroke="#4CAF50" stroke-width="6" /> <!-- Green -->
+    <rect x="202" y="0" width="190" height="1600" rx="32" fill="#311B33" stroke="#9C27B0" stroke-width="6" /> <!-- Purple -->
+    <rect x="404" y="0" width="190" height="1600" rx="32" fill="#33241B" stroke="#FF9800" stroke-width="6" /> <!-- Orange -->
+    <rect x="606" y="0" width="190" height="1600" rx="32" fill="#1B2733" stroke="#2196F3" stroke-width="6" /> <!-- Blue -->
+    <rect x="808" y="0" width="190" height="1600" rx="32" fill="#331B22" stroke="#E91E63" stroke-width="6" /> <!-- Pink -->
 
-  <!-- Header -->
-  <text x="70" y="100" font-family="'Courier New', Courier, monospace" font-size="36" font-weight="bold" fill="#5D4037">TOP SECRET DEDUCTION LOG</text>
-  <text x="600" y="100" font-family="'Courier New', Courier, monospace" font-size="24" fill="#D84315">PLAYER: 01</text>
+    <!-- Row 1 -->
+    <g transform="translate(15, 30)">
+      <rect width="160" height="120" rx="20" fill="#4CAF50" />
+      <text x="80" y="80" font-family="sans-serif" font-weight="900" font-size="60" fill="#FFFFFF" text-anchor="middle">1</text>
+      <!-- Crossed out state -->
+      <line x1="20" y1="20" x2="140" y2="100" stroke="#000000" stroke-width="12" opacity="0.6" />
+      <line x1="140" y1="20" x2="20" y2="100" stroke="#000000" stroke-width="12" opacity="0.6" />
+    </g>
+    
+    <g transform="translate(217, 30)">
+      <rect width="160" height="120" rx="20" fill="#9C27B0" opacity="0.4" />
+      <text x="80" y="80" font-family="sans-serif" font-weight="900" font-size="60" fill="#FFFFFF" text-anchor="middle">2</text>
+    </g>
 
-  <!-- Deduction Grid -->
-  <g transform="translate(100, 150)">
-    <!-- Column Headers -->
-    <text x="150" y="30" font-family="Arial" font-weight="bold" font-size="20" fill="#795548" text-anchor="middle">ALICE</text>
-    <text x="300" y="30" font-family="Arial" font-weight="bold" font-size="20" fill="#795548" text-anchor="middle">BOB</text>
-    <text x="450" y="30" font-family="Arial" font-weight="bold" font-size="20" fill="#795548" text-anchor="middle">CHARLIE</text>
+    <g transform="translate(419, 30)">
+      <rect width="160" height="120" rx="20" fill="#FF9800" />
+      <text x="80" y="80" font-family="sans-serif" font-weight="900" font-size="60" fill="#FFFFFF" text-anchor="middle">3</text>
+      <!-- Circled/Starred state -->
+      <circle cx="80" cy="60" r="50" fill="none" stroke="#FFFFFF" stroke-width="12" />
+    </g>
+    
+    <g transform="translate(621, 30)">
+      <rect width="160" height="120" rx="20" fill="#2196F3" opacity="0.4" />
+      <text x="80" y="80" font-family="sans-serif" font-weight="900" font-size="60" fill="#FFFFFF" text-anchor="middle">4</text>
+    </g>
 
-    <!-- Rows (Numbers 1-5) -->
-    <g transform="translate(0, 60)">
-      <!-- Row 1 -->
-      <g transform="translate(0, 0)">
-        <text x="0" y="25" font-family="Arial" font-weight="bold" font-size="32" fill="#EF6C00">1</text>
-        <rect x="135" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="285" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="435" y="0" width="30" height="30" fill="#4CAF50" stroke="#795548" /> <!-- Green check -->
-        <path d="M440 15 L448 22 L460 8" stroke="white" fill="none" stroke-width="4" />
-      </g>
-      <!-- Row 2 -->
-      <g transform="translate(0, 50)">
-        <text x="0" y="25" font-family="Arial" font-weight="bold" font-size="32" fill="#1565C0">2</text>
-        <rect x="135" y="0" width="30" height="30" fill="#E53935" stroke="#795548" /> <!-- Red X -->
-        <path d="M140 5 L160 25 M160 5 L140 25" stroke="white" fill="none" stroke-width="4" />
-        <rect x="285" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="435" y="0" width="30" height="30" fill="white" stroke="#795548" />
-      </g>
-      <!-- Row 3 -->
-      <g transform="translate(0, 100)">
-        <text x="0" y="25" font-family="Arial" font-weight="bold" font-size="32" fill="#2E7D32">3</text>
-        <rect x="135" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="285" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="435" y="0" width="30" height="30" fill="white" stroke="#795548" />
-      </g>
-      <!-- Row 4 -->
-      <g transform="translate(0, 150)">
-        <text x="0" y="25" font-family="Arial" font-weight="bold" font-size="32" fill="#7B1FA2">4</text>
-        <rect x="135" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="285" y="0" width="30" height="30" fill="#E53935" stroke="#795548" /> <!-- Red X -->
-        <path d="M290 5 L310 25 M310 5 L290 25" stroke="white" fill="none" stroke-width="4" />
-        <rect x="435" y="0" width="30" height="30" fill="white" stroke="#795548" />
-      </g>
-      <!-- Row 5 -->
-      <g transform="translate(0, 200)">
-        <text x="0" y="25" font-family="Arial" font-weight="bold" font-size="32" fill="#F9A825">5</text>
-        <rect x="135" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="285" y="0" width="30" height="30" fill="white" stroke="#795548" />
-        <rect x="435" y="0" width="30" height="30" fill="white" stroke="#795548" />
-      </g>
+    <g transform="translate(823, 30)">
+      <rect width="160" height="120" rx="20" fill="#E91E63" opacity="0.4" />
+      <text x="80" y="80" font-family="sans-serif" font-weight="900" font-size="60" fill="#FFFFFF" text-anchor="middle">5</text>
     </g>
   </g>
-
-  <!-- Sassy Decoration -->
-  <g transform="translate(600, 400) scale(1.5)">
-    <rect width="50" height="70" rx="8" fill="#FFF9C4" stroke="#795548" stroke-width="2" />
-    <text x="25" y="45" font-family="Arial" font-weight="bold" font-size="32" text-anchor="middle" fill="#D84315">5</text>
-    <!-- Sassy Side-eye Face -->
-    <circle cx="15" cy="30" r="3" fill="black" />
-    <circle cx="35" cy="30" r="3" fill="black" />
-    <path d="M15 25 L20 25 M30 25 L35 25" stroke="black" stroke-width="2" /> <!-- Flat eyebrows -->
-    <path d="M20 55 Q25 50 30 55" stroke="black" fill="none" stroke-width="2" /> <!-- Pout -->
-  </g>
-
-  <text x="400" y="520" font-family="Arial" font-size="14" font-style="italic" text-anchor="middle" fill="#795548">Property of Got Five Games Inc. 1974</text>
 </svg>
