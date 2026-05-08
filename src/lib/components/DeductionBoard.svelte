@@ -433,7 +433,7 @@
 
 	@media (max-width: 600px) {
 		.deduction-board {
-			padding: 8px;
+			padding: 4px;
 		}
 
 		.mini-tile {
@@ -451,10 +451,25 @@
 			padding: 5px;
 		}
 
+		.guess-area {
+			gap: 5px;
+			margin-bottom: 8px;
+			padding: 5px;
+		}
+
 		.guess-inputs input {
-			width: 30px;
-			height: 30px;
+			width: 25px;
+			height: 25px;
+			font-size: 0.8rem;
+		}
+
+		.header h2 {
 			font-size: 0.9rem;
+		}
+
+		.got-five-btn {
+			padding: 4px 10px;
+			font-size: 0.7rem;
 		}
 	}
 

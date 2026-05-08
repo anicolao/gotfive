@@ -65,16 +65,23 @@
 
 	@media (max-width: 600px) {
 		.table {
-			padding: 10px;
-			border-radius: 20px;
+			padding: 5px;
+			border-radius: 12px;
 		}
 
 		.decks-area {
-			gap: 5px;
+			gap: 4px;
+			margin-bottom: 8px;
 		}
 
 		.pool-tiles {
-			gap: 5px;
+			gap: 4px;
+			min-height: 80px;
+		}
+
+		h2 {
+			font-size: 0.9rem;
+			margin-bottom: 5px;
 		}
 	}
 
