@@ -120,6 +120,7 @@
 	.stand {
 		position: relative;
 		padding-bottom: 20px;
+		max-width: 100%;
 	}
 
 	.tiles-area {
@@ -130,6 +131,42 @@
 		padding: 12px 8px 8px 8px;
 		border-radius: 8px 8px 0 0;
 		gap: 4px;
+	}
+
+	@media (max-width: 600px) {
+		.tiles-area {
+			grid-template-columns: repeat(5, auto 45px) auto;
+			gap: 2px;
+			padding: 8px 4px 4px 4px;
+		}
+
+		.slot {
+			width: 45px;
+			height: 63px;
+		}
+
+		.notch {
+			width: 8px;
+			height: 8px;
+			margin-bottom: 5px;
+		}
+		
+		.name-tag {
+			font-size: 0.8rem;
+			padding: 2px 8px;
+		}
+	}
+
+	@media (max-width: 350px) {
+		.tiles-area {
+			grid-template-columns: repeat(5, auto 35px) auto;
+			gap: 1px;
+		}
+
+		.slot {
+			width: 35px;
+			height: 49px;
+		}
 	}
 
 	.slot {

@@ -36,9 +36,8 @@ h1 {
 
 @media (max-width: 768px) and (orientation: portrait) {
 	.game-container {
-		height: auto;
-		min-height: 100vh;
-		overflow-y: auto;
+		height: 100vh;
+		overflow: hidden;
 	}
 
 	header h1 {
@@ -47,45 +46,48 @@ h1 {
 
 	main {
 		flex-direction: column !important;
-		padding: 10px;
-		gap: 10px;
-		overflow: visible;
+		padding: 5px;
+		gap: 5px;
+		overflow: hidden;
 	}
 
 	.main-play-area {
-		height: auto;
-		gap: 20px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding-bottom: 20px;
 	}
 
-	.sidebar {
-		width: 100%;
-		max-height: none;
-		justify-content: center;
-	}
-
-	.side-col {
-		width: auto;
-	}
 
 	.middle-row {
 		flex-direction: column;
-		gap: 10px;
+		gap: 5px;
+	}
+
+	.side-col {
+		width: 100%;
 	}
 
 	.bottom-row {
 		flex-direction: column;
-		gap: 10px;
+		gap: 5px;
+		padding: 10px 0;
 	}
 
 	.controls-left, .controls-right {
 		position: static;
 		justify-content: center;
 		width: 100%;
+		margin: 5px 0;
 	}
 
 	.lobby {
-		width: 90%;
+		width: 95%;
 		padding: 15px;
+		box-sizing: border-box;
 	}
 
 	.lobby h2 {
@@ -94,46 +96,77 @@ h1 {
 
 	.lobby input {
 		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.lobby .actions {
 		flex-direction: column;
 		width: 100%;
+		gap: 10px;
 	}
 
 	.lobby .groovy-button {
 		width: 100%;
 	}
-
-	/* Scale down game components on mobile */
-	.stand {
-		transform: scale(0.9);
-		transform-origin: center;
-	}
-
-	.table {
-		transform: scale(0.85);
-		transform-origin: center;
-		padding: 10px;
-	}
-
-	.sidebar {
-		transform: scale(0.9);
-	}
 }
 
-/* Very small screens */
-@media (max-width: 400px) and (orientation: portrait) {
-	.stand {
-		transform: scale(0.75);
-	}
+.groovy-button {
+	background-color: var(--color-gold);
+	color: var(--color-wood);
+	font-weight: bold;
+	padding: 10px 20px;
+	border: 3px solid var(--color-wood);
+	border-radius: 8px;
+	cursor: pointer;
+	box-shadow: 4px 4px 0 var(--color-wood);
+	text-transform: uppercase;
+	font-family: inherit;
+	transition: all 0.1s;
+}
 
-	.table {
-		transform: scale(0.7);
-	}
+.groovy-button:hover {
+	transform: translate(-2px, -2px);
+	box-shadow: 6px 6px 0 var(--color-wood);
+}
 
-	header h1 {
-		font-size: 1.2rem !important;
+.groovy-button:active {
+	transform: translate(1px, 1px);
+	box-shadow: 2px 2px 0 var(--color-wood);
+}
+
+.groovy-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: 2px 2px 0 var(--color-wood);
+}
+
+.toggle-sidebar-btn {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.toggle-sidebar-btn {
+		display: block;
+		position: fixed;
+		bottom: 10px;
+		right: 10px;
+		z-index: 1000;
+		background-color: var(--color-gold);
+		color: var(--color-wood);
+		border: 2px solid var(--color-wood);
+		border-radius: 50%;
+		width: 50px;
+		height: 50px;
+		font-size: 0.7rem;
+		font-weight: bold;
+		cursor: pointer;
+		box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		line-height: 1;
 	}
 }
 
@@ -160,19 +193,8 @@ h1 {
 		flex: 1;
 		height: 100%;
 		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
 	}
 
-	.sidebar {
-		flex: 0 0 250px;
-		height: 100%;
-		overflow-y: auto;
-	}
-
-	.table {
-		transform: scale(0.6);
-	}
-
-	.stand {
-		transform: scale(0.6);
-	}
 }

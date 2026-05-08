@@ -15,6 +15,7 @@
 	let gameState = $state(store.getState().game);
 	let playersState = $state(store.getState().players);
 	let uiState = $state(store.getState().ui);
+	let showSidebar = $state(false);
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -149,7 +150,7 @@
 				{/if}
 				{:else if gameState?.status === 'FINISHED' && gameState.winnerId}
 				<span class="winner-label">Winner: {playersState?.players[gameState.winnerId]?.name}!</span>
-				<button class="got-five-btn" onclick={handleResetGame}>Play Again</button>
+				<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
 				{/if}
 				</div>
 				</header>
@@ -250,9 +251,15 @@
 				</div>
 				</div>
 
-				<aside class="sidebar">
+				<aside class="sidebar" class:open={showSidebar}>
 				<DeductionBoard deductions={uiState?.deductionBoard} />
 				</aside>
+
+				{#if gameState?.status === 'PLAYING'}
+					<button class="toggle-sidebar-btn" onclick={() => showSidebar = !showSidebar}>
+						{showSidebar ? 'GAME' : 'BOARD'}
+					</button>
+				{/if}
 				{/if}
 				</main>
 
@@ -262,16 +269,17 @@
 						{#if gameState?.status === 'FINISHED'}
 							<h2>GAME OVER</h2>
 							<p class="winner-msg">Winner: {playersState?.players[gameState.winnerId!]?.name}!</p>
-							<button class="primary" onclick={handleResetGame}>Play Again</button>
+							<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
 						{:else if (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
 							<h2>ELIMINATED</h2>
 							<p>Better luck next time!</p>
-							<button class="primary" onclick={handleResetGame}>Back to Lobby</button>
+							<button class="groovy-button" onclick={handleResetGame}>Back to Lobby</button>
 						{:else if newlyEliminatedPlayer}
 							<h2>PLAYER ELIMINATED</h2>
 							<p class="winner-msg">{newlyEliminatedPlayer.name} guessed incorrectly and was eliminated!</p>
-							<button class="primary" onclick={() => acknowledgeElimination(newlyEliminatedPlayer.id)}>Continue</button>
+							<button class="groovy-button" onclick={() => acknowledgeElimination(newlyEliminatedPlayer.id)}>Continue</button>
 						{/if}
+
 					</div>
 				</div>
 				{/if}
@@ -331,6 +339,27 @@
 		overflow-y: auto;
 	}
 
+	@media (max-width: 768px) {
+		.sidebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 1000;
+			background: rgba(0,0,0,0.9);
+			display: none;
+			justify-content: center;
+			align-items: center;
+			padding: 10px;
+			box-sizing: border-box;
+		}
+
+		.sidebar.open {
+			display: flex;
+		}
+	}
+
 	.top-row, .bottom-row {
 		display: flex;
 		justify-content: center;
@@ -347,23 +376,6 @@
 
 	.controls-left { left: 50px; }
 	.controls-right { right: 50px; }
-
-	.got-five-btn {
-		background-color: var(--color-gold);
-		color: var(--color-wood);
-		font-weight: bold;
-		font-size: 1.2rem;
-		padding: 10px 20px;
-		border: 4px solid var(--color-wood);
-		border-radius: 8px;
-		cursor: pointer;
-		box-shadow: 4px 4px 0 var(--color-wood);
-	}
-
-	.got-five-btn:hover {
-		transform: translate(-2px, -2px);
-		box-shadow: 6px 6px 0 var(--color-wood);
-	}
 
 	.next-turn-btn {
 		background-color: var(--color-cream);
@@ -430,15 +442,6 @@
 		font-weight: bold;
 		color: var(--color-gold);
 		margin: 20px 0;
-	}
-
-	.end-game-modal button.primary {
-		background-color: var(--color-gold);
-		font-weight: bold;
-		padding: 10px 20px;
-		border: 2px solid var(--color-wood);
-		border-radius: 8px;
-		cursor: pointer;
 	}
 
 	.middle-row {

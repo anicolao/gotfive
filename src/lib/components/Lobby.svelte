@@ -149,30 +149,48 @@
 		box-shadow: 10px 10px 0 var(--color-wood);
 		color: var(--color-wood);
 	}
+h2 {
+	margin-top: 0;
+	font-size: 2rem;
+	color: var(--color-wood);
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+}
 
-	h2 {
-		margin-top: 0;
-		font-size: 2rem;
-		color: var(--color-wood);
-		text-transform: uppercase;
-		letter-spacing: 2px;
-	}
+.input-group {
+	margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+}
 
-	.input-group {
-		margin-bottom: 20px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 10px;
-	}
+label {
+	font-weight: bold;
+	color: var(--color-wood);
+	font-size: 1.1rem;
+}
 
-	input {
-		padding: 10px;
-		font-size: 1.1rem;
-		border: 2px solid var(--color-wood);
-		border-radius: 8px;
-		width: 80%;
-	}
+input {
+	padding: 12px;
+	font-size: 1.1rem;
+	border: 3px solid var(--color-wood);
+	border-radius: 8px;
+	width: 80%;
+	background-color: white;
+	color: var(--color-wood);
+}
+
+input:focus {
+	outline: none;
+	border-color: var(--color-gold);
+	box-shadow: 0 0 0 3px rgba(218, 145, 0, 0.3);
+}
+
+.status p, .step p, li, label {
+	color: var(--color-wood) !important;
+}
 
 	.actions {
 		display: flex;

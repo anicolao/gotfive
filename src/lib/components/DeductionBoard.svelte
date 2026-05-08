@@ -219,7 +219,7 @@
 				<input type="number" min="1" max="60" bind:value={guessInputs[i]} placeholder="?" />
 			{/each}
 		</div>
-		<button class="got-five-btn" disabled={!canGuess} onclick={submitGuess}>
+		<button class="groovy-button" disabled={!canGuess} onclick={submitGuess}>
 			GOT FIVE!
 		</button>
 	</div>
@@ -406,6 +406,45 @@
 		transition: transform 0.1s;
 		padding: 2px 0;
 		box-sizing: border-box;
+	}
+
+	@media (max-width: 600px) {
+		.deduction-board {
+			padding: 8px;
+		}
+
+		.mini-tile {
+			width: 20px;
+			height: 28px;
+			font-size: 8px;
+		}
+
+		.color-label {
+			width: 15px;
+			font-size: 0.8rem;
+		}
+
+		.grid-container {
+			padding: 5px;
+		}
+
+		.guess-inputs input {
+			width: 30px;
+			height: 30px;
+			font-size: 0.9rem;
+		}
+	}
+
+	@media (max-width: 350px) {
+		.mini-tile {
+			width: 18px;
+			height: 25px;
+			font-size: 7px;
+		}
+		
+		.row {
+			gap: 2px;
+		}
 	}
 
 	.mini-tile:hover {
