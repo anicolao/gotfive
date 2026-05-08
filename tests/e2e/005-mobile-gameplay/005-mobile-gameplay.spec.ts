@@ -1,6 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
 
+interface Store {
+  dispatch: (action: { type: string; payload?: unknown }) => void;
+  getState: () => {
+    game: { status: string };
+    players: { players: Record<string, unknown> };
+  };
+}
+
+interface WindowWithStore extends Window {
+  store: Store;
+}
+
 test.describe('Mobile Gameplay', () => {
   test.use({ viewport: { width: 375, height: 667 } }); // iPhone SE portrait
 
@@ -27,7 +39,7 @@ test.describe('Mobile Gameplay', () => {
 
     // Add a player via store
     await page.evaluate(() => {
-      (window as any).store.dispatch({ 
+      (window as unknown as WindowWithStore).store.dispatch({ 
         type: 'players/addPlayer', 
         payload: { id: 'p2', name: 'Player 2' } 
       });
@@ -86,7 +98,7 @@ test.describe('Mobile Gameplay', () => {
     // 2. Play Again Flow
     // Force a win for Player 2 to trigger game over
     await page.evaluate(() => {
-      (window as any).store.dispatch({ 
+      (window as unknown as WindowWithStore).store.dispatch({ 
         type: 'game/setWinner', 
         payload: 'p2' 
       });
@@ -125,14 +137,14 @@ test.describe('Mobile Gameplay', () => {
         {
           spec: 'Game status is LOBBY in store',
           check: async () => {
-            const status = await page.evaluate(() => (window as any).store.getState().game.status);
+            const status = await page.evaluate(() => (window as unknown as WindowWithStore).store.getState().game.status);
             expect(status).toBe('LOBBY');
           }
         },
         {
           spec: 'Connected players are preserved',
           check: async () => {
-            const players = await page.evaluate(() => Object.keys((window as any).store.getState().players.players));
+            const players = await page.evaluate(() => Object.keys((window as unknown as WindowWithStore).store.getState().players.players));
             expect(players).toContain('p2');
           }
         }
@@ -153,7 +165,7 @@ test.describe('Mobile Gameplay', () => {
     await page.getByRole('button', { name: 'Host Game' }).click();
 
     await page.evaluate(() => {
-      (window as any).store.dispatch({ 
+      (window as unknown as WindowWithStore).store.dispatch({ 
         type: 'players/addPlayer', 
         payload: { id: 'p2', name: 'Player 2' } 
       });
