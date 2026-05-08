@@ -147,6 +147,7 @@
 		border: 4px solid var(--color-gold);
 		border-radius: 12px;
 		box-shadow: 10px 10px 0 var(--color-wood);
+		color: var(--color-wood);
 	}
 
 	h2 {

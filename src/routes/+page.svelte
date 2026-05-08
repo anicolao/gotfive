@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { store } from '$lib/store';
-	import { start, reveal, nextTurn, setWinner } from '$lib/store/gameSlice';
-	import { addPlayer, setHand, clue_sort, clue_compare, guess } from '$lib/store/playersSlice';
-	import { setMyId, selectTile, setOverlay } from '$lib/store/uiSlice';
+	import { start, reveal, nextTurn, setWinner, resetGame } from '$lib/store/gameSlice';
+	import { addPlayer, setHand, clue_sort, clue_compare, guess, resetPlayers } from '$lib/store/playersSlice';
+	import { setMyId, selectTile, setOverlay, resetUI } from '$lib/store/uiSlice';
 	import { createRNG } from '$lib/game/rng';
 	import { createDeck, shuffle } from '$lib/game/deck';
 	import Table from '$lib/components/Table.svelte';
@@ -56,6 +56,13 @@
 		}
 
 		store.dispatch(start({ deck, turnOrder: playerIds, initialPublic, seed }));
+	}
+
+	function handleResetGame() {
+		store.dispatch(resetGame());
+		store.dispatch(resetPlayers());
+		store.dispatch(resetUI());
+		acknowledgedEliminations = new Set();
 	}
 
 	let currentPlayerId = $derived(gameState?.turnOrder[gameState?.currentPlayerIndex]);
@@ -142,7 +149,7 @@
 				{/if}
 				{:else if gameState?.status === 'FINISHED' && gameState.winnerId}
 				<span class="winner-label">Winner: {playersState?.players[gameState.winnerId]?.name}!</span>
-				<button onclick={() => window.location.reload()}>Play Again</button>
+				<button class="got-five-btn" onclick={handleResetGame}>Play Again</button>
 				{/if}
 				</div>
 				</header>
@@ -255,11 +262,11 @@
 						{#if gameState?.status === 'FINISHED'}
 							<h2>GAME OVER</h2>
 							<p class="winner-msg">Winner: {playersState?.players[gameState.winnerId!]?.name}!</p>
-							<button class="primary" onclick={() => window.location.reload()}>Back to Lobby</button>
+							<button class="primary" onclick={handleResetGame}>Play Again</button>
 						{:else if (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
 							<h2>ELIMINATED</h2>
 							<p>Better luck next time!</p>
-							<button class="primary" onclick={() => window.location.reload()}>Back to Lobby</button>
+							<button class="primary" onclick={handleResetGame}>Back to Lobby</button>
 						{:else if newlyEliminatedPlayer}
 							<h2>PLAYER ELIMINATED</h2>
 							<p class="winner-msg">{newlyEliminatedPlayer.name} guessed incorrectly and was eliminated!</p>
@@ -292,6 +299,12 @@
 		margin: 0;
 		font-size: 2.5rem;
 		text-shadow: 2px 2px #000;
+	}
+
+	@media (max-width: 768px) {
+		h1 {
+			font-size: 1.5rem;
+		}
 	}
 
 	main {

@@ -99,9 +99,16 @@ export const playersSlice = createSlice({
 			if (!isCorrect) {
 				player.eliminated = true;
 			}
+		},
+		resetPlayers: (state) => {
+			Object.values(state.players).forEach((player) => {
+				player.hand = [];
+				player.clues = [];
+				player.eliminated = false;
+			});
 		}
 	}
 });
 
-export const { addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer, guess } = playersSlice.actions;
+export const { addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer, guess, resetPlayers } = playersSlice.actions;
 export default playersSlice.reducer;

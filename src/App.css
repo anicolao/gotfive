@@ -31,3 +31,148 @@ h1 {
 	font-size: 3rem;
 	margin-top: 0;
 }
+
+/* Mobile Responsive Design */
+
+@media (max-width: 768px) and (orientation: portrait) {
+	.game-container {
+		height: auto;
+		min-height: 100vh;
+		overflow-y: auto;
+	}
+
+	header h1 {
+		font-size: 1.5rem !important;
+	}
+
+	main {
+		flex-direction: column !important;
+		padding: 10px;
+		gap: 10px;
+		overflow: visible;
+	}
+
+	.main-play-area {
+		height: auto;
+		gap: 20px;
+	}
+
+	.sidebar {
+		width: 100%;
+		max-height: none;
+		justify-content: center;
+	}
+
+	.side-col {
+		width: auto;
+	}
+
+	.middle-row {
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.bottom-row {
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.controls-left, .controls-right {
+		position: static;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.lobby {
+		width: 90%;
+		padding: 15px;
+	}
+
+	.lobby h2 {
+		font-size: 1.5rem;
+	}
+
+	.lobby input {
+		width: 100%;
+	}
+
+	.lobby .actions {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.lobby .groovy-button {
+		width: 100%;
+	}
+
+	/* Scale down game components on mobile */
+	.stand {
+		transform: scale(0.9);
+		transform-origin: center;
+	}
+
+	.table {
+		transform: scale(0.85);
+		transform-origin: center;
+		padding: 10px;
+	}
+
+	.sidebar {
+		transform: scale(0.9);
+	}
+}
+
+/* Very small screens */
+@media (max-width: 400px) and (orientation: portrait) {
+	.stand {
+		transform: scale(0.75);
+	}
+
+	.table {
+		transform: scale(0.7);
+	}
+
+	header h1 {
+		font-size: 1.2rem !important;
+	}
+}
+
+/* Landscape orientation on small screens */
+@media (max-height: 500px) and (orientation: landscape) {
+	.game-container {
+		height: 100vh;
+		overflow: hidden;
+	}
+
+	header h1 {
+		font-size: 1.2rem !important;
+	}
+
+	main {
+		flex-direction: row !important;
+		flex-wrap: nowrap !important;
+		padding: 5px;
+		gap: 5px;
+		overflow: hidden;
+	}
+
+	.main-play-area {
+		flex: 1;
+		height: 100%;
+		overflow-y: auto;
+	}
+
+	.sidebar {
+		flex: 0 0 250px;
+		height: 100%;
+		overflow-y: auto;
+	}
+
+	.table {
+		transform: scale(0.6);
+	}
+
+	.stand {
+		transform: scale(0.6);
+	}
+}
