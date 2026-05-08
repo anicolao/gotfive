@@ -60,7 +60,7 @@
 
 	let currentPlayerId = $derived(gameState?.turnOrder[gameState?.currentPlayerIndex]);
 	let isMyTurn = $derived(currentPlayerId === uiState?.myId);
-	let isHost = $derived(uiState?.myId && gameState?.status === 'LOBBY' && Object.keys(playersState?.players || {}).length > 0); // Simplified host check
+	let isHost = $derived(uiState?.isHost);
 
 	// Sort other players for display around the table
 	let otherPlayerIds = $derived(gameState?.turnOrder.filter((id: string) => id !== uiState?.myId) || []);
@@ -111,6 +111,16 @@
 		newSet.add(id);
 		acknowledgedEliminations = newSet;
 	}
+
+	$effect(() => {
+		if (gameState?.status === 'PLAYING' && currentPlayerId && playersState?.players[currentPlayerId]?.eliminated) {
+			// If it's my turn but I'm eliminated, pass it
+			// Or if I'm the host, I'm responsible for advancing the turn if the current player is eliminated
+			if (currentPlayerId === uiState?.myId || isHost) {
+				store.dispatch(nextTurn());
+			}
+		}
+	});
 
 	const version = import.meta.env.VITE_APP_VERSION || 'dev';
 	const gitHash = import.meta.env.VITE_GIT_HASH || 'local';

@@ -2,7 +2,7 @@
 	import { initNetwork } from '../network';
 	import { store } from '../store';
 	import { addPlayer } from '../store/playersSlice';
-	import { setMyId } from '../store/uiSlice';
+	import { setMyId, setIsHost } from '../store/uiSlice';
 	import { onMount } from 'svelte';
 
 	let myName = $state('');
@@ -31,9 +31,8 @@
 		peerManager.connections.subscribe((c: string[]) => {
 			connections = c;
 		});
-		import('../store/uiSlice').then(({ setMyId }) => {
-			store.dispatch(setMyId(myId));
-		});
+		store.dispatch(setMyId(myId));
+		store.dispatch(setIsHost(host));
 		store.dispatch(addPlayer({ id: myId, name: myName }));
 	}
 
@@ -99,121 +98,133 @@
 			<p>Your Game ID (share this with friends):</p>
 			<div class="id-display">
 				<code>{myId}</code>
-				<button onclick={() => copyToClipboard(myId)}>Copy ID</button>
-				<button onclick={copyInviteLink}>Copy Invite Link</button>
+				<button onclick={() => copyToClipboard(myId)}>Copy</button>
 			</div>
+			<p>Or share this invite link:</p>
+			<button class="groovy-button" onclick={copyInviteLink}>Copy Invite Link</button>
+		</div>
+
+		<div class="status">
+			<h3>Connected Players ({connections.length + 1})</h3>
+			<ul>
+				<li>{myName} (You - Host)</li>
+				{#each connections as id}
+					<li>{id}</li>
+				{/each}
+			</ul>
 		</div>
 	{:else if mode === 'JOINING'}
 		<div class="step">
-			<p>Enter Host's Game ID:</p>
-			<input type="text" bind:value={targetHostId} placeholder="e.g. abc123" />
-			<button class="groovy-button" onclick={connectToHost} disabled={!targetHostId}>Connect</button>
+			<label for="hostId">Enter Host Game ID:</label>
+			<div class="id-input">
+				<input type="text" id="hostId" bind:value={targetHostId} placeholder="e.g. abc123xyz" />
+				<button class="groovy-button" onclick={connectToHost}>Connect</button>
+			</div>
+		</div>
+
+		<div class="status">
+			<h3>Connection Status</h3>
+			{#if connections.length > 0}
+				<p class="connected">Connected to Host!</p>
+				<ul>
+					<li>{myName} (You)</li>
+					<li>Host: {targetHostId}</li>
+				</ul>
+			{:else}
+				<p class="waiting">Waiting to connect...</p>
+			{/if}
 		</div>
 	{/if}
-
-	<div class="status">
-		<h3>Players Connected: {connections.length + 1}</h3>
-		<ul>
-			<li>{myName} (You)</li>
-			{#each connections as conn}
-				<li>Peer: {conn}</li>
-			{/each}
-		</ul>
-	</div>
 </div>
 
 <style>
 	.lobby {
 		max-width: 500px;
-		margin: 2rem auto;
-		padding: 2rem;
-		background: var(--color-bg-panel, #f0e6d2);
-		border: 4px solid var(--color-primary, #d4a373);
-		border-radius: 20px;
-		box-shadow: 10px 10px 0 var(--color-shadow, #bc8a5f);
+		margin: 20px auto;
+		padding: 30px;
+		text-align: center;
+		background-color: var(--color-cream);
+		border: 4px solid var(--color-gold);
+		border-radius: 12px;
+		box-shadow: 10px 10px 0 var(--color-wood);
 	}
 
 	h2 {
-		font-family: 'Groovy', sans-serif;
-		color: var(--color-primary);
-		text-align: center;
-		margin-bottom: 1.5rem;
+		margin-top: 0;
+		font-size: 2rem;
+		color: var(--color-wood);
+		text-transform: uppercase;
+		letter-spacing: 2px;
 	}
 
 	.input-group {
-		margin-bottom: 1rem;
-	}
-
-	label {
-		display: block;
-		margin-bottom: 0.5rem;
-		font-weight: bold;
+		margin-bottom: 20px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
 	}
 
 	input {
-		width: 100%;
-		padding: 0.5rem;
-		border: 2px solid var(--color-primary);
+		padding: 10px;
+		font-size: 1.1rem;
+		border: 2px solid var(--color-wood);
 		border-radius: 8px;
-		font-family: inherit;
-		box-sizing: border-box;
-		margin-bottom: 1rem;
+		width: 80%;
 	}
 
 	.actions {
 		display: flex;
-		gap: 1rem;
+		gap: 20px;
 		justify-content: center;
-		margin-top: 1rem;
 	}
 
 	.step {
-		margin-bottom: 1.5rem;
-		padding: 1rem;
-		background: rgba(255, 255, 255, 0.5);
-		border-radius: 10px;
+		margin-bottom: 30px;
+		padding: 20px;
+		background: rgba(0,0,0,0.05);
+		border-radius: 8px;
 	}
 
 	.id-display {
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		gap: 10px;
-		background: white;
-		padding: 10px;
-		border-radius: 8px;
-		border: 1px solid var(--color-primary);
-		flex-wrap: wrap;
+		margin: 10px 0;
 	}
 
 	code {
-		flex: 1;
-		font-family: monospace;
-		font-size: 1.2rem;
+		font-size: 1.5rem;
+		background: white;
+		padding: 5px 15px;
+		border: 2px solid var(--color-wood);
+		border-radius: 4px;
 		font-weight: bold;
+	}
+
+	.id-input {
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+		margin-top: 10px;
 	}
 
 	.status {
-		margin-top: 2rem;
-		border-top: 2px dashed var(--color-primary);
-		padding-top: 1rem;
+		margin-top: 20px;
+		text-align: left;
 	}
 
-	.groovy-button {
-		background: var(--color-accent, #faedcd);
-		border: 2px solid var(--color-primary);
-		padding: 0.5rem 1rem;
-		border-radius: 50px;
-		cursor: pointer;
-		font-weight: bold;
-		transition: transform 0.1s;
+	ul {
+		list-style: none;
+		padding: 0;
 	}
 
-	.groovy-button:hover {
-		transform: scale(1.05);
+	li {
+		padding: 8px;
+		border-bottom: 1px solid rgba(0,0,0,0.1);
 	}
 
-	.groovy-button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
+	.connected { color: var(--color-avocado); font-weight: bold; }
+	.waiting { font-style: italic; opacity: 0.7; }
 </style>
