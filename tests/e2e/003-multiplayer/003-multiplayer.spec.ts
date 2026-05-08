@@ -25,6 +25,6 @@ test.describe('Multiplayer Lobby', () => {
 		await page.getByRole('button', { name: 'Host Game' }).click();
 		
 		await expect(page.getByText('Your Game ID')).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Copy ID' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
 	});
 });
