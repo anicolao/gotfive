@@ -219,10 +219,9 @@
 				<input type="number" min="1" max="60" bind:value={guessInputs[i]} placeholder="?" />
 			{/each}
 		</div>
-		<button class="groovy-button" disabled={!canGuess} onclick={submitGuess}>
-			GOT FIVE!
-		</button>
-	</div>
+		<button class="groovy-button got-five-btn" disabled={!canGuess} onclick={submitGuess}>
+		        GOT FIVE!
+		</button>	</div>
 
 	<div class="grid-container">
 		<div class="grid">
