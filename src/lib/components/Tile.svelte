@@ -89,8 +89,8 @@
 		width: var(--tile-width, 60px);
 		height: var(--tile-height, 84px);
 		background-color: var(--tile-color);
-		border: 2px solid #795548;
-		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 12px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -98,7 +98,7 @@
 		padding: 4px;
 		box-sizing: border-box;
 		position: relative;
-		box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.2);
 		user-select: none;
 		color: white;
 	}
@@ -107,8 +107,7 @@
 		.tile {
 			--tile-width: 45px;
 			--tile-height: 63px;
-			border-width: 1px;
-			border-radius: 4px;
+			border-radius: 8px;
 		}
 
 		.number {
@@ -142,6 +141,7 @@
 		.tile {
 			--tile-width: 35px;
 			--tile-height: 49px;
+			border-radius: 6px;
 		}
 
 		.number {
@@ -170,8 +170,9 @@
 	}
 
 	.face-down {
-		border-color: #3e2723;
+		border-color: rgba(255, 255, 255, 0.1);
 	}
+
 
 	.back-pattern {
 		width: 100%;

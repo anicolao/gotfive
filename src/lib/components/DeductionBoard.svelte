@@ -269,14 +269,16 @@
 
 <style>
 	.deduction-board {
-		background-color: var(--color-cream);
+		background: var(--color-bg-panel);
+		backdrop-filter: blur(12px);
 		padding: 15px;
-		border-radius: 8px;
-		border: 4px solid var(--color-gold);
-		box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
-		color: var(--color-wood);
+		border-radius: 12px;
+		border: 1px solid var(--color-glass-border);
+		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 229, 255, 0.1);
+		color: var(--color-text-main);
 		width: fit-content;
 		position: relative;
+		margin: 0 auto;
 	}
 
 	.header {
@@ -292,19 +294,24 @@
 		text-transform: uppercase;
 		font-size: 1.2rem;
 		letter-spacing: 2px;
+		color: var(--color-neon-cyan);
+		text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
 	}
 
 	button {
 		font-family: 'Courier New', Courier, monospace;
 		background: none;
-		border: 1px solid var(--color-wood);
+		border: 1px solid var(--color-text-muted);
+		color: var(--color-text-muted);
 		cursor: pointer;
 		padding: 2px 8px;
 		font-size: 0.8rem;
+		border-radius: 4px;
 	}
 
 	button:hover {
-		background: rgba(0, 0, 0, 0.05);
+		background: rgba(255, 255, 255, 0.1);
+		color: var(--color-text-main);
 	}
 
 	.guess-area {
@@ -314,8 +321,9 @@
 		gap: 10px;
 		margin-bottom: 15px;
 		padding: 10px;
-		background: rgba(0,0,0,0.05);
+		background: rgba(0,0,0,0.5);
 		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
 	.guess-inputs {
@@ -327,38 +335,52 @@
 		width: 35px;
 		height: 35px;
 		text-align: center;
-		border: 2px solid var(--color-wood);
+		border: 1px solid var(--color-neon-yellow);
 		border-radius: 4px;
 		font-family: 'Courier New', Courier, monospace;
 		font-weight: bold;
-		background: white;
+		background: rgba(0, 0, 0, 0.8);
+		color: var(--color-neon-yellow);
+	}
+
+	.guess-inputs input:focus {
+		outline: none;
+		box-shadow: 0 0 5px var(--color-neon-yellow);
 	}
 
 	.got-five-btn {
-		background-color: var(--color-gold);
-		color: var(--color-wood);
+		background-color: rgba(0, 0, 0, 0.6);
+		color: var(--color-neon-magenta);
 		font-weight: bold;
 		padding: 5px 15px;
-		border: 2px solid var(--color-wood);
+		border: 1px solid var(--color-neon-magenta);
 		border-radius: 4px;
 		cursor: pointer;
 		font-family: 'Courier New', Courier, monospace;
+		text-shadow: 0 0 5px rgba(255, 0, 212, 0.5);
+		box-shadow: 0 0 10px rgba(255, 0, 212, 0.2);
 	}
 
-	.got-five-btn:hover {
-		background-color: #ffd700;
+	.got-five-btn:hover:not(:disabled) {
+		background-color: rgba(255, 0, 212, 0.1);
+		box-shadow: 0 0 15px rgba(255, 0, 212, 0.5);
 	}
 
 	.got-five-btn:disabled {
-		opacity: 0.5;
+		opacity: 0.3;
 		cursor: not-allowed;
+		border-color: var(--color-text-muted);
+		color: var(--color-text-muted);
+		box-shadow: none;
+		text-shadow: none;
 	}
 
 	.grid-container {
 		position: relative;
-		border: 2px solid var(--color-wood);
+		border: 1px solid var(--color-glass-border);
 		padding: 10px;
-		background: white;
+		background: rgba(0, 0, 0, 0.4);
+		border-radius: 8px;
 	}
 
 	.grid {
@@ -379,6 +401,7 @@
 		width: 20px;
 		font-weight: bold;
 		text-align: center;
+		text-shadow: 0 0 3px currentColor;
 	}
 
 	.cell {
@@ -401,10 +424,11 @@
 		font-weight: bold;
 		color: white;
 		position: relative;
-		box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+		box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 		transition: transform 0.1s;
 		padding: 2px 0;
 		box-sizing: border-box;
+		border: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
 	@media (max-width: 600px) {
@@ -459,7 +483,7 @@
 
 	.num {
 		z-index: 1;
-		text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+		text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
 		line-height: 1;
 	}
 
@@ -474,7 +498,7 @@
 		height: 4px;
 		background-color: white;
 		border-radius: 50%;
-		box-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+		box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 	}
 
 	.strike {
@@ -485,6 +509,7 @@
 		transform: rotate(45deg);
 		z-index: 2;
 		top: 16px;
+		box-shadow: 0 0 2px rgba(0,0,0,0.8);
 	}
 
 	.strike::after {
@@ -496,17 +521,19 @@
 		transform: rotate(-90deg);
 		top: 0;
 		left: 0;
+		box-shadow: 0 0 2px rgba(0,0,0,0.8);
 	}
 
 	.check {
 		position: absolute;
 		width: 100%;
 		height: 100%;
-		border: 3px solid var(--color-gold);
+		border: 3px solid var(--color-neon-cyan);
 		border-radius: 3px;
 		box-sizing: border-box;
 		z-index: 2;
 		top: 0;
+		box-shadow: inset 0 0 5px var(--color-neon-cyan), 0 0 5px var(--color-neon-cyan);
 	}
 
 	.dimmed {

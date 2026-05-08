@@ -30,14 +30,14 @@
 <style>
 	.mini-tile {
 		background-color: var(--tile-color);
-		border: 1px solid rgba(0, 0, 0, 0.3);
-		border-radius: 4px;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 6px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		color: white;
-		box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+		box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 		user-select: none;
 	}
 

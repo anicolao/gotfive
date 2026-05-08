@@ -139,23 +139,17 @@
 
 <style>
 	.lobby {
-		max-width: 500px;
-		margin: 20px auto;
-		padding: 30px;
+		width: 100%;
 		text-align: center;
-		background-color: var(--color-cream);
-		border: 4px solid var(--color-gold);
-		border-radius: 12px;
-		box-shadow: 10px 10px 0 var(--color-wood);
-		color: var(--color-wood);
+		color: var(--color-text-main);
 	}
 h2 {
 	margin-top: 0;
 	font-size: 2rem;
-	color: var(--color-wood);
+	color: var(--color-neon-cyan);
 	text-transform: uppercase;
 	letter-spacing: 2px;
-	text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+	text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
 }
 
 .input-group {
@@ -168,28 +162,29 @@ h2 {
 
 label {
 	font-weight: bold;
-	color: var(--color-wood);
+	color: var(--color-text-main);
 	font-size: 1.1rem;
 }
 
 input {
 	padding: 12px;
 	font-size: 1.1rem;
-	border: 3px solid var(--color-wood);
+	border: 1px solid var(--color-neon-cyan);
 	border-radius: 8px;
 	width: 80%;
-	background-color: white;
-	color: var(--color-wood);
+	background-color: rgba(0, 0, 0, 0.5);
+	color: var(--color-text-main);
+	box-shadow: inset 0 0 5px rgba(0, 229, 255, 0.2);
 }
 
 input:focus {
 	outline: none;
-	border-color: var(--color-gold);
-	box-shadow: 0 0 0 3px rgba(218, 145, 0, 0.3);
+	border-color: var(--color-neon-magenta);
+	box-shadow: 0 0 10px rgba(255, 0, 212, 0.4), inset 0 0 5px rgba(255, 0, 212, 0.2);
 }
 
 .status p, .step p, li, label {
-	color: var(--color-wood) !important;
+	color: var(--color-text-main) !important;
 }
 
 	.actions {
@@ -201,7 +196,8 @@ input:focus {
 	.step {
 		margin-bottom: 30px;
 		padding: 20px;
-		background: rgba(0,0,0,0.05);
+		background: rgba(0,0,0,0.3);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 8px;
 	}
 
@@ -215,11 +211,13 @@ input:focus {
 
 	code {
 		font-size: 1.5rem;
-		background: white;
+		background: rgba(0, 0, 0, 0.6);
 		padding: 5px 15px;
-		border: 2px solid var(--color-wood);
+		border: 1px solid var(--color-neon-yellow);
+		color: var(--color-neon-yellow);
 		border-radius: 4px;
 		font-weight: bold;
+		text-shadow: 0 0 5px rgba(255, 234, 0, 0.5);
 	}
 
 	.id-input {
@@ -241,9 +239,9 @@ input:focus {
 
 	li {
 		padding: 8px;
-		border-bottom: 1px solid rgba(0,0,0,0.1);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
-	.connected { color: var(--color-avocado); font-weight: bold; }
-	.waiting { font-style: italic; opacity: 0.7; }
+	.connected { color: var(--color-neon-cyan); font-weight: bold; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5); }
+	.waiting { font-style: italic; opacity: 0.7; color: var(--color-text-muted); }
 </style>

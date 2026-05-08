@@ -1,200 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 :root {
-	--color-avocado: #568203;
-	--color-gold: #DA9100;
-	--color-orange: #CC5500;
-	--color-wood: #5C4033;
-	--color-cream: #F5F5DC;
+	/* Backgrounds */
+	--color-bg-base: #0B0C10;
+	--color-bg-light: #1F2833;
+	--color-bg-panel: rgba(31, 40, 51, 0.7);
+
+	/* Neon Accents */
+	--color-neon-cyan: #00e5ff;
+	--color-neon-yellow: #ffea00;
+	--color-neon-magenta: #ff00d4;
+	
+	/* Text */
+	--color-text-main: #f0f0f0;
+	--color-text-muted: #8892b0;
+
+	/* Glass effects */
+	--color-glass-border: rgba(0, 229, 255, 0.3);
+	--color-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+	/* Backward compatibility mapping to not break everything immediately */
+	--color-avocado: var(--color-neon-cyan);
+	--color-gold: var(--color-neon-yellow);
+	--color-orange: var(--color-neon-magenta);
+	--color-wood: var(--color-bg-base);
+	--color-cream: var(--color-text-main);
 }
 
 body {
-	background-color: var(--color-wood);
-	color: var(--color-cream);
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background-color: var(--color-bg-base);
+	background-image: radial-gradient(circle at center, var(--color-bg-light) 0%, var(--color-bg-base) 100%);
+	color: var(--color-text-main);
+	font-family: 'Inter', system-ui, sans-serif;
 	margin: 0;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	min-height: 100vh;
+	height: 100vh;
+	overflow: hidden;
 }
 
-#center {
-	background-color: var(--color-avocado);
-	padding: 2rem;
-	border-radius: 1rem;
-	box-shadow: 0 0 20px rgba(0,0,0,0.5);
-	text-align: center;
-	border: 10px solid var(--color-gold);
+/* Glassmorphism helpers */
+.glass-panel {
+	background: var(--color-bg-panel);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid var(--color-glass-border);
+	box-shadow: var(--color-glass-shadow);
+	border-radius: 12px;
 }
 
-h1 {
-	color: var(--color-orange);
-	font-size: 3rem;
-	margin-top: 0;
-}
-
-/* Mobile Responsive Design */
-
-@media (max-width: 768px) and (orientation: portrait) {
-	.game-container {
-		height: 100vh;
-		overflow: hidden;
-	}
-
-	header h1 {
-		font-size: 1.5rem !important;
-	}
-
-	main {
-		flex-direction: column !important;
-		padding: 5px;
-		gap: 5px;
-		overflow: hidden;
-	}
-
-	.main-play-area {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-		overflow-y: auto;
-		overflow-x: hidden;
-		padding-bottom: 20px;
-	}
-
-
-	.middle-row {
-		flex-direction: column;
-		gap: 5px;
-	}
-
-	.side-col {
-		width: 100%;
-	}
-
-	.bottom-row {
-		flex-direction: column;
-		gap: 5px;
-		padding: 10px 0;
-	}
-
-	.controls-left, .controls-right {
-		position: static;
-		justify-content: center;
-		width: 100%;
-		margin: 5px 0;
-	}
-
-	.lobby {
-		width: 95%;
-		padding: 15px;
-		box-sizing: border-box;
-	}
-
-	.lobby h2 {
-		font-size: 1.5rem;
-	}
-
-	.lobby input {
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	.lobby .actions {
-		flex-direction: column;
-		width: 100%;
-		gap: 10px;
-	}
-
-	.lobby .groovy-button {
-		width: 100%;
-	}
-}
-
-.groovy-button {
-	background-color: var(--color-gold);
-	color: var(--color-wood);
-	font-weight: bold;
+.groovy-button, .got-five-btn, .next-turn-btn {
+	background: rgba(0, 0, 0, 0.5);
+	color: var(--color-neon-yellow);
+	font-weight: 600;
 	padding: 10px 20px;
-	border: 3px solid var(--color-wood);
+	border: 1px solid var(--color-neon-yellow);
 	border-radius: 8px;
 	cursor: pointer;
-	box-shadow: 4px 4px 0 var(--color-wood);
 	text-transform: uppercase;
-	font-family: inherit;
-	transition: all 0.1s;
+	font-family: 'Inter', inherit;
+	transition: all 0.2s ease;
+	box-shadow: 0 0 10px rgba(255, 234, 0, 0.2), inset 0 0 5px rgba(255, 234, 0, 0.1);
+	backdrop-filter: blur(4px);
 }
 
-.groovy-button:hover {
-	transform: translate(-2px, -2px);
-	box-shadow: 6px 6px 0 var(--color-wood);
+.groovy-button:hover:not(:disabled), .got-five-btn:hover:not(:disabled), .next-turn-btn:hover:not(:disabled) {
+	background: rgba(255, 234, 0, 0.1);
+	box-shadow: 0 0 15px rgba(255, 234, 0, 0.4), inset 0 0 10px rgba(255, 234, 0, 0.2);
+	transform: translateY(-2px);
 }
 
-.groovy-button:active {
-	transform: translate(1px, 1px);
-	box-shadow: 2px 2px 0 var(--color-wood);
+.groovy-button:active:not(:disabled), .got-five-btn:active:not(:disabled), .next-turn-btn:active:not(:disabled) {
+	transform: translateY(1px);
+	box-shadow: 0 0 5px rgba(255, 234, 0, 0.4);
 }
 
-.groovy-button:disabled {
-	opacity: 0.5;
+.groovy-button:disabled, .got-five-btn:disabled, .next-turn-btn:disabled {
+	opacity: 0.4;
 	cursor: not-allowed;
-	transform: none;
-	box-shadow: 2px 2px 0 var(--color-wood);
+	border-color: var(--color-text-muted);
+	color: var(--color-text-muted);
+	box-shadow: none;
 }
 
+/* Hide sidebar toggles permanently */
 .toggle-sidebar-btn {
-	display: none;
-}
-
-@media (max-width: 768px) {
-	.toggle-sidebar-btn {
-		display: block;
-		position: fixed;
-		bottom: 10px;
-		right: 10px;
-		z-index: 1000;
-		background-color: var(--color-gold);
-		color: var(--color-wood);
-		border: 2px solid var(--color-wood);
-		border-radius: 50%;
-		width: 50px;
-		height: 50px;
-		font-size: 0.7rem;
-		font-weight: bold;
-		cursor: pointer;
-		box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		text-align: center;
-		line-height: 1;
-	}
-}
-
-/* Landscape orientation on small screens */
-@media (max-height: 500px) and (orientation: landscape) {
-	.game-container {
-		height: 100vh;
-		overflow: hidden;
-	}
-
-	header h1 {
-		font-size: 1.2rem !important;
-	}
-
-	main {
-		flex-direction: row !important;
-		flex-wrap: nowrap !important;
-		padding: 5px;
-		gap: 5px;
-		overflow: hidden;
-	}
-
-	.main-play-area {
-		flex: 1;
-		height: 100%;
-		overflow-y: auto;
-		display: flex;
-		flex-direction: column;
-	}
-
+	display: none !important;
 }

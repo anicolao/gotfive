@@ -23,16 +23,8 @@ test.describe('Mobile Gameplay', () => {
     await page.goto('/?seed=123');
 
     // 1. Lobby Check
-    const lobby = page.locator('.lobby');
+    const lobby = page.locator('.lobby-wrapper');
     await expect(lobby).toBeVisible();
-    
-    // Check readability (background vs color)
-    const lobbyColor = await lobby.evaluate(el => getComputedStyle(el).color);
-    const lobbyBg = await lobby.evaluate(el => getComputedStyle(el).backgroundColor);
-    // var(--color-wood) is #5C4033, var(--color-cream) is #F5F5DC
-    // We just want to ensure they are set.
-    expect(lobbyColor).toBe('rgb(92, 64, 51)'); // #5C4033
-    expect(lobbyBg).toBe('rgb(245, 245, 220)'); // #F5F5DC
 
     await page.getByLabel('Your Name:').fill('MobileUser');
     await page.getByRole('button', { name: 'Host Game' }).click();
@@ -48,7 +40,7 @@ test.describe('Mobile Gameplay', () => {
     await page.getByRole('button', { name: 'START GAME' }).click();
 
     await tester.step('mobile-portrait-layout', {
-      description: 'Main play area is visible, board is hidden by default',
+      description: 'Main play area and deduction board are visible together',
       verifications: [
         {
           spec: 'Main play area is visible',
@@ -57,43 +49,21 @@ test.describe('Mobile Gameplay', () => {
           }
         },
         {
-          spec: 'Sidebar is hidden by default',
+          spec: 'Deduction area is visible without toggling',
           check: async () => {
-            const sidebar = page.locator('.sidebar');
-            await expect(sidebar).not.toBeVisible();
+            await expect(page.locator('.deduction-area')).toBeVisible();
           }
         },
         {
-          spec: 'Toggle button exists',
+          spec: 'Deduction area is in viewport',
           check: async () => {
-            await expect(page.locator('.toggle-sidebar-btn')).toBeVisible();
+            // Scroll to it to ensure it is in the viewport if it overflows slightly
+            await page.locator('.deduction-area').scrollIntoViewIfNeeded();
+            await expect(page.locator('.deduction-area')).toBeInViewport();
           }
         }
       ]
     });
-
-    await page.locator('.toggle-sidebar-btn').click();
-
-    await tester.step('mobile-portrait-board-open', {
-      description: 'Deduction board opens when toggled',
-      verifications: [
-        {
-          spec: 'Sidebar is now visible',
-          check: async () => {
-            await expect(page.locator('.sidebar')).toBeVisible();
-          }
-        },
-        {
-          spec: 'Deduction board title is visible',
-          check: async () => {
-            await expect(page.locator('.deduction-board h2')).toContainText('Top Secret Log');
-          }
-        }
-      ]
-    });
-
-    // Toggle back
-    await page.locator('.toggle-sidebar-btn').click();
 
     // 2. Play Again Flow
     // Force a win for Player 2 to trigger game over
@@ -131,7 +101,7 @@ test.describe('Mobile Gameplay', () => {
         {
           spec: 'Lobby is visible again',
           check: async () => {
-            await expect(page.locator('.lobby')).toBeVisible();
+            await expect(page.locator('.lobby-wrapper')).toBeVisible();
           }
         },
         {
@@ -174,7 +144,7 @@ test.describe('Mobile Gameplay', () => {
     await page.getByRole('button', { name: 'START GAME' }).click();
 
     await tester.step('mobile-landscape-layout', {
-      description: 'Main play area is visible, board is hidden by default in landscape',
+      description: 'Main play area and deduction board are both visible horizontally',
       verifications: [
         {
           spec: 'Main play area is visible',
@@ -183,17 +153,15 @@ test.describe('Mobile Gameplay', () => {
           }
         },
         {
-          spec: 'Sidebar is hidden by default',
+          spec: 'Deduction board is visible horizontally',
           check: async () => {
-            const sidebar = page.locator('.sidebar');
-            await expect(sidebar).not.toBeVisible();
+            await expect(page.locator('.deduction-area')).toBeVisible();
+            await page.locator('.deduction-area').scrollIntoViewIfNeeded();
+            await expect(page.locator('.deduction-area')).toBeInViewport();
           }
         }
       ]
     });
-    
-    await page.locator('.toggle-sidebar-btn').click();
-    await expect(page.locator('.sidebar')).toBeVisible();
 
     tester.generateDocs();
   });
