@@ -75,12 +75,12 @@ test.describe('Mobile Gameplay', () => {
     });
 
     await tester.step('game-over-mobile', {
-      description: 'Game over modal shows on mobile',
+      description: 'Game over status shows on mobile',
       verifications: [
         {
-          spec: 'Overlay is visible',
+          spec: 'Status banner is visible',
           check: async () => {
-            await expect(page.locator('.overlay')).toBeVisible();
+            await expect(page.locator('.status-banner')).toBeVisible();
           }
         },
         {
@@ -92,8 +92,8 @@ test.describe('Mobile Gameplay', () => {
       ]
     });
 
-    // Click Play Again (the one in the modal)
-    await page.locator('.overlay button:has-text("Play Again")').click();
+    // Click Play Again (the one in the banner)
+    await page.locator('.status-banner button:has-text("Play Again")').click();
 
     await tester.step('reset-flow', {
       description: 'Game resets to lobby state without page reload',
