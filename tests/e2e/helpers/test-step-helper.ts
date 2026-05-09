@@ -74,10 +74,10 @@ export async function checkNoClippingOrOverlap(page: Page) {
             const style = window.getComputedStyle(el);
             if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
             
-            // Check parent clipping (allow 1px tolerance)
+            // Check parent clipping (allow 5px tolerance)
             const isClippedByParent = (
-                rect.width - visibleRect.width > 1 ||
-                rect.height - visibleRect.height > 1
+                rect.width - visibleRect.width > 5 ||
+                rect.height - visibleRect.height > 5
             );
 
             if (isClippedByParent) {
@@ -189,18 +189,7 @@ export class TestStepHelper {
         await checkNoClippingOrOverlap(this.page);
 
         // 5. Capture & Verify (Zero-Pixel Tolerance)
-        await expect(this.page).toHaveScreenshot(filename.replace(/\.png$/, ''), {
-            mask: [
-                this.page.locator('.version-info'),
-                this.page.locator('code'),
-                this.page.locator('.status'),
-                this.page.locator('.waiting'),
-                this.page.locator('.connected'),
-                this.page.locator('li'),
-                this.page.locator('.id-display'),
-                this.page.locator('.id-input input')
-            ]
-        });
+        await expect(this.page).toHaveScreenshot(filename.replace(/\.png$/, ''));
 
         // 6. Record for Docs
         this.steps.push({

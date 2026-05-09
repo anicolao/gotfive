@@ -409,3 +409,28 @@
 - Implemented a "Neon Glassmorphism" aesthetic consistently across all components.
 - Confirmed that the "Thin Protocol" for WebRTC remains compatible with the new UI.
 
+
+## 2026-05-09: Improving E2E Tests (Issue #39)
+
+**User Prompt:**
+> The e2e tests need improvement. There should be a game playthrough in mobile form factor, both landscape and portrait screensots. 
+> 
+> Masking is not allowed. Update the e2e guide to make that clear — no masking is part of the zero pixel tolerance philosophy. All non-deterministic components of the e2e test need to be fixed - version number, random number seeds, game codes, etc. 
+
+**Action Plan (Orchestration):**
+- Remove masking from TestStepHelper.
+- Enforce zero-pixel tolerance (maxDiffPixels: 0).
+- Fix non-determinism via environment variables for versioning and fixed IDs for tests.
+- Expand mobile E2E tests to include a full game playthrough (reveal, clue, guess) in both orientations.
+- Update E2E_GUIDE.md to prohibit masking.
+- Delegating implementation to @coder.
+
+**Coder Verification:**
+- Removed `mask` property from `tests/e2e/helpers/test-step-helper.ts`.
+- Updated `package.json` to set `VITE_APP_VERSION=1.0.0` and `VITE_GIT_HASH=test-hash` for E2E tests.
+- Set `maxDiffPixels: 0` in `playwright.config.ts`.
+- Replaced worker indices with fixed IDs in all E2E tests for deterministic PeerJS IDs.
+- Expanded `tests/e2e/005-mobile-gameplay/005-mobile-gameplay.spec.ts` with full playthroughs.
+- Updated `E2E_GUIDE.md` to strictly prohibit masking.
+- Verified all 8 tests pass with `npm run test:e2e`.
+

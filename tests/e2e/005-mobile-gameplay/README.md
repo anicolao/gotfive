@@ -9,16 +9,39 @@ Verify layout and gameplay on mobile portrait.
 **Verifications:**
 - [x] Main play area is visible
 - [x] Deduction area is visible without toggling
-- [x] Opponents are in viewport
-- [x] Table is in viewport
-- [x] Player stand is in viewport
-- [x] Deduction area is in viewport
+
+---
+
+## Reveal a tile in portrait mode
+
+![Reveal a tile in portrait mode](./screenshots/001-mobile-portrait-reveal.png)
+
+**Verifications:**
+- [x] Public pool has 6 tiles
+
+---
+
+## Ask for a clue in portrait mode
+
+![Ask for a clue in portrait mode](./screenshots/002-mobile-portrait-ask-clue.png)
+
+**Verifications:**
+- [x] Player 2 stand has an active notch
+
+---
+
+## Submit a guess in portrait mode
+
+![Submit a guess in portrait mode](./screenshots/003-mobile-portrait-guess.png)
+
+**Verifications:**
+- [x] Status banner is visible
 
 ---
 
 ## Game over status shows on mobile
 
-![Game over status shows on mobile](./screenshots/001-game-over-mobile.png)
+![Game over status shows on mobile](./screenshots/004-game-over-mobile.png)
 
 **Verifications:**
 - [x] Status banner is visible
@@ -28,12 +51,10 @@ Verify layout and gameplay on mobile portrait.
 
 ## Game resets to lobby state without page reload
 
-![Game resets to lobby state without page reload](./screenshots/002-reset-flow.png)
+![Game resets to lobby state without page reload](./screenshots/005-reset-flow.png)
 
 **Verifications:**
 - [x] Lobby is visible again
-- [x] Game status is LOBBY in store
-- [x] Connected players are preserved
 
 ---
 

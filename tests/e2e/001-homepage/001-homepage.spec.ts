@@ -7,7 +7,7 @@ test('User visits homepage', async ({ page }, testInfo) => {
   tester.setMetadata('Homepage', 'As a user, I want to see the landing page.');
 
   // 2. Perform Action & Verify
-  await page.goto(`/?seed=123&myId=user1-${testInfo.workerIndex}`);  await tester.step('initial-load', {
+  await page.goto(`/?seed=123&myId=homepage-test-user`);  await tester.step('initial-load', {
     description: 'Landing page is visible',
     verifications: [
       { spec: 'Lobby is visible', check: async () => await expect(page.locator('.lobby-wrapper')).toBeVisible() },
