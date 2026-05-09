@@ -139,22 +139,6 @@
 </svelte:head>
 
 <div class="game-container">
-	<header>
-		<h1>Got Five!</h1>
-		<div class="turn-indicator">
-			{#if gameState?.status === 'PLAYING'}
-				<span class="turn-label">Current Turn:</span>
-				<span class="player-name">{playersState?.players[currentPlayerId]?.name}</span>
-				{#if isMyTurn}
-					<span class="your-turn-badge">YOUR TURN!</span>
-				{/if}
-				{:else if gameState?.status === 'FINISHED' && gameState.winnerId}
-				<span class="winner-label">Winner: {playersState?.players[gameState.winnerId]?.name}!</span>
-				<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
-				{/if}
-				</div>
-				</header>
-
 				<main>
 				{#if gameState?.status === 'LOBBY'}
 				<div class="lobby-wrapper glass-panel">
@@ -232,11 +216,6 @@
 							/>
 						{/if}
 						<div class="controls-right">
-							{#if isMyTurn}
-								<button class="next-turn-btn" onclick={() => store.dispatch(nextTurn())}>
-									Pass Turn
-								</button>
-							{/if}
 						</div>
 					</div>
 				</div>
@@ -261,49 +240,6 @@
 		position: relative;
 	}
 
-	header {
-		text-align: center;
-		padding: 10px;
-		flex-shrink: 0;
-		z-index: 10;
-	}
-
-	h1 {
-		margin: 0;
-		font-size: 2rem;
-		text-shadow: 0 0 10px var(--color-neon-cyan);
-		color: var(--color-text-main);
-	}
-
-	.turn-indicator {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		justify-content: center;
-		margin-top: 5px;
-		font-family: 'Courier New', Courier, monospace;
-	}
-
-	.player-name {
-		font-weight: bold;
-		color: var(--color-neon-yellow);
-		font-size: 1.2rem;
-	}
-
-	.your-turn-badge {
-		background-color: var(--color-neon-cyan);
-		color: #000;
-		padding: 2px 8px;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		font-weight: bold;
-		animation: blink 1s infinite;
-	}
-
-	@keyframes blink {
-		50% { opacity: 0; }
-	}
-
 	main {
 		flex: 1;
 		display: flex;
@@ -319,12 +255,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		overflow-y: auto;
-		overflow-x: hidden;
+		overflow: hidden;
 	}
 
 	.deduction-area {
-		width: 320px;
+		width: auto;
+		max-width: 400px;
 		flex-shrink: 0;
 		overflow-y: auto;
 		display: flex;
@@ -337,6 +273,7 @@
 		justify-content: center;
 		gap: 10px;
 		flex-wrap: wrap;
+		flex-shrink: 0;
 	}
 
 	.public-area {
@@ -344,7 +281,9 @@
 		justify-content: center;
 		flex: 1;
 		align-items: center;
-		min-height: 150px;
+		min-height: 100px;
+		flex-shrink: 1;
+		overflow: hidden;
 	}
 
 	.player-area {
@@ -353,7 +292,8 @@
 		align-items: flex-end;
 		position: relative;
 		padding-bottom: 10px;
-		min-height: 120px;
+		min-height: 80px;
+		flex-shrink: 0;
 	}
 
 	.controls-left, .controls-right {
@@ -367,87 +307,60 @@
 	@media (orientation: portrait) {
 		main {
 			flex-direction: column;
-			overflow: hidden;
-			padding: 5px;
-			gap: 5px;
-			height: calc(100vh - 60px);
+			gap: 2px;
+			padding: 2px;
 		}
 
 		.main-play-area {
 			flex: 1;
+			min-height: 0;
 			display: flex;
 			flex-direction: column;
-			gap: 4px;
-			min-height: 0;
-			overflow: hidden;
-		}
-
-		.opponents-area {
-			flex: 0 0 auto;
-			max-height: 100px;
-			overflow-y: auto;
-		}
-
-		.public-area {
-			flex: 1;
-			min-height: 0;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-
-		.player-area {
-			flex: 0 0 auto;
-			min-height: 100px;
-			padding-bottom: 2px;
-		}
-
-		.deduction-area {
-			flex: 0 0 35%;
-			width: 100%;
-			max-height: 35vh;
-			overflow-y: auto;
-			padding-bottom: 5px;
-			align-items: center;
 		}
 
 		.status-banner {
 			flex: 0 0 auto;
-			padding: 8px;
-			margin-bottom: 4px;
-		}
-
-		.status-banner h2 { font-size: 1rem; margin-bottom: 2px; }
-		.status-banner p { font-size: 0.9rem; margin: 4px 0; }
-		.status-banner .winner-msg { font-size: 1.1rem; }
-
-		h1 {
-			font-size: 1.2rem;
-		}
-	}
-
-	@media (orientation: landscape) {
-		main {
+			z-index: 20;
 			padding: 5px;
-			gap: 5px;
+			margin: 0;
 		}
 
-		.main-play-area {
-			gap: 5px;
-			overflow: hidden;
-		}
-
-		.deduction-area {
-			width: 280px;
-			max-height: 100%;
+		.opponents-area {
+			flex: 0 1 auto;
+			max-height: 80px;
+			overflow-y: auto;
 		}
 
 		.public-area {
-			min-height: 120px;
+			flex: 1 1 auto;
+			min-height: 0;
 		}
 
 		.player-area {
-			min-height: 90px;
+			flex: 0 1 auto;
+		}
+
+		.deduction-area {
+			flex: 0 1 25vh;
+			width: 100%;
+			max-height: 25vh;
+			overflow-y: auto;
+			border-top: 1px solid var(--color-glass-border);
+		}
+	}
+
+	@media (orientation: landscape) and (max-height: 500px) {
+		.deduction-area {
+			max-width: 100px;
+			transform: scale(0.4);
+			transform-origin: top right;
+			position: relative;
+			right: 50px;
+		}
+		
+		.player-area, .opponents-area, .public-area {
+			transform: scale(0.4);
+			margin: -60px 0;
 		}
 	}
 
@@ -462,6 +375,14 @@
 		gap: 2rem;
 		padding: 2rem;
 		align-self: center;
+		box-sizing: border-box;
+	}
+
+	@media (max-width: 600px) {
+		.lobby-wrapper {
+			padding: 0.5rem;
+			gap: 1rem;
+		}
 	}
 
 	.host-actions {
@@ -470,24 +391,26 @@
 	}
 
 	.status-banner {
-		padding: 20px;
+		padding: 10px;
 		text-align: center;
 		border: 1px solid var(--color-neon-magenta);
 		box-shadow: 0 0 15px rgba(255, 0, 212, 0.3);
-		margin-bottom: 10px;
+		margin-bottom: 5px;
+		flex-shrink: 0;
 	}
 
 	.status-banner h2 {
-		margin-top: 0;
+		margin: 0;
+		font-size: 1.2rem;
 		color: var(--color-neon-magenta);
 		text-shadow: 0 0 10px rgba(255, 0, 212, 0.5);
 	}
 
 	.winner-msg {
-		font-size: 1.5rem;
+		font-size: 1.1rem;
 		font-weight: bold;
 		color: var(--color-neon-yellow);
-		margin: 20px 0;
+		margin: 5px 0;
 		text-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
 	}
 

@@ -85,10 +85,16 @@
 		background-color: var(--color-neon-cyan);
 		color: #000;
 		animation: pulse 2s infinite;
+		box-shadow: 0 0 10px var(--color-neon-cyan);
 	}
 
 	.current-turn .stand {
-		filter: drop-shadow(0 0 10px var(--color-neon-cyan));
+		animation: breathing-glow 3s ease-in-out infinite;
+	}
+
+	@keyframes breathing-glow {
+		0%, 100% { filter: drop-shadow(0 0 5px var(--color-neon-cyan)); }
+		50% { filter: drop-shadow(0 0 20px var(--color-neon-cyan)); }
 	}
 
 	@keyframes pulse {
@@ -122,7 +128,7 @@
 
 	.stand {
 		position: relative;
-		padding-bottom: 20px;
+		padding-bottom: 2px;
 		max-width: 100%;
 	}
 
@@ -135,13 +141,13 @@
 		border: 1px solid var(--color-glass-border);
 		padding: 12px 8px 8px 8px;
 		border-radius: 12px 12px 0 0;
-		gap: 4px;
+		gap: 8px;
 	}
 
-	@media (max-width: 600px) {
+	@media (max-width: 800px) {
 		.tiles-area {
 			grid-template-columns: repeat(5, auto 45px) auto;
-			gap: 2px;
+			gap: 6px;
 			padding: 8px 4px 4px 4px;
 		}
 
@@ -151,8 +157,8 @@
 		}
 
 		.notch {
-			width: 8px;
-			height: 8px;
+			width: 10px;
+			height: 10px;
 			margin-bottom: 5px;
 		}
 		
@@ -162,15 +168,35 @@
 		}
 	}
 
-	@media (max-width: 350px) {
+	@media (max-width: 450px) {
 		.tiles-area {
-			grid-template-columns: repeat(5, auto 35px) auto;
-			gap: 1px;
+			grid-template-columns: repeat(5, auto 24px) auto;
+			gap: 4px;
+			padding: 2px;
 		}
 
 		.slot {
-			width: 35px;
-			height: 49px;
+			width: 24px;
+			height: 34px;
+		}
+
+		.notch {
+			width: 4px;
+			height: 4px;
+			margin-bottom: 0px;
+		}
+
+		.clue-stack {
+			bottom: 4px;
+		}
+
+		.compare-indicators {
+			top: -12px;
+		}
+		
+		.name-tag {
+			font-size: 0.6rem;
+			padding: 1px 4px;
 		}
 	}
 
@@ -194,8 +220,8 @@
 	}
 
 	.notch {
-		width: 10px;
-		height: 10px;
+		width: 12px;
+		height: 12px;
 		background: rgba(0, 0, 0, 0.5);
 		border: 1px solid var(--color-text-muted);
 		border-radius: 50%;
@@ -214,7 +240,7 @@
 
 	.clue-stack {
 		position: absolute;
-		bottom: 15px;
+		bottom: 12px;
 		display: flex;
 		flex-direction: column-reverse;
 		align-items: center;
@@ -224,13 +250,25 @@
 
 	.compare-indicators {
 		position: absolute;
-		top: -20px;
+		top: -45px;
 		left: 0;
 		right: 0;
 		display: flex;
 		justify-content: center;
 		gap: 3px;
 		z-index: 10;
+	}
+
+	@media (max-width: 800px) {
+		.compare-indicators {
+			top: -35px;
+		}
+	}
+
+	@media (max-width: 450px) {
+		.compare-indicators {
+			top: -30px;
+		}
 	}
 
 	.compare-clue {
@@ -242,7 +280,7 @@
 	}
 
 	.base {
-		height: 15px;
+		height: 10px;
 		background: rgba(0, 0, 0, 0.7);
 		border-left: 1px solid var(--color-glass-border);
 		border-right: 1px solid var(--color-glass-border);
