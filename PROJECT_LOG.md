@@ -385,3 +385,27 @@
 - Since all clients share the same seed and RNG, they only need to broadcast high-level actions (e.g., "Player 1 revealed Red", "Player 1 asked Player 2 for SORT clue with Tile 15").
 - The host will be responsible for the initial seed and managing the connection relay.
 
+## 2026-05-09: Complete UI Overhaul for Mobile (Issue #35)
+
+**User Prompt:**
+> Let's completely rework the layout of the UI so that it actually works well on mobile phones. Read UI_OVERHAUL.md and examine the miockups for inspiration, and then make the required changes.
+>
+> Be sure to regenerate screenshots for all e2e tests and add tests that verify that every component is actually in the viewport. Avoid modal dialogs/popups, make everything touch-friendly and visible at all times.
+
+**Last Human Comment:**
+> CI is failing so this didn't deploy.
+
+**Action Plan (Orchestration):**
+- Redesigned the layout for both portrait and landscape mobile viewports.
+- Removed the `scale(0.4)` hack in favor of a responsive CSS Grid/Flexbox layout.
+- Improved Deduction Board touch-friendliness by increasing mini-tile size and adding scrolling.
+- Replaced modal dialogs (Game Over, Elimination) with inline status banners.
+- Updated `checkNoClippingOrOverlap` E2E helper to rigorously verify viewport placement and prevent overlaps.
+- Regenerated all E2E screenshots on Linux to ensure consistent CI baselines.
+- Verified all 7 E2E tests pass, including new mobile-specific viewport checks.
+
+**Notes:**
+- Used orientation-aware media queries to optimize space on small screens.
+- Implemented a "Neon Glassmorphism" aesthetic consistently across all components.
+- Confirmed that the "Thin Protocol" for WebRTC remains compatible with the new UI.
+
