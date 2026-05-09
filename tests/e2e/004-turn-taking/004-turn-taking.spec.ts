@@ -12,13 +12,13 @@ test.describe('Multiplayer Turn-Taking', () => {
 		tester.setMetadata('Multiplayer Turn-Taking', 'Testing turn rotation and elimination in multiplayer.');
 
 		// 1. Setup Lobby
-		await hostPage.goto('/?seed=123');
+		await hostPage.goto(`/?seed=123&myId=host-${testInfo.workerIndex}`);
 		await hostPage.getByLabel('Your Name:').fill('Host');
 		await hostPage.getByRole('button', { name: 'Host Game' }).click();
 		
 		const gameId = (await hostPage.locator('code').innerText()).trim();
 		
-		await clientPage.goto('/?seed=123');
+		await clientPage.goto(`/?seed=123&myId=client-${testInfo.workerIndex}`);
 		await clientPage.getByLabel('Your Name:').fill('Client');
 		await clientPage.getByRole('button', { name: 'Join Game' }).click();
 		await clientPage.getByLabel('Enter Host Game ID:').fill(gameId);

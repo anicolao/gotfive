@@ -7,7 +7,7 @@ test('User plays the game', async ({ page }, testInfo) => {
   tester.setMetadata('Gameplay', 'As a user, I want to play through a game with deterministic results.');
 
   // 2. Load the game
-  await page.goto('/?seed=42');
+  await page.goto(`/?seed=123&myId=user1-${testInfo.workerIndex}`);
 
   // Handle Lobby
   await page.getByLabel('Your Name:').fill('You');
