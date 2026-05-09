@@ -6,7 +6,7 @@ test.describe('Multiplayer Lobby', () => {
 		const tester = new TestStepHelper(page, testInfo);
 		tester.setMetadata('Multiplayer Lobby', 'Testing the initial lobby state.');
 
-		await page.goto(`/?seed=123&myId=user1-${testInfo.workerIndex}`);
+		await page.goto(`/?seed=123&myId=multiplayer-lobby-test-user`);
 		
 		await tester.step('initial-lobby', {
 			description: 'Lobby is visible',
@@ -25,7 +25,7 @@ test.describe('Multiplayer Lobby', () => {
 		const tester = new TestStepHelper(page, testInfo);
 		tester.setMetadata('Hosting Lobby', 'Testing the hosting flow.');
 
-		await page.goto(`/?seed=123&myId=host-${testInfo.workerIndex}`);
+		await page.goto(`/?seed=123&myId=multiplayer-hosting-test-user`);
 		
 		await page.getByLabel('Your Name:').fill('Tester');
 		await page.getByRole('button', { name: 'Host Game' }).click();

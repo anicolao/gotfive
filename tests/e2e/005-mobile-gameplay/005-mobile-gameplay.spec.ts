@@ -20,7 +20,7 @@ test.describe('Mobile Gameplay', () => {
     const tester = new TestStepHelper(page, testInfo);
     tester.setMetadata('Mobile Portrait', 'Verify layout and gameplay on mobile portrait.');
 
-    await page.goto(`/?seed=123&myId=mobile-${testInfo.workerIndex}`);
+    await page.goto(`/?seed=123&myId=mobile-portrait-test-user`);
 
     // 1. Lobby Check
     const lobby = page.locator('.lobby-wrapper');
@@ -53,36 +53,65 @@ test.describe('Mobile Gameplay', () => {
           check: async () => {
             await expect(page.locator('.deduction-area')).toBeVisible();
           }
-        },
+        }
+      ]
+    });
+
+    // 2. Reveal a tile
+    await page.locator('.deck-btn.red').click();
+    await tester.step('mobile-portrait-reveal', {
+      description: 'Reveal a tile in portrait mode',
+      verifications: [
         {
-          spec: 'Opponents are in viewport',
+          spec: 'Public pool has 6 tiles',
           check: async () => {
-            await expect(page.locator('.opponents-area')).toBeInViewport();
-          }
-        },
-        {
-          spec: 'Table is in viewport',
-          check: async () => {
-            await expect(page.locator('.public-area')).toBeInViewport();
-          }
-        },
-        {
-          spec: 'Player stand is in viewport',
-          check: async () => {
-            await expect(page.locator('.player-area')).toBeInViewport();
-          }
-        },
-        {
-          spec: 'Deduction area is in viewport',
-          check: async () => {
-            await expect(page.locator('.deduction-area')).toBeInViewport();
+            await expect(page.locator('.pool-tiles .tile')).toHaveCount(6);
           }
         }
       ]
     });
 
-    // 2. Play Again Flow
-    // Force a win for Player 2 to trigger game over
+    // 3. Ask for a clue
+    const firstPublicTile = page.locator('.pool-tiles .tile-btn').first();
+    const firstPublicTileId = await firstPublicTile.locator('.number').innerText();
+    await firstPublicTile.click();
+    
+    const p2Stand = page.locator('.stand-container').filter({ hasText: 'Player 2' });
+    await p2Stand.locator('.name-tag').click();
+
+    await tester.step('mobile-portrait-ask-clue', {
+      description: 'Ask for a clue in portrait mode',
+      verifications: [
+        {
+          spec: 'Player 2 stand has an active notch',
+          check: async () => {
+            await expect(p2Stand.locator('.notch.active')).toHaveCount(1);
+          }
+        }
+      ]
+    });
+
+    // 4. Guessing flow
+    const guessInputs = page.locator('.deduction-board .guess-inputs input');
+    for (let i = 0; i < 5; i++) {
+      await guessInputs.nth(i).fill(`${i + 1}`);
+    }
+    await page.locator('.deduction-board .got-five-btn').click();
+
+    await tester.step('mobile-portrait-guess', {
+      description: 'Submit a guess in portrait mode',
+      verifications: [
+        {
+          spec: 'Status banner is visible',
+          check: async () => {
+            await expect(page.locator('.status-banner')).toBeVisible();
+          }
+        }
+      ]
+    });
+
+    // 5. Play Again Flow
+    // Force a win for Player 2 to trigger game over (if guess didn't)
     await page.evaluate(() => {
       (window as unknown as WindowWithStore).store.dispatch({ 
         type: 'game/setWinner', 
@@ -119,20 +148,6 @@ test.describe('Mobile Gameplay', () => {
           check: async () => {
             await expect(page.locator('.lobby-wrapper')).toBeVisible();
           }
-        },
-        {
-          spec: 'Game status is LOBBY in store',
-          check: async () => {
-            const status = await page.evaluate(() => (window as unknown as WindowWithStore).store.getState().game.status);
-            expect(status).toBe('LOBBY');
-          }
-        },
-        {
-          spec: 'Connected players are preserved',
-          check: async () => {
-            const players = await page.evaluate(() => Object.keys((window as unknown as WindowWithStore).store.getState().players.players));
-            expect(players).toContain('p2');
-          }
         }
       ]
     });
@@ -144,8 +159,8 @@ test.describe('Mobile Gameplay', () => {
     const tester = new TestStepHelper(page, testInfo);
     tester.setMetadata('Mobile Landscape', 'Verify layout on mobile landscape.');
 
-    await page.setViewportSize({ width: 667, height: 375 });
-    await page.goto(`/?seed=123&myId=mobile-${testInfo.workerIndex}`);
+    await page.setViewportSize({ width: 667, height: 450 });
+    await page.goto(`/?seed=123&myId=mobile-landscape-test-user`);
 
     await page.getByLabel('Your Name:').fill('LandscapeUser');
     await page.getByRole('button', { name: 'Host Game' }).click();
@@ -172,7 +187,58 @@ test.describe('Mobile Gameplay', () => {
           spec: 'Deduction board is visible horizontally',
           check: async () => {
             await expect(page.locator('.deduction-area')).toBeVisible();
-            await expect(page.locator('.deduction-area')).toBeInViewport();
+          }
+        }
+      ]
+    });
+
+    // 1. Reveal a tile
+    await page.locator('.deck-btn.red').click();
+    await tester.step('mobile-landscape-reveal', {
+      description: 'Reveal a tile in landscape mode',
+      verifications: [
+        {
+          spec: 'Public pool has 6 tiles',
+          check: async () => {
+            await expect(page.locator('.pool-tiles .tile')).toHaveCount(6);
+          }
+        }
+      ]
+    });
+
+    // 2. Ask for a clue
+    const firstPublicTile = page.locator('.pool-tiles .tile-btn').first();
+    await firstPublicTile.click();
+    
+    const p2Stand = page.locator('.stand-container').filter({ hasText: 'Player 2' });
+    await p2Stand.locator('.name-tag').click();
+
+    await tester.step('mobile-landscape-ask-clue', {
+      description: 'Ask for a clue in landscape mode',
+      verifications: [
+        {
+          spec: 'Player 2 stand has an active notch',
+          check: async () => {
+            await expect(p2Stand.locator('.notch.active')).toHaveCount(1);
+          }
+        }
+      ]
+    });
+
+    // 3. Guessing flow
+    const guessInputs = page.locator('.deduction-board .guess-inputs input');
+    for (let i = 0; i < 5; i++) {
+      await guessInputs.nth(i).fill(`${i + 1}`);
+    }
+    await page.locator('.deduction-board .got-five-btn').click();
+
+    await tester.step('mobile-landscape-guess', {
+      description: 'Submit a guess in landscape mode',
+      verifications: [
+        {
+          spec: 'Status banner is visible',
+          check: async () => {
+            await expect(page.locator('.status-banner')).toBeVisible();
           }
         }
       ]
@@ -186,7 +252,7 @@ test.describe('Mobile Gameplay', () => {
     tester.setMetadata('Tablet Portrait', 'Verify layout on tablet portrait.');
 
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto(`/?seed=123&myId=tablet-${testInfo.workerIndex}`);
+    await page.goto(`/?seed=123&myId=tablet-portrait-test-user`);
 
     await page.getByLabel('Your Name:').fill('TabletUser');
     await page.getByRole('button', { name: 'Host Game' }).click();

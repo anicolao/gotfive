@@ -9,8 +9,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "preview": "vite preview",
     "commit": "sh -c 'git add . && git commit -m \"#$1: $2\"' --",
-    "test:e2e": "playwright test",
-    "test:e2e:update-snapshots": "playwright test -u"
+    "test:e2e": "VITE_APP_VERSION=1.0.0 VITE_GIT_HASH=test-hash playwright test",
+    "test:e2e:update-snapshots": "VITE_APP_VERSION=1.0.0 VITE_GIT_HASH=test-hash playwright test -u"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
