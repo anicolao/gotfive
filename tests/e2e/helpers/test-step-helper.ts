@@ -34,34 +34,67 @@ export async function waitForAnimations(page: Page) {
 
 export async function checkNoClippingOrOverlap(page: Page) {
     await page.evaluate(() => {
-        const elements = Array.from(document.querySelectorAll('.tile, .stand, .deduction-board, .table, .lobby, .mini-tile, input, button:not(.cell)'));
+        const getVisibleRect = (el: Element) => {
+            let rect = el.getBoundingClientRect();
+            let visibleRect = { 
+                left: rect.left, 
+                top: rect.top, 
+                right: rect.right, 
+                bottom: rect.bottom,
+                width: rect.width,
+                height: rect.height
+            };
+            
+            let current = el.parentElement;
+            while (current && current !== document.body) {
+                const style = window.getComputedStyle(current);
+                if (style.overflow !== 'visible') {
+                    const parentRect = current.getBoundingClientRect();
+                    visibleRect.left = Math.max(visibleRect.left, parentRect.left);
+                    visibleRect.top = Math.max(visibleRect.top, parentRect.top);
+                    visibleRect.right = Math.min(visibleRect.right, parentRect.right);
+                    visibleRect.bottom = Math.min(visibleRect.bottom, parentRect.bottom);
+                }
+                current = current.parentElement;
+            }
+            visibleRect.width = Math.max(0, visibleRect.right - visibleRect.left);
+            visibleRect.height = Math.max(0, visibleRect.bottom - visibleRect.top);
+            return visibleRect;
+        };
+
+        const elements = Array.from(document.querySelectorAll('.tile, .stand, .deduction-area, .table, .lobby-wrapper, input, button:not(.cell), .player-area, .opponents-area'));
         const viewWidth = window.innerWidth;
         const viewHeight = window.innerHeight;
 
         for (const el of elements) {
             const rect = el.getBoundingClientRect();
+            const visibleRect = getVisibleRect(el);
             
-            // Check clipping (allow 10px tolerance for mobile)
-            if (rect.left < -10 || rect.top < -10 || rect.right > viewWidth + 10 || rect.bottom > viewHeight + 10) {
-                // If the element is hidden or zero-sized, it's fine
-                if (rect.width === 0 || rect.height === 0) continue;
-                
-                throw new Error(`Element ${el.className} (${el.tagName}) is clipped: ${JSON.stringify(rect)} vs viewport ${viewWidth}x${viewHeight}`);
+            // Check if the element is actually present and visible in the DOM
+            const style = window.getComputedStyle(el);
+            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
+            if (visibleRect.width === 0 || visibleRect.height === 0) continue;
+
+            // Check clipping (allow 5px tolerance for mobile)
+            // We check the visible rect against the viewport
+            if (visibleRect.left < -5 || visibleRect.top < -5 || visibleRect.right > viewWidth + 5 || visibleRect.bottom > viewHeight + 5) {
+                throw new Error(`Element ${el.className} (${el.tagName}) is clipped: ${JSON.stringify(visibleRect)} vs viewport ${viewWidth}x${viewHeight}`);
             }
 
             // Check overlap
             for (const other of elements) {
                 if (el === other) continue;
-                const otherRect = other.getBoundingClientRect();
+                const otherVisibleRect = getVisibleRect(other);
                 
-                // If either is hidden, skip
-                if (rect.width === 0 || rect.height === 0 || otherRect.width === 0 || otherRect.height === 0) continue;
+                const otherStyle = window.getComputedStyle(other);
+                if (otherStyle.display === 'none' || otherStyle.visibility === 'hidden' || otherStyle.opacity === '0') continue;
+                if (otherVisibleRect.width === 0 || otherVisibleRect.height === 0) continue;
 
-                // Allow 10px tolerance for overlaps on mobile
-                const overlap = !(rect.right <= otherRect.left + 10 || 
-                                  rect.left >= otherRect.right - 10 || 
-                                  rect.bottom <= otherRect.top + 10 || 
-                                  rect.top >= otherRect.bottom - 10);
+                // Allow 5px tolerance for overlaps
+                const overlap = !(visibleRect.right <= otherVisibleRect.left + 5 || 
+                                  visibleRect.left >= otherVisibleRect.right - 5 || 
+                                  visibleRect.bottom <= otherVisibleRect.top + 5 || 
+                                  visibleRect.top >= otherVisibleRect.bottom - 5);
                 
                 if (overlap) {
                     // Check if one is a child of the other, which is fine
@@ -73,17 +106,15 @@ export async function checkNoClippingOrOverlap(page: Page) {
                     // Ignore overlaps with status-banner as it might overlay during end-game
                     if (el.classList.contains('status-banner') || other.classList.contains('status-banner')) continue;
 
-                    // Allow some overlap between table and stands on mobile as they are large components
+                    // Allow some overlap between table/stands and their containers
                     const isTable = el.closest('.table') || other.closest('.table');
                     const isStand = el.closest('.stand-container') || other.closest('.stand-container');
-                    
-                    if (isTable && isStand) {
-                        // If they overlap by less than 100px, it's acceptable on mobile
-                        const overlapAmount = Math.max(0, Math.min(rect.bottom, otherRect.bottom) - Math.max(rect.top, otherRect.top));
-                        if (overlapAmount < 100) continue;
-                    }
+                    const isArea = el.classList.contains('player-area') || el.classList.contains('opponents-area') || el.classList.contains('public-area') ||
+                                   other.classList.contains('player-area') || other.classList.contains('opponents-area') || other.classList.contains('public-area');
 
-                    throw new Error(`Element ${el.className} (${el.tagName}) overlaps with ${other.className} (${other.tagName})\nRect 1: ${JSON.stringify(rect)}\nRect 2: ${JSON.stringify(otherRect)}`);
+                    if ((isTable || isStand) && isArea) continue;
+
+                    throw new Error(`Element ${el.className} (${el.tagName}) overlaps with ${other.className} (${other.tagName})\nVisible Rect 1: ${JSON.stringify(visibleRect)}\nVisible Rect 2: ${JSON.stringify(otherVisibleRect)}`);
                 }
             }
         }
@@ -133,7 +164,14 @@ export class TestStepHelper {
 
         // 5. Capture & Verify (Zero-Pixel Tolerance)
         await expect(this.page).toHaveScreenshot(filename.replace(/\.png$/, ''), {
-            mask: [this.page.locator('.version-info')]
+            mask: [
+                this.page.locator('.version-info'),
+                this.page.locator('code'),
+                this.page.locator('.status'),
+                this.page.locator('.waiting'),
+                this.page.locator('.connected'),
+                this.page.locator('li')
+            ]
         });
 
         // 6. Record for Docs

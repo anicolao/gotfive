@@ -175,6 +175,28 @@
 		background: rgba(255, 255, 255, 0.05);
 	}
 
+	@media (max-height: 500px) and (orientation: landscape) {
+	        .table {
+	                padding: 4px;
+	        }
+
+	        .empty-deck {
+	                width: 28px;
+	                height: 40px;
+	                font-size: 10px;
+	        }
+
+	        .decks-area {
+	                gap: 4px;
+	                margin-bottom: 4px;
+	        }
+
+	        .pool-tiles {
+	                gap: 6px;
+	                min-height: 50px;
+	        }
+	}
+
 	@media (max-width: 450px) {
 		.empty-deck {
 			width: 32px;
@@ -182,4 +204,5 @@
 			font-size: 10px;
 		}
 	}
+
 </style>

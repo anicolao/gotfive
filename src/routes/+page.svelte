@@ -307,60 +307,81 @@
 	@media (orientation: portrait) {
 		main {
 			flex-direction: column;
-			gap: 2px;
-			padding: 2px;
+			gap: 8px;
+			padding: 8px;
 		}
 
 		.main-play-area {
 			flex: 1;
 			min-height: 0;
-			display: flex;
-			flex-direction: column;
+			display: grid;
+			grid-template-rows: auto auto 1fr auto;
+			gap: 8px;
+			overflow: hidden;
 		}
 
 		.status-banner {
-			flex: 0 0 auto;
+			grid-row: 1;
 			z-index: 20;
-			padding: 5px;
+			padding: 10px;
 			margin: 0;
 		}
 
 		.opponents-area {
-			flex: 0 1 auto;
-			max-height: 80px;
-			overflow-y: auto;
+			grid-row: 2;
+			max-height: 100px;
+			min-height: 0;
+			overflow: auto;
 		}
 
 		.public-area {
-			flex: 1 1 auto;
+			grid-row: 3;
 			min-height: 0;
+			overflow: auto;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 
 		.player-area {
-			flex: 0 1 auto;
+			grid-row: 4;
+			padding-bottom: 10px;
 		}
 
 		.deduction-area {
-			flex: 0 1 25vh;
+			flex: 0 0 25vh;
 			width: 100%;
 			max-height: 25vh;
-			overflow-y: auto;
+			overflow: auto;
 			border-top: 1px solid var(--color-glass-border);
 		}
 	}
 
 	@media (orientation: landscape) and (max-height: 500px) {
-		.deduction-area {
-			max-width: 100px;
-			transform: scale(0.4);
-			transform-origin: top right;
-			position: relative;
-			right: 50px;
+		main {
+			padding: 4px;
+			gap: 6px;
 		}
-		
-		.player-area, .opponents-area, .public-area {
-			transform: scale(0.4);
-			margin: -60px 0;
+
+		.deduction-area {
+			width: 340px;
+			max-width: 40vw;
+			flex: 0 0 auto;
+			border-left: 1px solid var(--color-glass-border);
+			padding-left: 6px;
+		}
+
+		.opponents-area {
+			gap: 4px;
+		}
+
+		.player-area {
+			padding-bottom: 2px;
+			min-height: 50px;
+		}
+
+		.public-area {
+			min-height: 80px;
 		}
 	}
 

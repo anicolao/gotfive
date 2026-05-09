@@ -168,6 +168,42 @@
 		}
 	}
 
+	@media (max-height: 500px) and (orientation: landscape) {
+	        .tiles-area {
+	                grid-template-columns: repeat(5, auto 28px) auto;
+	                gap: 4px;
+	                padding: 4px;
+	        }
+
+	        .slot {
+	                width: 28px;
+	                height: 40px;
+	        }
+
+	        .notch {
+	                width: 8px;
+	                height: 8px;
+	                margin-bottom: 2px;
+	        }
+
+	        .name-tag {
+	                font-size: 0.7rem;
+	                padding: 1px 6px;
+	        }
+
+	        .clue-stack {
+	                bottom: 6px;
+	        }
+
+	        .compare-indicators {
+	                top: -24px;
+	        }
+
+	        .stand-container {
+	                gap: 4px;
+	        }
+	}
+
 	@media (max-width: 450px) {
 		.tiles-area {
 			grid-template-columns: repeat(5, auto 24px) auto;
@@ -193,13 +229,12 @@
 		.compare-indicators {
 			top: -12px;
 		}
-		
+
 		.name-tag {
 			font-size: 0.6rem;
 			padding: 1px 4px;
 		}
 	}
-
 	.slot {
 		width: 60px;
 		height: 84px;

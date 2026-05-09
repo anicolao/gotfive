@@ -382,20 +382,22 @@
 		padding: 6px;
 		background: rgba(0, 0, 0, 0.4);
 		border-radius: 8px;
-		overflow-x: auto;
+		overflow: auto;
+		max-height: 100%;
 	}
 
 	.grid {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: 4px;
 		z-index: 2;
 		position: relative;
+		min-width: min-content;
 	}
 
 	.row {
 		display: flex;
-		gap: 2px;
+		gap: 4px;
 		align-items: center;
 	}
 
@@ -408,70 +410,82 @@
 	}
 
 	.mini-tile {
-		width: 18px;
-		height: 25px;
-		border-radius: 2px;
+		width: 24px;
+		height: 32px;
+		border-radius: 4px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		font-size: 7px;
+		font-size: 10px;
 		font-weight: bold;
 		color: white;
 		position: relative;
-		box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+		box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
 		transition: transform 0.1s;
-		padding: 1px 0;
+		padding: 2px 0;
 		box-sizing: border-box;
 		border: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
 	@media (max-width: 600px) {
 		.deduction-board {
-			padding: 1px;
+			padding: 4px;
 		}
 
 		.mini-tile {
-			width: 10px;
-			height: 14px;
-			font-size: 4px;
+			width: 28px;
+			height: 38px;
+			font-size: 12px;
+			border-radius: 6px;
 		}
 
 		.grid-container {
-			padding: 1px;
+			padding: 4px;
 		}
 
 		.guess-area {
-			gap: 1px;
-			margin-bottom: 1px;
-			padding: 1px;
+			gap: 4px;
+			margin-bottom: 4px;
+			padding: 4px;
 		}
 
 		.guess-inputs input {
-			width: 14px;
-			height: 14px;
-			font-size: 0.5rem;
+			width: 40px;
+			height: 40px;
+			font-size: 1.1rem;
 		}
 
 		.header h2 {
-			font-size: 0.5rem;
+			font-size: 0.8rem;
 		}
 
 		.got-five-btn {
-			padding: 1px 3px;
-			font-size: 0.4rem;
+			padding: 8px 16px;
+			font-size: 0.9rem;
+		}
+
+		.dot {
+			width: 6px;
+			height: 6px;
 		}
 	}
 
 	@media (max-width: 350px) {
 		.mini-tile {
-			width: 8px;
-			height: 11px;
-			font-size: 3px;
+			width: 24px;
+			height: 32px;
+			font-size: 10px;
 		}
 		
 		.row {
-			gap: 0px;
+			gap: 2px;
+		}
+
+		.guess-inputs input {
+			width: 32px;
+			height: 32px;
+			font-size: 1rem;
 		}
 	}
 
