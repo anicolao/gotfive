@@ -424,3 +424,13 @@
 - Expand mobile E2E tests to include a full game playthrough (reveal, clue, guess) in both orientations.
 - Update E2E_GUIDE.md to prohibit masking.
 - Delegating implementation to @coder.
+
+**Coder Verification:**
+- Removed `mask` property from `tests/e2e/helpers/test-step-helper.ts`.
+- Updated `package.json` to set `VITE_APP_VERSION=1.0.0` and `VITE_GIT_HASH=test-hash` for E2E tests.
+- Set `maxDiffPixels: 0` in `playwright.config.ts`.
+- Replaced worker indices with fixed IDs in all E2E tests for deterministic PeerJS IDs.
+- Expanded `tests/e2e/005-mobile-gameplay/005-mobile-gameplay.spec.ts` with full playthroughs.
+- Updated `E2E_GUIDE.md` to strictly prohibit masking.
+- Verified all 8 tests pass with `npm run test:e2e`.
+
