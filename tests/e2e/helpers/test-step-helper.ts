@@ -73,12 +73,23 @@ export async function checkNoClippingOrOverlap(page: Page) {
             // Check if the element is actually present and visible in the DOM
             const style = window.getComputedStyle(el);
             if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
+            
+            // Check parent clipping (allow 1px tolerance)
+            const isClippedByParent = (
+                rect.width - visibleRect.width > 1 ||
+                rect.height - visibleRect.height > 1
+            );
+
+            if (isClippedByParent) {
+                throw new Error(`Element ${el.className} (${el.tagName}) is clipped by a parent container (overflow hidden/scroll/auto).\nFull Rect: ${JSON.stringify(rect)}\nVisible Rect: ${JSON.stringify(visibleRect)}`);
+            }
+
             if (visibleRect.width === 0 || visibleRect.height === 0) continue;
 
             // Check clipping (allow 5px tolerance for mobile)
             // We check the visible rect against the viewport
             if (visibleRect.left < -5 || visibleRect.top < -5 || visibleRect.right > viewWidth + 5 || visibleRect.bottom > viewHeight + 5) {
-                throw new Error(`Element ${el.className} (${el.tagName}) is clipped: ${JSON.stringify(visibleRect)} vs viewport ${viewWidth}x${viewHeight}`);
+                throw new Error(`Element ${el.className} (${el.tagName}) is clipped by viewport: ${JSON.stringify(visibleRect)} vs viewport ${viewWidth}x${viewHeight}`);
             }
 
             // Check overlap
@@ -170,7 +181,9 @@ export class TestStepHelper {
                 this.page.locator('.status'),
                 this.page.locator('.waiting'),
                 this.page.locator('.connected'),
-                this.page.locator('li')
+                this.page.locator('li'),
+                this.page.locator('.id-display'),
+                this.page.locator('.id-input input')
             ]
         });
 

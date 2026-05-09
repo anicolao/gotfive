@@ -234,6 +234,10 @@
 	                font-size: 0.6rem;
 	                padding: 1px 4px;
 	        }
+
+	        .stand-container {
+	                gap: 4px;
+	        }
 	}
 	.slot {
 	        width: 60px;

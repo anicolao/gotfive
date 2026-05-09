@@ -431,67 +431,65 @@
 
 	@media (max-width: 600px) {
 	        .deduction-board {
-	                padding: 4px;
-	        }
-
-	        .mini-tile {
-	                width: 24px;
-	                height: 24px;
-	                font-size: 12px;
-	                border-radius: 4px;
-	        }
-
-	        .grid-container {
 	                padding: 2px;
-	                overflow: hidden;
 	        }
 
-	        .row {
-	                gap: 2px;
-	        }
-
-	        .guess-area {
-	                gap: 4px;
-	                margin-bottom: 4px;
-	                padding: 4px;
-	        }
-
-	        .guess-inputs input {
-	                width: 36px;
-	                height: 36px;
-	                font-size: 1.1rem;
-	        }
-
-	        .header h2 {
-	                font-size: 0.9rem;
-	        }
-
-	        .got-five-btn {
-	                padding: 8px 16px;
-	                font-size: 0.9rem;
-	        }
-
-	        .dot {
-	                width: 4px;
-	                height: 4px;
-	        }
-	}
-
-	@media (max-width: 350px) {
 	        .mini-tile {
 	                width: 22px;
 	                height: 22px;
-	                font-size: 10px;
+	                font-size: 11px;
+	                border-radius: 3px;
+	        }
+
+	        .grid-container {
+	                padding: 1px;
+	                overflow: hidden;
 	        }
 
 	        .row {
 	                gap: 1px;
 	        }
 
+	        .grid {
+	                gap: 2px;
+	        }
+
+	        .guess-area {
+	                gap: 2px;
+	                margin-bottom: 2px;
+	                padding: 2px;
+	        }
+
 	        .guess-inputs input {
-	                width: 30px;
-	                height: 30px;
-	                font-size: 0.9rem;
+	                width: 26px;
+	                height: 26px;
+	                font-size: 0.8rem;
+	        }
+
+	        .header {
+	                margin-bottom: 2px;
+	        }
+
+	        .header h2 {
+	                font-size: 0.7rem;
+	        }
+
+	        .got-five-btn {
+	                padding: 4px 10px;
+	                font-size: 0.7rem;
+	        }
+
+	        .dot {
+	                width: 3px;
+	                height: 3px;
+	        }
+	}
+
+	@media (max-width: 350px) {
+	        .mini-tile {
+	                width: 20px;
+	                height: 20px;
+	                font-size: 10px;
 	        }
 	}
 	.mini-tile:hover {
