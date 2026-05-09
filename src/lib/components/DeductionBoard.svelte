@@ -410,86 +410,90 @@
 	}
 
 	.mini-tile {
-		width: 24px;
-		height: 32px;
-		flex-shrink: 0;
-		border-radius: 4px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		font-size: 10px;
-		font-weight: bold;
-		color: white;
-		position: relative;
-		box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-		transition: transform 0.1s;
-		padding: 2px 0;
-		box-sizing: border-box;
-		border: 1px solid rgba(255, 255, 255, 0.2);
+	        width: 24px;
+	        height: 24px;
+	        flex-shrink: 0;
+	        border-radius: 4px;
+	        display: flex;
+	        flex-direction: column;
+	        align-items: center;
+	        justify-content: center;
+	        font-size: 10px;
+	        font-weight: bold;
+	        color: white;
+	        position: relative;
+	        box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+	        transition: transform 0.1s;
+	        padding: 0;
+	        box-sizing: border-box;
+	        border: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
 	@media (max-width: 600px) {
-		.deduction-board {
-			padding: 4px;
-		}
+	        .deduction-board {
+	                padding: 4px;
+	        }
 
-		.mini-tile {
-			width: 30px;
-			height: 40px;
-			font-size: 14px;
-			border-radius: 6px;
-		}
+	        .mini-tile {
+	                width: 24px;
+	                height: 24px;
+	                font-size: 12px;
+	                border-radius: 4px;
+	        }
 
-		.grid-container {
-			padding: 4px;
-		}
+	        .grid-container {
+	                padding: 2px;
+	                overflow: hidden;
+	        }
 
-		.guess-area {
-			gap: 4px;
-			margin-bottom: 4px;
-			padding: 4px;
-		}
+	        .row {
+	                gap: 2px;
+	        }
 
-		.guess-inputs input {
-			width: 44px;
-			height: 44px;
-			font-size: 1.2rem;
-		}
+	        .guess-area {
+	                gap: 4px;
+	                margin-bottom: 4px;
+	                padding: 4px;
+	        }
 
-		.header h2 {
-			font-size: 0.9rem;
-		}
+	        .guess-inputs input {
+	                width: 36px;
+	                height: 36px;
+	                font-size: 1.1rem;
+	        }
 
-		.got-five-btn {
-			padding: 10px 20px;
-			font-size: 1rem;
-		}
+	        .header h2 {
+	                font-size: 0.9rem;
+	        }
 
-		.dot {
-			width: 6px;
-			height: 6px;
-		}
+	        .got-five-btn {
+	                padding: 8px 16px;
+	                font-size: 0.9rem;
+	        }
+
+	        .dot {
+	                width: 4px;
+	                height: 4px;
+	        }
 	}
 
 	@media (max-width: 350px) {
-		.mini-tile {
-			width: 28px;
-			height: 38px;
-			font-size: 12px;
-		}
-		
-		.row {
-			gap: 2px;
-		}
+	        .mini-tile {
+	                width: 22px;
+	                height: 22px;
+	                font-size: 10px;
+	        }
 
-		.guess-inputs input {
-			width: 36px;
-			height: 36px;
-			font-size: 1rem;
-		}
+	        .row {
+	                gap: 1px;
+	        }
+
+	        .guess-inputs input {
+	                width: 30px;
+	                height: 30px;
+	                font-size: 0.9rem;
+	        }
 	}
-
 	.mini-tile:hover {
 		transform: scale(1.1);
 		z-index: 2;

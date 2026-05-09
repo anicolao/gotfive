@@ -1,16 +1,14 @@
-# Multiplayer Lobby
+# Hosting Lobby
 
-Testing the initial lobby state.
+Testing the hosting flow.
 
-## Lobby is visible
+## Hosting instructions are visible
 
-![Lobby is visible](./screenshots/000-initial-lobby.png)
+![Hosting instructions are visible](./screenshots/000-hosting-flow.png)
 
 **Verifications:**
-- [x] Lobby header is visible
-- [x] Name input is visible
-- [x] Host button is visible
-- [x] Join button is visible
+- [x] Game ID is visible
+- [x] Copy button is visible
 
 ---
 

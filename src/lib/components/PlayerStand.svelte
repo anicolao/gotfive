@@ -133,51 +133,51 @@
 	}
 
 	.tiles-area {
-		display: grid;
-		grid-template-columns: repeat(5, auto 60px) auto;
-		align-items: center;
-		background: rgba(31, 40, 51, 0.8);
-		backdrop-filter: blur(10px);
-		border: 1px solid var(--color-glass-border);
-		padding: 12px 8px 8px 8px;
-		border-radius: 12px 12px 0 0;
-		gap: 8px;
+	        display: grid;
+	        grid-template-columns: repeat(5, auto 60px) auto;
+	        align-items: center;
+	        background: rgba(31, 40, 51, 0.8);
+	        backdrop-filter: blur(10px);
+	        border: 1px solid var(--color-glass-border);
+	        padding: 12px 8px 8px 8px;
+	        border-radius: 12px 12px 0 0;
+	        gap: 8px;
 	}
 
 	@media (max-width: 800px) {
-		.tiles-area {
-			grid-template-columns: repeat(5, auto 45px) auto;
-			gap: 6px;
-			padding: 8px 4px 4px 4px;
-		}
+	        .tiles-area {
+	                grid-template-columns: repeat(5, auto 40px) auto;
+	                gap: 4px;
+	                padding: 6px 4px 4px 4px;
+	        }
 
-		.slot {
-			width: 45px;
-			height: 63px;
-		}
+	        .slot {
+	                width: 40px;
+	                height: 40px;
+	        }
 
-		.notch {
-			width: 10px;
-			height: 10px;
-			margin-bottom: 5px;
-		}
-		
-		.name-tag {
-			font-size: 0.8rem;
-			padding: 2px 8px;
-		}
+	        .notch {
+	                width: 10px;
+	                height: 10px;
+	                margin-bottom: 5px;
+	        }
+
+	        .name-tag {
+	                font-size: 0.8rem;
+	                padding: 2px 8px;
+	        }
 	}
 
 	@media (max-height: 500px) and (orientation: landscape) {
 	        .tiles-area {
-	                grid-template-columns: repeat(5, auto 28px) auto;
+	                grid-template-columns: repeat(5, auto 32px) auto;
 	                gap: 4px;
 	                padding: 4px;
 	        }
 
 	        .slot {
-	                width: 28px;
-	                height: 40px;
+	                width: 32px;
+	                height: 32px;
 	        }
 
 	        .notch {
@@ -205,43 +205,42 @@
 	}
 
 	@media (max-width: 450px) {
-		.tiles-area {
-			grid-template-columns: repeat(5, auto 24px) auto;
-			gap: 4px;
-			padding: 2px;
-		}
+	        .tiles-area {
+	                grid-template-columns: repeat(5, auto 32px) auto;
+	                gap: 2px;
+	                padding: 2px;
+	        }
 
-		.slot {
-			width: 24px;
-			height: 34px;
-		}
+	        .slot {
+	                width: 32px;
+	                height: 32px;
+	        }
 
-		.notch {
-			width: 4px;
-			height: 4px;
-			margin-bottom: 0px;
-		}
+	        .notch {
+	                width: 4px;
+	                height: 4px;
+	                margin-bottom: 0px;
+	        }
 
-		.clue-stack {
-			bottom: 4px;
-		}
+	        .clue-stack {
+	                bottom: 4px;
+	        }
 
-		.compare-indicators {
-			top: -12px;
-		}
+	        .compare-indicators {
+	                top: -12px;
+	        }
 
-		.name-tag {
-			font-size: 0.6rem;
-			padding: 1px 4px;
-		}
+	        .name-tag {
+	                font-size: 0.6rem;
+	                padding: 1px 4px;
+	        }
 	}
 	.slot {
-		width: 60px;
-		height: 84px;
-		position: relative;
-		cursor: inherit;
+	        width: 60px;
+	        height: 60px;
+	        position: relative;
+	        cursor: inherit;
 	}
-
 	.slot:hover {
 		filter: brightness(1.2);
 	}
