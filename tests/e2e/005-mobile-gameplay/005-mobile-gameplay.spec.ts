@@ -180,4 +180,44 @@ test.describe('Mobile Gameplay', () => {
 
     tester.generateDocs();
   });
+
+  test('User plays on tablet portrait', async ({ page }, testInfo) => {
+    const tester = new TestStepHelper(page, testInfo);
+    tester.setMetadata('Tablet Portrait', 'Verify layout on tablet portrait.');
+
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto(`/?seed=123&myId=tablet-${testInfo.workerIndex}`);
+
+    await page.getByLabel('Your Name:').fill('TabletUser');
+    await page.getByRole('button', { name: 'Host Game' }).click();
+
+    await page.evaluate(() => {
+      const store = (window as unknown as WindowWithStore).store;
+      store.dispatch({ type: 'players/addPlayer', payload: { id: 'p2', name: 'Player 2' } });
+      store.dispatch({ type: 'players/addPlayer', payload: { id: 'p3', name: 'Player 3' } });
+      store.dispatch({ type: 'players/addPlayer', payload: { id: 'p4', name: 'Player 4' } });
+    });
+
+    await page.getByRole('button', { name: 'START GAME' }).click();
+
+    await tester.step('tablet-portrait-layout', {
+      description: 'Check for clipping and overlap in tablet portrait',
+      verifications: [
+        {
+          spec: 'Main play area is visible',
+          check: async () => {
+            await expect(page.locator('.main-play-area')).toBeVisible();
+          }
+        },
+        {
+          spec: 'Deduction board is visible',
+          check: async () => {
+            await expect(page.locator('.deduction-area')).toBeVisible();
+          }
+        }
+      ]
+    });
+
+    tester.generateDocs();
+  });
 });
