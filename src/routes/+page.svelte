@@ -307,8 +307,8 @@
 	@media (orientation: portrait) {
 		main {
 			flex-direction: column;
-			gap: 8px;
-			padding: 8px;
+			gap: 4px;
+			padding: 4px;
 		}
 
 		.main-play-area {
@@ -316,27 +316,31 @@
 			min-height: 0;
 			display: grid;
 			grid-template-rows: auto auto 1fr auto;
-			gap: 8px;
+			gap: 4px;
 			overflow: hidden;
 		}
 
 		.status-banner {
 			grid-row: 1;
 			z-index: 20;
-			padding: 10px;
+			padding: 4px;
 			margin: 0;
+		}
+
+		.status-banner h2 {
+			font-size: 1rem;
 		}
 
 		.opponents-area {
 			grid-row: 2;
-			max-height: 100px;
+			height: 100px;
 			min-height: 0;
-			overflow: auto;
+			overflow: hidden;
 		}
 
 		.public-area {
 			grid-row: 3;
-			min-height: 0;
+			min-height: 120px;
 			overflow: auto;
 			display: flex;
 			align-items: center;
@@ -345,15 +349,15 @@
 
 		.player-area {
 			grid-row: 4;
-			padding-bottom: 10px;
+			padding-bottom: 2px;
 		}
 
 		.deduction-area {
-		        flex: 0 0 auto;
-		        width: 100%;
-		        max-height: 180px;
-		        overflow: hidden;
-		        border-top: 1px solid var(--color-glass-border);
+			flex: 0 0 auto;
+			width: 100%;
+			max-height: 212px;
+			overflow-y: auto;
+			border-top: 1px solid var(--color-glass-border);
 		}
 		}
 	@media (orientation: landscape) and (max-height: 500px) {
