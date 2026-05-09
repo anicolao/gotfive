@@ -227,9 +227,6 @@
 		<div class="grid">
 			{#each TILE_IDS_BY_COLOR as row, i}
 				<div class="row">
-					<div class="color-label" style="color: var(--color-{COLORS[i].toLowerCase()}, {COLORS[i]})">
-						{COLORS[i][0]}
-					</div>
 					{#each row as id}
 						<button
 							class="cell {deductions[id] || 'unknown'} {visibleTiles.has(id) ? 'dimmed' : ''}"
@@ -271,7 +268,7 @@
 	.deduction-board {
 		background: var(--color-bg-panel);
 		backdrop-filter: blur(12px);
-		padding: 15px;
+		padding: 10px;
 		border-radius: 12px;
 		border: 1px solid var(--color-glass-border);
 		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 229, 255, 0.1);
@@ -279,21 +276,23 @@
 		width: fit-content;
 		position: relative;
 		margin: 0 auto;
+		max-width: 100%;
+		box-sizing: border-box;
 	}
 
 	.header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 10px;
+		margin-bottom: 8px;
 	}
 
 	h2 {
 		margin: 0;
 		font-family: 'Courier New', Courier, monospace;
 		text-transform: uppercase;
-		font-size: 1.2rem;
-		letter-spacing: 2px;
+		font-size: 1rem;
+		letter-spacing: 1px;
 		color: var(--color-neon-cyan);
 		text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
 	}
@@ -304,8 +303,8 @@
 		border: 1px solid var(--color-text-muted);
 		color: var(--color-text-muted);
 		cursor: pointer;
-		padding: 2px 8px;
-		font-size: 0.8rem;
+		padding: 1px 6px;
+		font-size: 0.7rem;
 		border-radius: 4px;
 	}
 
@@ -318,9 +317,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 10px;
-		margin-bottom: 15px;
-		padding: 10px;
+		gap: 8px;
+		margin-bottom: 10px;
+		padding: 8px;
 		background: rgba(0,0,0,0.5);
 		border-radius: 8px;
 		border: 1px solid rgba(255, 255, 255, 0.1);
@@ -328,12 +327,12 @@
 
 	.guess-inputs {
 		display: flex;
-		gap: 5px;
+		gap: 4px;
 	}
 
 	.guess-inputs input {
-		width: 35px;
-		height: 35px;
+		width: 30px;
+		height: 30px;
 		text-align: center;
 		border: 1px solid var(--color-neon-yellow);
 		border-radius: 4px;
@@ -341,6 +340,7 @@
 		font-weight: bold;
 		background: rgba(0, 0, 0, 0.8);
 		color: var(--color-neon-yellow);
+		font-size: 0.9rem;
 	}
 
 	.guess-inputs input:focus {
@@ -352,13 +352,14 @@
 		background-color: rgba(0, 0, 0, 0.6);
 		color: var(--color-neon-magenta);
 		font-weight: bold;
-		padding: 5px 15px;
+		padding: 4px 12px;
 		border: 1px solid var(--color-neon-magenta);
 		border-radius: 4px;
 		cursor: pointer;
 		font-family: 'Courier New', Courier, monospace;
 		text-shadow: 0 0 5px rgba(255, 0, 212, 0.5);
 		box-shadow: 0 0 10px rgba(255, 0, 212, 0.2);
+		font-size: 0.8rem;
 	}
 
 	.got-five-btn:hover:not(:disabled) {
@@ -378,30 +379,24 @@
 	.grid-container {
 		position: relative;
 		border: 1px solid var(--color-glass-border);
-		padding: 10px;
+		padding: 6px;
 		background: rgba(0, 0, 0, 0.4);
 		border-radius: 8px;
+		overflow-x: auto;
 	}
 
 	.grid {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 2px;
 		z-index: 2;
 		position: relative;
 	}
 
 	.row {
 		display: flex;
-		gap: 4px;
+		gap: 2px;
 		align-items: center;
-	}
-
-	.color-label {
-		width: 20px;
-		font-weight: bold;
-		text-align: center;
-		text-shadow: 0 0 3px currentColor;
 	}
 
 	.cell {
@@ -413,75 +408,70 @@
 	}
 
 	.mini-tile {
-		width: 24px;
-		height: 34px;
-		border-radius: 3px;
+		width: 18px;
+		height: 25px;
+		border-radius: 2px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		font-size: 10px;
+		font-size: 7px;
 		font-weight: bold;
 		color: white;
 		position: relative;
-		box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+		box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 		transition: transform 0.1s;
-		padding: 2px 0;
+		padding: 1px 0;
 		box-sizing: border-box;
 		border: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
 	@media (max-width: 600px) {
 		.deduction-board {
-			padding: 4px;
+			padding: 1px;
 		}
 
 		.mini-tile {
-			width: 20px;
-			height: 28px;
-			font-size: 8px;
-		}
-
-		.color-label {
-			width: 15px;
-			font-size: 0.8rem;
+			width: 10px;
+			height: 14px;
+			font-size: 4px;
 		}
 
 		.grid-container {
-			padding: 5px;
+			padding: 1px;
 		}
 
 		.guess-area {
-			gap: 5px;
-			margin-bottom: 8px;
-			padding: 5px;
+			gap: 1px;
+			margin-bottom: 1px;
+			padding: 1px;
 		}
 
 		.guess-inputs input {
-			width: 25px;
-			height: 25px;
-			font-size: 0.8rem;
+			width: 14px;
+			height: 14px;
+			font-size: 0.5rem;
 		}
 
 		.header h2 {
-			font-size: 0.9rem;
+			font-size: 0.5rem;
 		}
 
 		.got-five-btn {
-			padding: 4px 10px;
-			font-size: 0.7rem;
+			padding: 1px 3px;
+			font-size: 0.4rem;
 		}
 	}
 
 	@media (max-width: 350px) {
 		.mini-tile {
-			width: 18px;
-			height: 25px;
-			font-size: 7px;
+			width: 8px;
+			height: 11px;
+			font-size: 3px;
 		}
 		
 		.row {
-			gap: 2px;
+			gap: 0px;
 		}
 	}
 

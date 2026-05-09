@@ -11,7 +11,8 @@ test('User visits homepage', async ({ page }, testInfo) => {
   await tester.step('initial-load', {
     description: 'Landing page is visible',
     verifications: [
-      { spec: 'Heading is visible', check: async () => await expect(page.getByRole('heading', { name: 'Got Five!' })).toBeVisible() }
+      { spec: 'Lobby is visible', check: async () => await expect(page.locator('.lobby-wrapper')).toBeVisible() },
+      { spec: 'Name input is visible', check: async () => await expect(page.getByLabel('Your Name:')).toBeVisible() }
     ]
   });
 

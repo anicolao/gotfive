@@ -15,14 +15,6 @@
 		Green: '#2E7D32',
 		Purple: '#6A1B9A'
 	};
-
-	const COLOR_SYMBOL: Record<string, string> = {
-		Red: 'R',
-		Blue: 'B',
-		Yellow: 'Y',
-		Green: 'G',
-		Purple: 'P'
-	};
 </script>
 
 <div class="tile" class:face-down={faceDown} style="--tile-color: {tileColor ? COLOR_MAP[tileColor] : '#795548'}">
@@ -76,7 +68,6 @@
 						<div class="mouth neutral"></div>
 					{/if}
 				</div>
-				<div class="color-symbol">{COLOR_SYMBOL[tileColor]}</div>
 			{:else}
 				<div class="back-pattern"></div>
 			{/if}
@@ -105,56 +96,52 @@
 
 	@media (max-width: 600px) {
 		.tile {
-			--tile-width: 45px;
-			--tile-height: 63px;
-			border-radius: 8px;
+			--tile-width: 40px;
+			--tile-height: 56px;
+			border-radius: 6px;
 		}
 
 		.number {
-			font-size: 16px !important;
+			font-size: 14px !important;
 		}
 
 		.dot {
-			width: 6px !important;
-			height: 6px !important;
+			width: 5px !important;
+			height: 5px !important;
 		}
 
 		.sassy-face {
-			height: 30px !important;
+			height: 25px !important;
 		}
 
 		.eyes {
-			gap: 4px !important;
+			gap: 3px !important;
 		}
 
 		.eye {
-			width: 4px !important;
-			height: 4px !important;
+			width: 3px !important;
+			height: 3px !important;
 		}
 
 		.mouth {
-			width: 10px !important;
+			width: 8px !important;
 		}
 	}
 
 	@media (max-width: 350px) {
 		.tile {
-			--tile-width: 35px;
-			--tile-height: 49px;
-			border-radius: 6px;
+			--tile-width: 32px;
+			--tile-height: 45px;
+			border-radius: 4px;
 		}
 
 		.number {
-			font-size: 12px !important;
+			font-size: 11px !important;
 		}
 
 		.dot {
-			width: 4px !important;
-			height: 4px !important;
-		}
-		
-		.color-symbol {
-			font-size: 10px !important;
+			width: 3px !important;
+			height: 3px !important;
 		}
 	}
 

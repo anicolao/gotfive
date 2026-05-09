@@ -32,6 +32,64 @@ export async function waitForAnimations(page: Page) {
     });
 }
 
+export async function checkNoClippingOrOverlap(page: Page) {
+    await page.evaluate(() => {
+        const elements = Array.from(document.querySelectorAll('.tile, .stand, .deduction-board, .table, .lobby, .mini-tile, input, button:not(.cell)'));
+        const viewWidth = window.innerWidth;
+        const viewHeight = window.innerHeight;
+
+        for (const el of elements) {
+            const rect = el.getBoundingClientRect();
+            
+            // Check clipping (allow 10px tolerance for mobile)
+            if (rect.left < -10 || rect.top < -10 || rect.right > viewWidth + 10 || rect.bottom > viewHeight + 10) {
+                // If the element is hidden or zero-sized, it's fine
+                if (rect.width === 0 || rect.height === 0) continue;
+                
+                throw new Error(`Element ${el.className} (${el.tagName}) is clipped: ${JSON.stringify(rect)} vs viewport ${viewWidth}x${viewHeight}`);
+            }
+
+            // Check overlap
+            for (const other of elements) {
+                if (el === other) continue;
+                const otherRect = other.getBoundingClientRect();
+                
+                // If either is hidden, skip
+                if (rect.width === 0 || rect.height === 0 || otherRect.width === 0 || otherRect.height === 0) continue;
+
+                // Allow 10px tolerance for overlaps on mobile
+                const overlap = !(rect.right <= otherRect.left + 10 || 
+                                  rect.left >= otherRect.right - 10 || 
+                                  rect.bottom <= otherRect.top + 10 || 
+                                  rect.top >= otherRect.bottom - 10);
+                
+                if (overlap) {
+                    // Check if one is a child of the other, which is fine
+                    if (el.contains(other) || other.contains(el)) continue;
+                    
+                    // Also some overlays are expected (like the canvas on deduction board)
+                    if (el.tagName === 'CANVAS' || other.tagName === 'CANVAS') continue;
+                    
+                    // Ignore overlaps with status-banner as it might overlay during end-game
+                    if (el.classList.contains('status-banner') || other.classList.contains('status-banner')) continue;
+
+                    // Allow some overlap between table and stands on mobile as they are large components
+                    const isTable = el.closest('.table') || other.closest('.table');
+                    const isStand = el.closest('.stand-container') || other.closest('.stand-container');
+                    
+                    if (isTable && isStand) {
+                        // If they overlap by less than 100px, it's acceptable on mobile
+                        const overlapAmount = Math.max(0, Math.min(rect.bottom, otherRect.bottom) - Math.max(rect.top, otherRect.top));
+                        if (overlapAmount < 100) continue;
+                    }
+
+                    throw new Error(`Element ${el.className} (${el.tagName}) overlaps with ${other.className} (${other.tagName})\nRect 1: ${JSON.stringify(rect)}\nRect 2: ${JSON.stringify(otherRect)}`);
+                }
+            }
+        }
+    });
+}
+
 export class TestStepHelper {
     private stepCount = 0;
     private steps: DocStep[] = [];
@@ -69,13 +127,16 @@ export class TestStepHelper {
         }
 
         await waitForAnimations(this.page);
+        
+        // 4. Check for clipping and overlap
+        await checkNoClippingOrOverlap(this.page);
 
-        // 4. Capture & Verify (Zero-Pixel Tolerance)
+        // 5. Capture & Verify (Zero-Pixel Tolerance)
         await expect(this.page).toHaveScreenshot(filename.replace(/\.png$/, ''), {
             mask: [this.page.locator('.version-info')]
         });
 
-        // 5. Record for Docs
+        // 6. Record for Docs
         this.steps.push({
             title: options.description,
             image: `./screenshots/${filename}`,

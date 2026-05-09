@@ -32,7 +32,6 @@
 	</div>
 
 	<div class="pool-area">
-		<h2>Public Pool</h2>
 		<div class="pool-tiles">
 			{#each publicPool as id}
 				<button
@@ -51,8 +50,8 @@
 	.table {
 		background: var(--color-bg-panel);
 		backdrop-filter: blur(8px);
-		padding: 20px;
-		border-radius: 40px;
+		padding: 10px;
+		border-radius: 20px;
 		width: 100%;
 		max-width: 600px;
 		display: flex;
@@ -71,24 +70,19 @@
 
 		.decks-area {
 			gap: 4px;
-			margin-bottom: 8px;
+			margin-bottom: 4px;
 		}
 
 		.pool-tiles {
 			gap: 4px;
-			min-height: 80px;
-		}
-
-		h2 {
-			font-size: 0.9rem;
-			margin-bottom: 5px;
+			min-height: 60px;
 		}
 	}
 
 	.decks-area {
 		display: flex;
-		gap: 10px;
-		margin-bottom: 20px;
+		gap: 8px;
+		margin-bottom: 10px;
 		flex-wrap: wrap;
 		justify-content: center;
 	}
@@ -113,18 +107,18 @@
 
 	.deck-count {
 		position: absolute;
-		bottom: -10px;
-		right: -10px;
+		bottom: -8px;
+		right: -8px;
 		background: rgba(0, 0, 0, 0.8);
 		color: var(--color-text-main);
 		border-radius: 50%;
-		width: 24px;
-		height: 24px;
+		width: 20px;
+		height: 20px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-weight: bold;
-		font-size: 12px;
+		font-size: 10px;
 		border: 1px solid var(--color-glass-border);
 		z-index: 2;
 	}
@@ -134,21 +128,18 @@
 		width: 100%;
 	}
 
-	h2 {
-		margin: 0 0 10px 0;
-		font-size: 1.2rem;
-		color: var(--color-neon-cyan);
-		text-transform: uppercase;
-		letter-spacing: 2px;
-		text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
-	}
-
 	.pool-tiles {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 10px;
+		gap: 12px;
 		justify-content: center;
-		min-height: 100px;
+		min-height: 80px;
+	}
+
+	@media (max-width: 600px) {
+		.pool-tiles {
+			gap: 10px;
+		}
 	}
 
 	.tile-btn {
@@ -182,5 +173,13 @@
 		color: var(--color-text-muted);
 		font-weight: bold;
 		background: rgba(255, 255, 255, 0.05);
+	}
+
+	@media (max-width: 450px) {
+		.empty-deck {
+			width: 32px;
+			height: 45px;
+			font-size: 10px;
+		}
 	}
 </style>
