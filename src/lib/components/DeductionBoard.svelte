@@ -412,6 +412,7 @@
 	.mini-tile {
 		width: 24px;
 		height: 32px;
+		flex-shrink: 0;
 		border-radius: 4px;
 		display: flex;
 		flex-direction: column;
@@ -434,9 +435,9 @@
 		}
 
 		.mini-tile {
-			width: 28px;
-			height: 38px;
-			font-size: 12px;
+			width: 30px;
+			height: 40px;
+			font-size: 14px;
 			border-radius: 6px;
 		}
 
@@ -451,18 +452,18 @@
 		}
 
 		.guess-inputs input {
-			width: 40px;
-			height: 40px;
-			font-size: 1.1rem;
+			width: 44px;
+			height: 44px;
+			font-size: 1.2rem;
 		}
 
 		.header h2 {
-			font-size: 0.8rem;
+			font-size: 0.9rem;
 		}
 
 		.got-five-btn {
-			padding: 8px 16px;
-			font-size: 0.9rem;
+			padding: 10px 20px;
+			font-size: 1rem;
 		}
 
 		.dot {
@@ -473,9 +474,9 @@
 
 	@media (max-width: 350px) {
 		.mini-tile {
-			width: 24px;
-			height: 32px;
-			font-size: 10px;
+			width: 28px;
+			height: 38px;
+			font-size: 12px;
 		}
 		
 		.row {
@@ -483,8 +484,8 @@
 		}
 
 		.guess-inputs input {
-			width: 32px;
-			height: 32px;
+			width: 36px;
+			height: 36px;
 			font-size: 1rem;
 		}
 	}

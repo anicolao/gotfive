@@ -62,7 +62,7 @@ export async function checkNoClippingOrOverlap(page: Page) {
             return visibleRect;
         };
 
-        const elements = Array.from(document.querySelectorAll('.tile, .stand, .deduction-area, .table, .lobby-wrapper, input, button:not(.cell), .player-area, .opponents-area'));
+        const elements = Array.from(document.querySelectorAll('.tile, .stand, .stand-container, .deduction-area, .deduction-board, .table, .lobby-wrapper, input, button:not(.cell), .player-area, .opponents-area, .public-area'));
         const viewWidth = window.innerWidth;
         const viewHeight = window.innerHeight;
 
