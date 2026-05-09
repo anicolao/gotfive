@@ -62,14 +62,12 @@
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
-		alert('Copied to clipboard!');
 	}
 
 	function copyInviteLink() {
 		const url = new URL(window.location.href);
 		url.searchParams.set('peerId', myId);
 		navigator.clipboard.writeText(url.toString());
-		alert('Invite link copied to clipboard!');
 	}
 </script>
 
@@ -244,4 +242,30 @@ input:focus {
 
 	.connected { color: var(--color-neon-cyan); font-weight: bold; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5); }
 	.waiting { font-style: italic; opacity: 0.7; color: var(--color-text-muted); }
+
+	@media (max-width: 600px) {
+		h2 {
+			font-size: 1.5rem;
+		}
+
+		input {
+			width: 100% !important;
+			box-sizing: border-box;
+		}
+
+		.actions {
+			flex-direction: column;
+			gap: 10px;
+			width: 100%;
+		}
+
+		.id-input {
+			flex-direction: column;
+			width: 100%;
+		}
+
+		.id-input input {
+			width: 100% !important;
+		}
+	}
 </style>

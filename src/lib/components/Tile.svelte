@@ -128,23 +128,41 @@
 		}
 	}
 
-	@media (max-width: 350px) {
-		.tile {
-			--tile-width: 32px;
-			--tile-height: 45px;
-			border-radius: 4px;
-		}
+	@media (max-height: 500px) and (orientation: landscape) {
+	        .tile {
+	                --tile-width: 32px;
+	                --tile-height: 45px;
+	                border-radius: 4px;
+	        }
 
-		.number {
-			font-size: 11px !important;
-		}
+	        .number {
+	                font-size: 12px !important;
+	        }
 
-		.dot {
-			width: 3px !important;
-			height: 3px !important;
-		}
+	        .dot {
+	                width: 4px !important;
+	                height: 4px !important;
+	        }
+
+	        .sassy-face {
+	                height: 20px !important;
+	        }
+
+	        .eyes {
+	                gap: 2px !important;
+	        }
+
+	        .eye {
+	                width: 2px !important;
+	                height: 2px !important;
+	        }
+
+	        .mouth {
+	                width: 6px !important;
+	                height: 3px !important;
+	                border-bottom-width: 2px !important;
+	        }
 	}
-
 	.front-content, .back-content {
 		width: 100%;
 		height: 100%;
