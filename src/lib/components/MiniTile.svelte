@@ -42,17 +42,16 @@
 	}
 
 	.medium {
-		width: 30px;
-		height: 42px;
-		padding: 2px;
+	        width: 30px;
+	        height: 30px;
+	        padding: 2px;
 	}
 
 	.small {
-		width: 20px;
-		height: 28px;
-		padding: 1px;
+	        width: 20px;
+	        height: 20px;
+	        padding: 1px;
 	}
-
 	.number {
 		font-weight: bold;
 		line-height: 1;

@@ -349,14 +349,13 @@
 		}
 
 		.deduction-area {
-			flex: 0 0 25vh;
-			width: 100%;
-			max-height: 25vh;
-			overflow: auto;
-			border-top: 1px solid var(--color-glass-border);
+		        flex: 0 0 auto;
+		        width: 100%;
+		        max-height: 180px;
+		        overflow: hidden;
+		        border-top: 1px solid var(--color-glass-border);
 		}
-	}
-
+		}
 	@media (orientation: landscape) and (max-height: 500px) {
 		main {
 			padding: 4px;

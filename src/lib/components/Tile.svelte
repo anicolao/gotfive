@@ -77,61 +77,59 @@
 
 <style>
 	.tile {
-		width: var(--tile-width, 60px);
-		height: var(--tile-height, 84px);
-		background-color: var(--tile-color);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		border-radius: 12px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 4px;
-		box-sizing: border-box;
-		position: relative;
-		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.2);
-		user-select: none;
-		color: white;
+	        width: var(--tile-width, 60px);
+	        height: var(--tile-width, 60px);
+	        background-color: var(--tile-color);
+	        border: 1px solid rgba(255, 255, 255, 0.3);
+	        border-radius: 8px;
+	        display: flex;
+	        flex-direction: column;
+	        align-items: center;
+	        justify-content: center;
+	        padding: 2px;
+	        box-sizing: border-box;
+	        position: relative;
+	        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.2);
+	        user-select: none;
+	        color: white;
 	}
 
 	@media (max-width: 600px) {
-		.tile {
-			--tile-width: 40px;
-			--tile-height: 56px;
-			border-radius: 6px;
-		}
+	        .tile {
+	                --tile-width: 40px;
+	                border-radius: 6px;
+	        }
 
-		.number {
-			font-size: 14px !important;
-		}
+	        .number {
+	                font-size: 14px !important;
+	        }
 
-		.dot {
-			width: 5px !important;
-			height: 5px !important;
-		}
+	        .dot {
+	                width: 5px !important;
+	                height: 5px !important;
+	        }
 
-		.sassy-face {
-			height: 25px !important;
-		}
+	        .sassy-face {
+	                height: 25px !important;
+	        }
 
-		.eyes {
-			gap: 3px !important;
-		}
+	        .eyes {
+	                gap: 3px !important;
+	        }
 
-		.eye {
-			width: 3px !important;
-			height: 3px !important;
-		}
+	        .eye {
+	                width: 3px !important;
+	                height: 3px !important;
+	        }
 
-		.mouth {
-			width: 8px !important;
-		}
+	        .mouth {
+	                width: 8px !important;
+	        }
 	}
 
 	@media (max-height: 500px) and (orientation: landscape) {
 	        .tile {
 	                --tile-width: 32px;
-	                --tile-height: 45px;
 	                border-radius: 4px;
 	        }
 
@@ -164,16 +162,16 @@
 	        }
 	}
 	.front-content, .back-content {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: space-between;
-		padding: 4px;
-		box-sizing: border-box;
+	        width: 100%;
+	        height: 100%;
+	        display: flex;
+	        flex-direction: column;
+	        align-items: center;
+	        justify-content: center;
+	        padding: 2px;
+	        box-sizing: border-box;
+	        gap: 2px;
 	}
-
 	.face-down {
 		border-color: rgba(255, 255, 255, 0.1);
 	}
