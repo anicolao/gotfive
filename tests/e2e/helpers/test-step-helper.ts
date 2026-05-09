@@ -115,7 +115,8 @@ export async function checkNoClippingOrOverlap(page: Page) {
                     if (el.tagName === 'CANVAS' || other.tagName === 'CANVAS') continue;
                     
                     // Ignore overlaps with status-banner as it might overlay during end-game
-                    if (el.classList.contains('status-banner') || other.classList.contains('status-banner')) continue;
+                    if (el.classList.contains('status-banner') || other.classList.contains('status-banner') || 
+                        el.closest('.status-banner') || other.closest('.status-banner')) continue;
 
                     // Allow some overlap between table/stands and their containers
                     const isTable = el.closest('.table') || other.closest('.table');

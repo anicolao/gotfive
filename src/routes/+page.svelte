@@ -312,16 +312,19 @@
 		}
 
 		.main-play-area {
-			flex: 1;
+			flex: 1.2;
 			min-height: 0;
-			display: grid;
-			grid-template-rows: auto auto 1fr auto;
+			display: flex;
+			flex-direction: column;
 			gap: 4px;
 			overflow: hidden;
 		}
 
 		.status-banner {
-			grid-row: 1;
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			right: 10px;
 			z-index: 20;
 			padding: 4px;
 			margin: 0;
@@ -332,15 +335,16 @@
 		}
 
 		.opponents-area {
-			grid-row: 2;
-			height: 100px;
-			min-height: 0;
-			overflow: hidden;
+			min-height: 60px;
+			flex: 0 0 auto;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 
 		.public-area {
-			grid-row: 3;
-			min-height: 120px;
+			min-height: 60px;
+			flex: 1;
 			overflow: auto;
 			display: flex;
 			align-items: center;
@@ -348,14 +352,19 @@
 		}
 
 		.player-area {
-			grid-row: 4;
 			padding-bottom: 2px;
+			min-height: 60px;
+			flex: 0 0 auto;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 
 		.deduction-area {
-			flex: 0 0 auto;
+			flex: 1;
 			width: 100%;
-			max-height: 212px;
+			min-height: 210px;
+			max-height: 50vh;
 			overflow-y: auto;
 			border-top: 1px solid var(--color-glass-border);
 		}
