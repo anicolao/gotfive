@@ -6,17 +6,24 @@
 	import { onMount } from 'svelte';
 
 	let myName = $state('');
-	let myId = Math.random().toString(36).substring(7);
+	let myId = $state('');
 	let peerManager: any = $state(null);
 	let mode: 'CHOOSING' | 'HOSTING' | 'JOINING' | 'JOINING_FROM_LINK' = $state('CHOOSING');
 
 	let targetHostId = $state('');
 	let connections: string[] = $state([]);
 	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const paramMyId = urlParams.get('myId');
+		if (paramMyId) {
+			myId = paramMyId;
+		} else {
+			myId = Math.random().toString(36).substring(7);
+		}
+
 		const savedName = localStorage.getItem('playerName');
 		if (savedName) myName = savedName;
 
-		const urlParams = new URLSearchParams(window.location.search);
 		const peerId = urlParams.get('peerId');
 		if (peerId) {
 			targetHostId = peerId;

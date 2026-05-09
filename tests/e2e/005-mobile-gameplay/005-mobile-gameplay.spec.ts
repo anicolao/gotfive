@@ -20,7 +20,7 @@ test.describe('Mobile Gameplay', () => {
     const tester = new TestStepHelper(page, testInfo);
     tester.setMetadata('Mobile Portrait', 'Verify layout and gameplay on mobile portrait.');
 
-    await page.goto('/?seed=123');
+    await page.goto(`/?seed=123&myId=mobile-${testInfo.workerIndex}`);
 
     // 1. Lobby Check
     const lobby = page.locator('.lobby-wrapper');
@@ -145,7 +145,7 @@ test.describe('Mobile Gameplay', () => {
     tester.setMetadata('Mobile Landscape', 'Verify layout on mobile landscape.');
 
     await page.setViewportSize({ width: 667, height: 375 });
-    await page.goto('/?seed=123');
+    await page.goto(`/?seed=123&myId=mobile-${testInfo.workerIndex}`);
 
     await page.getByLabel('Your Name:').fill('LandscapeUser');
     await page.getByRole('button', { name: 'Host Game' }).click();

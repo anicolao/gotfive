@@ -138,7 +138,21 @@ export class TestStepHelper {
     private metadataTitle = '';
     private metadataDescription = '';
 
-    constructor(private page: Page, private testInfo: TestInfo) { }
+    constructor(private page: Page, private testInfo: TestInfo) {
+        // Inject CSS to stabilize screenshots
+        this.page.addInitScript(() => {
+            const style = document.createElement('style');
+            style.innerHTML = `
+                *, *::before, *::after {
+                    backdrop-filter: none !important;
+                    -webkit-backdrop-filter: none !important;
+                    transition: none !important;
+                    animation: none !important;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    }
 
     setMetadata(title: string, description: string) {
         this.metadataTitle = title;
