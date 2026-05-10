@@ -1,7 +1,7 @@
 # Got Five!
 
-[![Deploy to GitHub Pages](https://github.com/anicolao/gotfive/actions/workflows/deploy.yml/badge.svg)](https://github.com/anicolao/gotfive/actions/workflows/deploy.yml)
-[![E2E Tests](https://github.com/anicolao/gotfive/actions/workflows/e2e.yml/badge.svg)](https://github.com/anicolao/gotfive/actions/workflows/e2e.yml)
+[![Deploy to GitHub Pages](https://github.com/anicolao/gotfive/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/anicolao/gotfive/actions/workflows/deploy.yml)
+[![E2E Tests](https://github.com/anicolao/gotfive/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/anicolao/gotfive/actions/workflows/e2e.yml)
 
 A game of numbers.
 
