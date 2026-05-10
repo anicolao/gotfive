@@ -410,6 +410,29 @@
 - Confirmed that the "Thin Protocol" for WebRTC remains compatible with the new UI.
 
 
+## 2026-05-10: Implement Global Lobby Design (Issue #41)
+
+**User Prompt:**
+> read and implement docs/LOBBY_DESIGN
+
+**Last Human Comment:**
+> This looks great but there doesn't seem to be a new e2e test that validates how the lobby works.
+
+**Action Plan (Orchestration):**
+- Implemented decentralized Global Lobby with dynamic leader election.
+- Created `LobbyManager` to handle PeerJS connections, heartbeats, and state synchronization.
+- Updated `Lobby.svelte` with a new UI for profile management, player list, and public game discovery.
+- Fixed a bug in `PeerManager` where `peer.connect()` could return `undefined`.
+- Resolved E2E test flakiness by introducing `lobbyId` URL parameter for test isolation.
+- Added a new E2E test in `tests/e2e/003-multiplayer/003-multiplayer.spec.ts` for public game discovery.
+- Verified all E2E tests pass consistently with zero-pixel tolerance.
+
+**Verification Results:**
+- All 9 E2E tests passed.
+- PeerManager TypeError fixed.
+- Cross-test interference in PeerJS namespace resolved.
+
+
 ## 2026-05-09: Improving E2E Tests (Issue #39)
 
 **User Prompt:**
