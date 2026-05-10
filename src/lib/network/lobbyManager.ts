@@ -113,7 +113,11 @@ export class LobbyManager {
       this.peer = null;
     }
     
-    this.peer = new Peer(clientPeerId);
+    if (clientPeerId) {
+      this.peer = new Peer(clientPeerId);
+    } else {
+      this.peer = new Peer();
+    }
 
     this.peer.on('open', (id) => {
       console.log('[LobbyManager] Became LOBBY_CLIENT with ID:', id);
