@@ -23,8 +23,12 @@ export class PeerManager {
 			this.setupConnection(conn);
 		});
 
-		this.peer.on('error', (err) => {
-			console.error('PeerJS error:', err);
+		this.peer.on('error', (err: any) => {
+			if (err.type === 'unavailable-id') {
+				console.warn('[PeerManager] Peer ID unavailable:', this.myId);
+			} else {
+				console.error('[PeerManager] PeerJS error:', err);
+			}
 		});
 	}
 

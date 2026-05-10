@@ -5,6 +5,7 @@ export interface PlayerProfile {
   name: string;
   avatar: string; // Icon name or SVG
   status: 'visible' | 'lurking';
+  activity: 'idle' | 'playing';
   lastSeen: number; // Timestamp
 }
 
@@ -41,7 +42,7 @@ const lobbySlice = createSlice({
     setProfile(state, action: PayloadAction<PlayerProfile>) {
       state.profile = action.payload;
     },
-    setLobbyState(state, action: PayloadAction<{ players: Record<string, PlayerProfile>; publicGames: Record<string, GameInfo> }>) {
+    setLobbyState(state, action: PayloadAction<{ players: Record<string, PlayerProfile>; publicGames: Record<string, GameInfo>; leaderId?: string }>) {
       state.players = action.payload.players;
       state.publicGames = action.payload.publicGames;
     },

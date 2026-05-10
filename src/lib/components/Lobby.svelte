@@ -29,6 +29,12 @@
 			lobbyState = store.getState().lobby;
 		});
 
+		const handleUnload = () => {
+			const lm = getLobbyManager();
+			if (lm) lm.disconnect();
+		};
+		window.addEventListener('beforeunload', handleUnload);
+
 		const urlParams = new URLSearchParams(window.location.search);
 		const paramMyId = urlParams.get('myId');
 		if (paramMyId) {
@@ -64,12 +70,19 @@
 				mode = 'ONBOARDING'; // Needs to enter name first
 			}
 		}
+
+		return () => {
+			window.removeEventListener('beforeunload', handleUnload);
+		};
 	});
 	
 	onDestroy(() => {
 		if (unsubscribe) unsubscribe();
-		const lm = getLobbyManager();
-		if (lm) lm.disconnect();
+		// Only disconnect if we are not in a game-related mode
+		if (mode === 'ONBOARDING' || mode === 'LOBBY') {
+			const lm = getLobbyManager();
+			if (lm) lm.disconnect();
+		}
 	});
 
 	function saveProfileAndJoinLobby() {
@@ -79,6 +92,7 @@
 			name: myName,
 			avatar: myAvatar,
 			status: myVisibility,
+			activity: 'idle',
 			lastSeen: Date.now()
 		};
 		localStorage.setItem('playerProfile', JSON.stringify(profile));
@@ -98,6 +112,7 @@
 			name: myName,
 			avatar: myAvatar,
 			status: myVisibility,
+			activity: 'idle',
 			lastSeen: Date.now()
 		};
 		store.dispatch(setProfile(profile));
@@ -128,6 +143,11 @@
 	async function confirmHostGame() {
 		const lm = getLobbyManager();
 		// We still keep the lobby connection to broadcast the game
+		if (lm && lobbyState.profile) {
+			const updatedProfile = { ...lobbyState.profile, activity: 'playing' as const };
+			store.dispatch(setProfile(updatedProfile));
+			lm.updateProfile(updatedProfile);
+		}
 		
 		const peerManager = initNetwork(myId, store.dispatch, true, store.getState);
 		peerManager.connections.subscribe((c: string[]) => {
@@ -165,7 +185,11 @@
 
 	async function joinGame(hostId: string) {
 		const lm = getLobbyManager();
-		if (lm) lm.disconnect(); // Leave global lobby
+		if (lm && lobbyState.profile) {
+			const updatedProfile = { ...lobbyState.profile, activity: 'playing' as const };
+			store.dispatch(setProfile(updatedProfile));
+			lm.updateProfile(updatedProfile);
+		}
 		
 		targetHostId = hostId;
 		mode = 'JOINING';
@@ -185,6 +209,13 @@
 	}
 
 	async function joinGameFromLink() {
+		const lm = getLobbyManager();
+		if (lm && lobbyState.profile) {
+			const updatedProfile = { ...lobbyState.profile, activity: 'playing' as const };
+			store.dispatch(setProfile(updatedProfile));
+			lm.updateProfile(updatedProfile);
+		}
+
 		const peerManager = initNetwork(myId, store.dispatch, false, store.getState);
 		peerManager.connections.subscribe((c: string[]) => {
 			connections = c;
@@ -222,7 +253,16 @@
 </script>
 
 <div class="lobby groovy-panel">
-	<h2>Got Five! Lobby</h2>
+	<div class="lobby-header-row">
+		<h2>Got Five! Lobby</h2>
+		{#if mode !== 'ONBOARDING'}
+			<div class="global-status">
+				<span class={lobbyState.myStatus === 'CONNECTING' ? 'text-yellow' : 'text-cyan'}>
+					{lobbyState.myStatus}
+				</span>
+			</div>
+		{/if}
+	</div>
 
 	{#if mode === 'ONBOARDING'}
 		<div class="step">
@@ -253,12 +293,6 @@
 					<button class="groovy-button-small" onclick={updateProfileVisibility}>
 						Toggle Visibility
 					</button>
-					<p class="status-indicator">
-						Lobby Status: 
-						<span class={lobbyState.myStatus === 'CONNECTING' ? 'text-yellow' : 'text-cyan'}>
-							{lobbyState.myStatus}
-						</span>
-					</p>
 				</div>
 
 				<div class="players-list-panel">
@@ -268,6 +302,9 @@
 							{#if player.status === 'visible' || player.id === myId}
 								<li class={player.id === myId ? 'me' : ''}>
 									{player.name} {player.id === myId ? '(You)' : ''}
+									{#if player.activity === 'playing'}
+										<span class="activity-tag">playing</span>
+									{/if}
 								</li>
 							{/if}
 						{/each}
@@ -386,6 +423,22 @@
 		text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
 	}
 	h3 { color: var(--color-neon-magenta); }
+
+	.lobby-header-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+
+	.global-status {
+		font-size: 0.8rem;
+		font-weight: bold;
+		border: 1px solid var(--color-glass-border);
+		padding: 4px 8px;
+		border-radius: 4px;
+		background: rgba(0,0,0,0.2);
+	}
 
 	.input-group {
 		margin-bottom: 20px;
@@ -518,6 +571,17 @@
 	}
 	.players-list .me { color: var(--color-neon-cyan); font-weight: bold; }
 	.players-list .lurkers-count { font-style: italic; color: var(--color-text-muted); }
+	.activity-tag {
+		font-size: 0.6rem;
+		text-transform: uppercase;
+		background: var(--color-neon-magenta);
+		color: black;
+		padding: 1px 4px;
+		border-radius: 3px;
+		margin-left: 5px;
+		font-weight: bold;
+		vertical-align: middle;
+	}
 	
 	.games-header {
 		display: flex;
