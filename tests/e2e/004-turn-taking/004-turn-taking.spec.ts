@@ -14,14 +14,16 @@ test.describe('Multiplayer Turn-Taking', () => {
 		// 1. Setup Lobby
 		await hostPage.goto(`/?seed=123&myId=turn-taking-host-test-user`);
 		await hostPage.getByLabel('Your Name:').fill('Host');
-		await hostPage.getByRole('button', { name: 'Host Game' }).click();
+		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
+		await hostPage.getByRole('button', { name: 'Host New Game' }).click();
+		await hostPage.getByRole('button', { name: 'Start Hosting' }).click();
 		
 		const gameId = (await hostPage.locator('code').innerText()).trim();
 		
 		await clientPage.goto(`/?seed=123&myId=turn-taking-client-test-user`);
 		await clientPage.getByLabel('Your Name:').fill('Client');
-		await clientPage.getByRole('button', { name: 'Join Game' }).click();
-		await clientPage.getByLabel('Enter Host Game ID:').fill(gameId);
+		await clientPage.getByRole('button', { name: 'Join Lobby' }).click();
+		await clientPage.getByPlaceholder('Enter Game ID').fill(gameId);
 		await clientPage.getByRole('button', { name: 'Connect' }).click();
 
 		// Wait for connection - Host should see "Connected Players (2)"

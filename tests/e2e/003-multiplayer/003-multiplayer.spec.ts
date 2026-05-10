@@ -11,10 +11,9 @@ test.describe('Multiplayer Lobby', () => {
 		await tester.step('initial-lobby', {
 			description: 'Lobby is visible',
 			verifications: [
-				{ spec: 'Lobby header is visible', check: async () => await expect(page.getByRole('heading', { name: 'Lobby' })).toBeVisible() },
+				{ spec: 'Lobby header is visible', check: async () => await expect(page.getByRole('heading', { name: 'Got Five! Lobby' })).toBeVisible() },
 				{ spec: 'Name input is visible', check: async () => await expect(page.getByLabel('Your Name:')).toBeVisible() },
-				{ spec: 'Host button is visible', check: async () => await expect(page.getByRole('button', { name: 'Host Game' })).toBeVisible() },
-				{ spec: 'Join button is visible', check: async () => await expect(page.getByRole('button', { name: 'Join Game' })).toBeVisible() }
+				{ spec: 'Join Lobby button is visible', check: async () => await expect(page.getByRole('button', { name: 'Join Lobby' })).toBeVisible() }
 			]
 		});
 
@@ -28,7 +27,9 @@ test.describe('Multiplayer Lobby', () => {
 		await page.goto(`/?seed=123&myId=multiplayer-hosting-test-user`);
 		
 		await page.getByLabel('Your Name:').fill('Tester');
-		await page.getByRole('button', { name: 'Host Game' }).click();
+		await page.getByRole('button', { name: 'Join Lobby' }).click();
+		await page.getByRole('button', { name: 'Host New Game' }).click();
+		await page.getByRole('button', { name: 'Start Hosting' }).click();
 		
 		await tester.step('hosting-flow', {
 			description: 'Hosting instructions are visible',
