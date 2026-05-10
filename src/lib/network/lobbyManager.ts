@@ -40,6 +40,7 @@ export class LobbyManager {
   private pruneInterval: any = null;
   private initTimeout: any = null;
   private connectTimeout: any = null;
+  private electionRetryCount = 0;
 
   constructor(profile: PlayerProfile) {
     this.profile = profile;
@@ -52,7 +53,7 @@ export class LobbyManager {
     store.dispatch(setMyStatus('CONNECTING'));
     
     // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
-    const initialDelay = isReconnect ? 0 : 2000;
+    const initialDelay = isReconnect ? 0 : 5000;
     
     this.initTimeout = setTimeout(() => {
       this.initTimeout = null;
@@ -63,6 +64,7 @@ export class LobbyManager {
       this.peer.on('open', (id) => {
         console.log('[LobbyManager] Became LOBBY_LEADER with ID:', id);
         this.isLeader = true;
+        this.electionRetryCount = 0;
         store.dispatch(setMyStatus('LOBBY_LEADER'));
         store.dispatch(updatePlayerStatus({ ...this.profile!, lastSeen: Date.now() }));
         
@@ -78,15 +80,23 @@ export class LobbyManager {
 
       this.peer.on('error', (err: any) => {
         if (err.type === 'unavailable-id') {
+          if (isReconnect && this.electionRetryCount < 10) {
+            this.electionRetryCount++;
+            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying...`);
+            this.peer?.destroy();
+            this.peer = null;
+            setTimeout(() => this.init(true), 1000);
+            return;
+          }
           console.log('[LobbyManager] Leader ID taken, starting as client');
+          this.electionRetryCount = 0;
           this.peer?.destroy();
           this.peer = null;
           this.startAsClient();
         } else {
           console.error('[LobbyManager] Lobby peer error:', err);
         }
-      });
-    }, initialDelay);
+      });    }, initialDelay);
   }
 
   private startAsClient(retryWithRandom = false) {
