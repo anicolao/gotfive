@@ -49,9 +49,14 @@
 			playersState = state.players;
 			uiState = state.ui;
 			updateVisibleTiles();
-			if (uiState.strokes.length === 0 && ctx && canvas) {
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-			} else if (ctx) {
+			
+			// Defensive check for canvas and ctx to prevent "Cannot read properties of null" errors
+			// especially during mount/unmount transitions.
+			const c = canvas;
+			const context = ctx;
+			if (uiState?.strokes?.length === 0 && context && c) {
+				context.clearRect(0, 0, c.width, c.height);
+			} else if (context) {
 				redrawStrokes();
 			}
 		});
@@ -93,16 +98,18 @@
 	}
 
 	function redrawStrokes() {
-		if (!ctx || !canvas || !uiState?.strokes) return;
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		const c = canvas;
+		const context = ctx;
+		if (!context || !c || !uiState?.strokes) return;
+		context.clearRect(0, 0, c.width, c.height);
 		uiState.strokes.forEach((stroke: number[][]) => {
 			if (stroke.length === 0) return;
-			ctx.beginPath();
-			ctx.moveTo(stroke[0][0], stroke[0][1]);
+			context.beginPath();
+			context.moveTo(stroke[0][0], stroke[0][1]);
 			for (let i = 1; i < stroke.length; i++) {
-				ctx.lineTo(stroke[i][0], stroke[i][1]);
+				context.lineTo(stroke[i][0], stroke[i][1]);
 			}
-			ctx.stroke();
+			context.stroke();
 		});
 	}
 
