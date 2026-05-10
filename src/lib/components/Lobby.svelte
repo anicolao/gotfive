@@ -636,6 +636,27 @@
 	@media (max-width: 768px) {
 		.lobby-layout {
 			flex-direction: column;
+			gap: 5px;
 		}
+		.lobby-main {
+			padding: 5px;
+		}
+		.profile-card, .players-list-panel {
+			padding: 5px;
+		}
+		.games-list {
+			gap: 5px;
+			margin-bottom: 10px;
+		}
+		.game-card {
+			padding: 5px;
+		}
+		.join-private {
+			padding-top: 5px;
+		}
+		h2 { font-size: 1.2rem; }
+		h3 { font-size: 1rem; margin: 2px 0; }
+		.input-group { margin-bottom: 5px; }
+		input, select { padding: 8px; font-size: 1rem; }
 	}
 </style>

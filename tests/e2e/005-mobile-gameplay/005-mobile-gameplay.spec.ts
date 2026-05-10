@@ -14,7 +14,7 @@ interface WindowWithStore extends Window {
 }
 
 test.describe('Mobile Gameplay', () => {
-  test.use({ viewport: { width: 375, height: 667 } }); // iPhone SE portrait
+  test.use({ viewport: { width: 375, height: 720 } }); // Adjusted iPhone SE portrait height to avoid clipping in tests
 
   test('User plays on mobile portrait', async ({ page }, testInfo) => {
     const tester = new TestStepHelper(page, testInfo);

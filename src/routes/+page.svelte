@@ -404,17 +404,19 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 2rem;
 		padding: 2rem;
 		align-self: center;
 		box-sizing: border-box;
+		overflow-y: auto;
+		max-height: 100%;
 	}
 
 	@media (max-width: 600px) {
 		.lobby-wrapper {
-			padding: 0.5rem;
-			gap: 1rem;
+			padding: 0.25rem;
+			gap: 0.25rem;
 		}
 	}
 

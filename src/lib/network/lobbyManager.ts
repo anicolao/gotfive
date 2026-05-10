@@ -38,6 +38,8 @@ export class LobbyManager {
   private profile: PlayerProfile | null = null;
   private heartbeatInterval: any = null;
   private pruneInterval: any = null;
+  private initTimeout: any = null;
+  private connectTimeout: any = null;
 
   constructor(profile: PlayerProfile) {
     this.profile = profile;
@@ -45,13 +47,15 @@ export class LobbyManager {
   }
 
   private init(isReconnect = false) {
+    if (this.initTimeout) clearTimeout(this.initTimeout);
     console.log(`[LobbyManager] Initializing as potential leader (isReconnect: ${isReconnect})...`);
     store.dispatch(setMyStatus('CONNECTING'));
     
     // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
     const initialDelay = isReconnect ? 0 : 2000;
     
-    setTimeout(() => {
+    this.initTimeout = setTimeout(() => {
+      this.initTimeout = null;
       if (this.peer) return; // Already initialized by something else?
       
       this.peer = new Peer(getLobbyLeaderId());
@@ -65,6 +69,7 @@ export class LobbyManager {
         this.peer!.on('connection', (conn) => this.handleClientConnection(conn));
         
         // Periodically prune dead clients and send heartbeats
+        if (this.pruneInterval) clearInterval(this.pruneInterval);
         this.pruneInterval = setInterval(() => {
           this.pruneDeadClients();
           this.sendHeartbeatToClients();
@@ -88,6 +93,12 @@ export class LobbyManager {
     this.isLeader = false;
     const clientPeerId = retryWithRandom ? undefined : `gotfive-lobby-client-${this.profile!.id}`;
     console.log('[LobbyManager] Starting as client with ID:', clientPeerId || '(random)');
+    
+    if (this.peer) {
+      this.peer.destroy();
+      this.peer = null;
+    }
+    
     this.peer = new Peer(clientPeerId);
 
     this.peer.on('open', (id) => {
@@ -99,7 +110,8 @@ export class LobbyManager {
     this.peer.on('error', (err: any) => {
       if (!retryWithRandom && err.type === 'unavailable-id') {
         console.log('[LobbyManager] Client peer ID taken, retrying with random ID');
-        this.peer?.destroy();
+        if (this.peer) this.peer.destroy();
+        this.peer = null;
         this.startAsClient(true);
       } else {
         console.error('[LobbyManager] Client peer error:', err);
@@ -112,6 +124,13 @@ export class LobbyManager {
     if (!this.peer) return;
     const leaderId = getLobbyLeaderId();
     console.log('[LobbyManager] Connecting to leader:', leaderId);
+    
+    if (this.connectTimeout) clearTimeout(this.connectTimeout);
+    this.connectTimeout = setTimeout(() => {
+      console.warn('[LobbyManager] Connection to leader timed out (ghost?)');
+      this.handleLeaderDisconnect();
+    }, 3000); // 3s connection timeout
+
     const conn = this.peer.connect(leaderId);
     
     if (!conn) return;
@@ -125,10 +144,14 @@ export class LobbyManager {
     };
 
     conn.on('open', () => {
+      if (this.connectTimeout) clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
+
       console.log('[LobbyManager] Connected to leader');
       this.leaderConnection = conn;
       this.sendToLeader({ type: 'LOBBY_JOIN', payload: { ...this.profile!, lastSeen: Date.now() } });
       
+      if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = setInterval(() => {
         this.sendToLeader({ type: 'HEARTBEAT' });
       }, 1000); // 1s heartbeat
@@ -137,6 +160,13 @@ export class LobbyManager {
 
     conn.on('data', (data) => {
       resetLeaderWatchdog();
+      
+      // Update leader's lastSeen locally since we just got data from them
+      const state = store.getState().lobby;
+      if (this.currentLeaderId && state.players[this.currentLeaderId]) {
+        store.dispatch(updatePlayerStatus({ ...state.players[this.currentLeaderId], lastSeen: Date.now() }));
+      }
+
       try {
         const msg = (typeof data === 'string' ? JSON.parse(data) : data) as LobbyMessage;
         if (msg.type === 'LOBBY_STATE') {
@@ -149,10 +179,14 @@ export class LobbyManager {
     });
 
     conn.on('close', () => {
+      if (this.connectTimeout) clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
       console.log('[LobbyManager] Leader connection closed event');
       this.handleLeaderDisconnect();
     });
     conn.on('error', (err) => {
+      if (this.connectTimeout) clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
       console.error('[LobbyManager] Leader connection error event:', err);
       this.handleLeaderDisconnect();
     });
@@ -167,7 +201,8 @@ export class LobbyManager {
       this.leaderConnection.close();
       this.leaderConnection = null;
     }
-    clearInterval(this.heartbeatInterval);
+    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+    this.heartbeatInterval = null;
     
     const state = store.getState().lobby;
     const now = Date.now();
@@ -184,7 +219,7 @@ export class LobbyManager {
     }
 
     const activePlayers = Object.values(players)
-      .filter(p => p.id === this.profile?.id || now - p.lastSeen < 30000)
+      .filter(p => p.id === this.profile?.id || now - p.lastSeen < 60000)
       .map(p => p.id)
       .sort();
       

@@ -35,17 +35,31 @@
 		return !isNaN(num) && num > 0 && num <= 60;
 	}));
 
-	store.subscribe(() => {
-		const state = store.getState();
-		gameState = state.game;
-		playersState = state.players;
-		uiState = state.ui;
-		updateVisibleTiles();
-		if (uiState.strokes.length === 0 && ctx) {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-		} else if (ctx) {
-			redrawStrokes();
+	onMount(() => {
+		const context = canvas.getContext('2d');
+		if (context) {
+			ctx = context;
+			resizeCanvas();
 		}
+		window.addEventListener('resize', resizeCanvas);
+
+		const unsubscribe = store.subscribe(() => {
+			const state = store.getState();
+			gameState = state.game;
+			playersState = state.players;
+			uiState = state.ui;
+			updateVisibleTiles();
+			if (uiState.strokes.length === 0 && ctx && canvas) {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+			} else if (ctx) {
+				redrawStrokes();
+			}
+		});
+
+		return () => {
+			window.removeEventListener('resize', resizeCanvas);
+			unsubscribe();
+		};
 	});
 
 	function updateVisibleTiles() {
@@ -62,16 +76,6 @@
 		}
 		visibleTiles = visible;
 	}
-
-	onMount(() => {
-		const context = canvas.getContext('2d');
-		if (context) {
-			ctx = context;
-			resizeCanvas();
-		}
-		window.addEventListener('resize', resizeCanvas);
-		return () => window.removeEventListener('resize', resizeCanvas);
-	});
 
 	function resizeCanvas() {
 		if (!canvas) return;
