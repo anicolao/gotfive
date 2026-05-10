@@ -2,13 +2,15 @@ import { configureStore } from '@reduxjs/toolkit';
 import gameReducer from './gameSlice';
 import playersReducer from './playersSlice';
 import uiReducer from './uiSlice';
+import lobbyReducer from './lobbySlice';
 import { networkMiddleware } from '../network';
 
 export const store = configureStore({
         reducer: {
                 game: gameReducer,
                 players: playersReducer,
-                ui: uiReducer
+                ui: uiReducer,
+                lobby: lobbyReducer
         },
         middleware: (getDefaultMiddleware) => 
                 getDefaultMiddleware().concat(networkMiddleware)

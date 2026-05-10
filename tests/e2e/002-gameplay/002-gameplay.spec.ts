@@ -11,7 +11,9 @@ test('User plays the game', async ({ page }, testInfo) => {
 
   // Handle Lobby
   await page.getByLabel('Your Name:').fill('You');
-  await page.getByRole('button', { name: 'Host Game' }).click();
+  await page.getByRole('button', { name: 'Join Lobby' }).click();
+  await page.getByRole('button', { name: 'Host New Game' }).click();
+  await page.getByRole('button', { name: 'Start Hosting' }).click();
 
   // Add Alice via store
   await page.evaluate(() => {

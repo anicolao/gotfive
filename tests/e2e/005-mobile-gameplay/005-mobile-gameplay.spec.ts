@@ -27,7 +27,9 @@ test.describe('Mobile Gameplay', () => {
     await expect(lobby).toBeVisible();
 
     await page.getByLabel('Your Name:').fill('MobileUser');
-    await page.getByRole('button', { name: 'Host Game' }).click();
+    await page.getByRole('button', { name: 'Join Lobby' }).click();
+    await page.getByRole('button', { name: 'Host New Game' }).click();
+    await page.getByRole('button', { name: 'Start Hosting' }).click();
 
     // Add a player via store
     await page.evaluate(() => {
@@ -163,7 +165,9 @@ test.describe('Mobile Gameplay', () => {
     await page.goto(`/?seed=123&myId=mobile-landscape-test-user`);
 
     await page.getByLabel('Your Name:').fill('LandscapeUser');
-    await page.getByRole('button', { name: 'Host Game' }).click();
+    await page.getByRole('button', { name: 'Join Lobby' }).click();
+    await page.getByRole('button', { name: 'Host New Game' }).click();
+    await page.getByRole('button', { name: 'Start Hosting' }).click();
 
     await page.evaluate(() => {
       (window as unknown as WindowWithStore).store.dispatch({ 
@@ -255,7 +259,9 @@ test.describe('Mobile Gameplay', () => {
     await page.goto(`/?seed=123&myId=tablet-portrait-test-user`);
 
     await page.getByLabel('Your Name:').fill('TabletUser');
-    await page.getByRole('button', { name: 'Host Game' }).click();
+    await page.getByRole('button', { name: 'Join Lobby' }).click();
+    await page.getByRole('button', { name: 'Host New Game' }).click();
+    await page.getByRole('button', { name: 'Start Hosting' }).click();
 
     await page.evaluate(() => {
       const store = (window as unknown as WindowWithStore).store;

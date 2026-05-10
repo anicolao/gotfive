@@ -1,60 +1,41 @@
-# Mobile Portrait
+# Mobile Landscape
 
-Verify layout and gameplay on mobile portrait.
+Verify layout on mobile landscape.
 
-## Main play area and deduction board are visible together
+## Main play area and deduction board are both visible horizontally
 
-![Main play area and deduction board are visible together](./screenshots/000-mobile-portrait-layout.png)
+![Main play area and deduction board are both visible horizontally](./screenshots/000-mobile-landscape-layout.png)
 
 **Verifications:**
 - [x] Main play area is visible
-- [x] Deduction area is visible without toggling
+- [x] Deduction board is visible horizontally
 
 ---
 
-## Reveal a tile in portrait mode
+## Reveal a tile in landscape mode
 
-![Reveal a tile in portrait mode](./screenshots/001-mobile-portrait-reveal.png)
+![Reveal a tile in landscape mode](./screenshots/001-mobile-landscape-reveal.png)
 
 **Verifications:**
 - [x] Public pool has 6 tiles
 
 ---
 
-## Ask for a clue in portrait mode
+## Ask for a clue in landscape mode
 
-![Ask for a clue in portrait mode](./screenshots/002-mobile-portrait-ask-clue.png)
+![Ask for a clue in landscape mode](./screenshots/002-mobile-landscape-ask-clue.png)
 
 **Verifications:**
 - [x] Player 2 stand has an active notch
 
 ---
 
-## Submit a guess in portrait mode
+## Submit a guess in landscape mode
 
-![Submit a guess in portrait mode](./screenshots/003-mobile-portrait-guess.png)
-
-**Verifications:**
-- [x] Status banner is visible
-
----
-
-## Game over status shows on mobile
-
-![Game over status shows on mobile](./screenshots/004-game-over-mobile.png)
+![Submit a guess in landscape mode](./screenshots/003-mobile-landscape-guess.png)
 
 **Verifications:**
 - [x] Status banner is visible
-- [x] Winner message is correct
-
----
-
-## Game resets to lobby state without page reload
-
-![Game resets to lobby state without page reload](./screenshots/005-reset-flow.png)
-
-**Verifications:**
-- [x] Lobby is visible again
 
 ---
 
