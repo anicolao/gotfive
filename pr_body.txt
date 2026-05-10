@@ -1,0 +1,9 @@
+This PR addresses issue #45 by:
+1. Implementing a seniority-based lobby leader election in `LobbyManager`.
+2. Adding a watchdog and heartbeat system to detect leader disconnects reliably.
+3. Introducing player activity tracking ('idle' vs 'playing') to keep players in the lobby during games.
+4. Ensuring Lobby connections persist during gameplay.
+5. Resolving Peer ID conflicts by using specific client IDs and retrying with random IDs.
+6. Adding comprehensive E2E tests to verify these scenarios.
+
+Closes #45
