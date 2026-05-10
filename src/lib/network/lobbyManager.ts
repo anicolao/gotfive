@@ -31,6 +31,8 @@ export class LobbyManager {
   public isLeader = false;
   private leaderConnection: DataConnection | null = null;
   private clientConnections: Map<string, DataConnection> = new Map();
+  private peerIdToProfileId: Map<string, string> = new Map();
+  private profileIdToPeerId: Map<string, string> = new Map();
   private reconnectTimeout: any = null;
   private profile: PlayerProfile | null = null;
   private heartbeatInterval: any = null;
@@ -66,17 +68,23 @@ export class LobbyManager {
     });
   }
 
-  private startAsClient() {
+  private startAsClient(retryWithRandom = false) {
     this.isLeader = false;
-    this.peer = new Peer(this.profile!.id);
+    this.peer = retryWithRandom ? new Peer() : new Peer(this.profile!.id);
 
     this.peer.on('open', (id) => {
       store.dispatch(setMyStatus('LOBBY_CLIENT'));
       this.connectToLeader();
     });
 
-    this.peer.on('error', (err) => {
-      console.error('Client peer error:', err);
+    this.peer.on('error', (err: any) => {
+      if (!retryWithRandom && err.type === 'unavailable-id') {
+        console.log('Profile ID taken, retrying with random ID');
+        this.peer?.destroy();
+        this.startAsClient(true);
+      } else {
+        console.error('Client peer error:', err);
+      }
     });
   }
 
@@ -144,6 +152,21 @@ export class LobbyManager {
         const msg = (typeof data === 'string' ? JSON.parse(data) : data) as LobbyMessage;
         
         if (msg.type === 'LOBBY_JOIN') {
+          const profileId = msg.payload.id;
+          const oldPeerId = this.profileIdToPeerId.get(profileId);
+          
+          if (oldPeerId && oldPeerId !== conn.peer) {
+            const oldConn = this.clientConnections.get(oldPeerId);
+            if (oldConn) {
+              oldConn.close();
+            }
+            this.peerIdToProfileId.delete(oldPeerId);
+            this.clientConnections.delete(oldPeerId);
+          }
+          
+          this.peerIdToProfileId.set(conn.peer, profileId);
+          this.profileIdToPeerId.set(profileId, conn.peer);
+
           store.dispatch(updatePlayerStatus({ ...msg.payload, lastSeen: Date.now() }));
           this.broadcastState();
         } else if (msg.type === 'GAME_REGISTER') {
@@ -153,9 +176,10 @@ export class LobbyManager {
           store.dispatch(unregisterGame(msg.payload));
           this.broadcastState();
         } else if (msg.type === 'HEARTBEAT') {
+          const profileId = this.peerIdToProfileId.get(conn.peer);
           const state = store.getState().lobby;
-          if (state.players[conn.peer]) {
-             store.dispatch(updatePlayerStatus({ ...state.players[conn.peer], lastSeen: Date.now() }));
+          if (profileId && state.players[profileId]) {
+             store.dispatch(updatePlayerStatus({ ...state.players[profileId], lastSeen: Date.now() }));
           }
         }
       } catch(e) {
@@ -164,14 +188,24 @@ export class LobbyManager {
     });
 
     conn.on('close', () => {
+      const profileId = this.peerIdToProfileId.get(conn.peer);
       this.clientConnections.delete(conn.peer);
-      store.dispatch(removePlayer(conn.peer));
       
-      const state = store.getState().lobby;
-      if (state.publicGames[conn.peer]) {
-         store.dispatch(unregisterGame(conn.peer));
+      if (profileId) {
+        this.peerIdToProfileId.delete(conn.peer);
+        
+        // Only remove the player if this connection is the one currently associated with the profile
+        if (this.profileIdToPeerId.get(profileId) === conn.peer) {
+          this.profileIdToPeerId.delete(profileId);
+          store.dispatch(removePlayer(profileId));
+          
+          const state = store.getState().lobby;
+          if (state.publicGames[profileId]) {
+             store.dispatch(unregisterGame(profileId));
+          }
+          this.broadcastState();
+        }
       }
-      this.broadcastState();
     });
     
     conn.on('error', () => {
@@ -194,10 +228,15 @@ export class LobbyManager {
         store.dispatch(removePlayer(p.id));
         if (state.publicGames[p.id]) store.dispatch(unregisterGame(p.id));
         
-        const conn = this.clientConnections.get(p.id);
-        if (conn) {
-          conn.close();
-          this.clientConnections.delete(p.id);
+        const peerId = this.profileIdToPeerId.get(p.id);
+        if (peerId) {
+          const conn = this.clientConnections.get(peerId);
+          if (conn) {
+            conn.close();
+            this.clientConnections.delete(peerId);
+          }
+          this.peerIdToProfileId.delete(peerId);
+          this.profileIdToPeerId.delete(p.id);
         }
         changed = true;
       }
@@ -248,6 +287,9 @@ export class LobbyManager {
     if (this.pruneInterval) clearInterval(this.pruneInterval);
     if (this.leaderConnection) this.leaderConnection.close();
     this.clientConnections.forEach(c => c.close());
+    this.clientConnections.clear();
+    this.peerIdToProfileId.clear();
+    this.profileIdToPeerId.clear();
     if (this.peer) this.peer.destroy();
   }
 }
