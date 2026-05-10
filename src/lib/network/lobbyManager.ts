@@ -80,12 +80,16 @@ export class LobbyManager {
 
       this.peer.on('error', (err: any) => {
         if (err.type === 'unavailable-id') {
-          if (isReconnect && this.electionRetryCount < 10) {
+          // If we were trying to reconnect as leader and failed, it means either:
+          // 1. The old leader session is still active (ghost)
+          // 2. Someone else beat us to it and is now the leader
+          // We'll retry a few times if we were already a member, then fall back to client mode.
+          if (isReconnect && this.electionRetryCount < 3) {
             this.electionRetryCount++;
-            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying...`);
+            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in 500ms...`);
             this.peer?.destroy();
             this.peer = null;
-            setTimeout(() => this.init(true), 1000);
+            setTimeout(() => this.init(true), 500);
             return;
           }
           console.log('[LobbyManager] Leader ID taken, starting as client');

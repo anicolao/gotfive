@@ -36,7 +36,7 @@
 	}));
 
 	onMount(() => {
-		const context = canvas.getContext('2d');
+		const context = canvas?.getContext('2d');
 		if (context) {
 			ctx = context;
 			resizeCanvas();
@@ -44,6 +44,8 @@
 		window.addEventListener('resize', resizeCanvas);
 
 		const unsubscribe = store.subscribe(() => {
+			if (!canvas || !ctx) return;
+			
 			const state = store.getState();
 			gameState = state.game;
 			playersState = state.players;
@@ -54,9 +56,9 @@
 			// especially during mount/unmount transitions.
 			const c = canvas;
 			const context = ctx;
-			if (uiState?.strokes?.length === 0 && context && c) {
+			if (uiState?.strokes?.length === 0) {
 				context.clearRect(0, 0, c.width, c.height);
-			} else if (context) {
+			} else {
 				redrawStrokes();
 			}
 		});
@@ -64,6 +66,7 @@
 		return () => {
 			window.removeEventListener('resize', resizeCanvas);
 			unsubscribe();
+			ctx = null as any;
 		};
 	});
 
