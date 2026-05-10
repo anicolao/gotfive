@@ -1,0 +1,10 @@
+I have investigated issue #43 regarding the "ID is taken" error when reconnecting to a lobby. 
+
+The issue was caused by PeerJS trying to reuse the same Peer ID as the profileId after a tab refresh, while the previous socket connection was still active on the signaling server. The existing code on the issue-43 branch already includes a fix:
+1. It adds a retry mechanism in LobbyManager.startAsClient that falls back to a random Peer ID if the unavailable-id error occurs.
+2. It decouples Peer IDs from Profile IDs using new mapping structures (peerIdToProfileId, profileIdToPeerId).
+3. It ensures connections are properly cleaned up on disconnect/reconnect.
+
+I have verified the codebase, confirmed that E2E tests pass (after installing the necessary browser dependencies), and verified the fix works as expected. 
+
+Pull request: https://github.com/anicolao/gotfive/pull/44
