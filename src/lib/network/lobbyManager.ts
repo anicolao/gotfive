@@ -21,7 +21,7 @@ function getLobbyLeaderId() {
 
 export type LobbyMessage =
   | { type: 'LOBBY_JOIN'; payload: PlayerProfile }
-  | { type: 'LOBBY_STATE'; payload: { players: Record<string, PlayerProfile>; publicGames: Record<string, GameInfo> } }
+  | { type: 'LOBBY_STATE'; payload: { players: Record<string, PlayerProfile>; publicGames: Record<string, GameInfo>; leaderId: string } }
   | { type: 'GAME_REGISTER'; payload: GameInfo }
   | { type: 'GAME_UNREGISTER'; payload: string }
   | { type: 'HEARTBEAT' };
@@ -34,6 +34,7 @@ export class LobbyManager {
   private peerIdToProfileId: Map<string, string> = new Map();
   private profileIdToPeerId: Map<string, string> = new Map();
   private reconnectTimeout: any = null;
+  private currentLeaderId: string | null = null;
   private profile: PlayerProfile | null = null;
   private heartbeatInterval: any = null;
   private pruneInterval: any = null;
@@ -43,82 +44,125 @@ export class LobbyManager {
     this.init();
   }
 
-  private init() {
+  private init(isReconnect = false) {
+    console.log(`[LobbyManager] Initializing as potential leader (isReconnect: ${isReconnect})...`);
     store.dispatch(setMyStatus('CONNECTING'));
-    this.peer = new Peer(getLobbyLeaderId());
-
-    this.peer.on('open', (id) => {
-      this.isLeader = true;
-      store.dispatch(setMyStatus('LOBBY_LEADER'));
-      store.dispatch(updatePlayerStatus({ ...this.profile!, lastSeen: Date.now() }));
+    
+    // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
+    const initialDelay = isReconnect ? 0 : 2000;
+    
+    setTimeout(() => {
+      if (this.peer) return; // Already initialized by something else?
       
-      this.peer!.on('connection', (conn) => this.handleClientConnection(conn));
-      
-      // Periodically prune dead clients
-      this.pruneInterval = setInterval(() => this.pruneDeadClients(), 15000);
-    });
+      this.peer = new Peer(getLobbyLeaderId());
 
-    this.peer.on('error', (err: any) => {
-      if (err.type === 'unavailable-id') {
-        this.peer?.destroy();
-        this.startAsClient();
-      } else {
-        console.error('Lobby peer error:', err);
-      }
-    });
+      this.peer.on('open', (id) => {
+        console.log('[LobbyManager] Became LOBBY_LEADER with ID:', id);
+        this.isLeader = true;
+        store.dispatch(setMyStatus('LOBBY_LEADER'));
+        store.dispatch(updatePlayerStatus({ ...this.profile!, lastSeen: Date.now() }));
+        
+        this.peer!.on('connection', (conn) => this.handleClientConnection(conn));
+        
+        // Periodically prune dead clients and send heartbeats
+        this.pruneInterval = setInterval(() => {
+          this.pruneDeadClients();
+          this.sendHeartbeatToClients();
+        }, 1000); // 1s prune/heartbeat
+      });
+
+      this.peer.on('error', (err: any) => {
+        if (err.type === 'unavailable-id') {
+          console.log('[LobbyManager] Leader ID taken, starting as client');
+          this.peer?.destroy();
+          this.peer = null;
+          this.startAsClient();
+        } else {
+          console.error('[LobbyManager] Lobby peer error:', err);
+        }
+      });
+    }, initialDelay);
   }
 
   private startAsClient(retryWithRandom = false) {
     this.isLeader = false;
-    this.peer = retryWithRandom ? new Peer() : new Peer(this.profile!.id);
+    const clientPeerId = retryWithRandom ? undefined : `gotfive-lobby-client-${this.profile!.id}`;
+    console.log('[LobbyManager] Starting as client with ID:', clientPeerId || '(random)');
+    this.peer = new Peer(clientPeerId);
 
     this.peer.on('open', (id) => {
+      console.log('[LobbyManager] Became LOBBY_CLIENT with ID:', id);
       store.dispatch(setMyStatus('LOBBY_CLIENT'));
       this.connectToLeader();
     });
 
     this.peer.on('error', (err: any) => {
       if (!retryWithRandom && err.type === 'unavailable-id') {
-        console.log('Profile ID taken, retrying with random ID');
+        console.log('[LobbyManager] Client peer ID taken, retrying with random ID');
         this.peer?.destroy();
         this.startAsClient(true);
       } else {
-        console.error('Client peer error:', err);
+        console.error('[LobbyManager] Client peer error:', err);
       }
     });
   }
 
+  private leaderHeartbeatTimeout: any = null;
   private connectToLeader() {
     if (!this.peer) return;
-    const conn = this.peer.connect(getLobbyLeaderId());
+    const leaderId = getLobbyLeaderId();
+    console.log('[LobbyManager] Connecting to leader:', leaderId);
+    const conn = this.peer.connect(leaderId);
     
     if (!conn) return;
 
+    const resetLeaderWatchdog = () => {
+      if (this.leaderHeartbeatTimeout) clearTimeout(this.leaderHeartbeatTimeout);
+      this.leaderHeartbeatTimeout = setTimeout(() => {
+        console.warn('[LobbyManager] Leader watchdog timeout! Assuming leader is dead.');
+        this.handleLeaderDisconnect();
+      }, 1500); // 1.5s watchdog
+    };
+
     conn.on('open', () => {
+      console.log('[LobbyManager] Connected to leader');
       this.leaderConnection = conn;
       this.sendToLeader({ type: 'LOBBY_JOIN', payload: { ...this.profile!, lastSeen: Date.now() } });
       
       this.heartbeatInterval = setInterval(() => {
         this.sendToLeader({ type: 'HEARTBEAT' });
-      }, 5000);
+      }, 1000); // 1s heartbeat
+      resetLeaderWatchdog();
     });
 
     conn.on('data', (data) => {
+      resetLeaderWatchdog();
       try {
         const msg = (typeof data === 'string' ? JSON.parse(data) : data) as LobbyMessage;
         if (msg.type === 'LOBBY_STATE') {
+          this.currentLeaderId = msg.payload.leaderId;
           store.dispatch(setLobbyState(msg.payload));
         }
       } catch(e) {
-        console.error('Failed parsing lobby msg', e);
+        console.error('[LobbyManager] Failed parsing lobby msg', e);
       }
     });
 
-    conn.on('close', () => this.handleLeaderDisconnect());
-    conn.on('error', () => this.handleLeaderDisconnect());
+    conn.on('close', () => {
+      console.log('[LobbyManager] Leader connection closed event');
+      this.handleLeaderDisconnect();
+    });
+    conn.on('error', (err) => {
+      console.error('[LobbyManager] Leader connection error event:', err);
+      this.handleLeaderDisconnect();
+    });
   }
 
+  private isDisconnecting = false;
   private handleLeaderDisconnect() {
+    if (this.isDisconnecting) return;
+    this.isDisconnecting = true;
+
     if (this.leaderConnection) {
       this.leaderConnection.close();
       this.leaderConnection = null;
@@ -126,17 +170,47 @@ export class LobbyManager {
     clearInterval(this.heartbeatInterval);
     
     const state = store.getState().lobby;
-    const allPlayers = Object.keys(state.players).sort();
-    const myIndex = allPlayers.indexOf(this.profile!.id);
+    const now = Date.now();
     
-    const delay = (Math.max(0, myIndex) * 200) + Math.random() * 100;
+    // Ensure I am in the list of players for election
+    const players = { ...state.players };
+    if (this.profile && !players[this.profile.id]) {
+      players[this.profile.id] = this.profile;
+    }
+
+    // EXCLUDE the dead leader
+    if (this.currentLeaderId) {
+      delete players[this.currentLeaderId];
+    }
+
+    const activePlayers = Object.values(players)
+      .filter(p => p.id === this.profile?.id || now - p.lastSeen < 30000)
+      .map(p => p.id)
+      .sort();
+      
+    const myIndex = this.profile ? activePlayers.indexOf(this.profile.id) : -1;
+    console.log('[LobbyManager] Leader disconnected. Active players:', activePlayers, 'My index:', myIndex);
     
+    // New senior (index 0) should be very aggressive
+    const delay = myIndex <= 0 ? (100 + Math.random() * 200) : (myIndex * 500 + Math.random() * 200);
+    
+    console.log(`[LobbyManager] Attempting to reconnect in ${delay}ms`);
     store.dispatch(setMyStatus('CONNECTING'));
     
     if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
     this.reconnectTimeout = setTimeout(() => {
-      if (this.peer) this.peer.destroy();
-      this.init();
+      this.isDisconnecting = false;
+      if (this.peer) {
+        console.log('[LobbyManager] Destroying old peer before reconnect');
+        const oldPeer = this.peer;
+        this.peer = null;
+        try {
+           oldPeer.destroy();
+        } catch(e) {
+           console.error('[LobbyManager] Error destroying peer:', e);
+        }
+      }
+      this.init(true);
     }, delay);
   }
 
@@ -249,11 +323,19 @@ export class LobbyManager {
     const state = store.getState().lobby;
     const msg: LobbyMessage = {
       type: 'LOBBY_STATE',
-      payload: { players: state.players, publicGames: state.publicGames }
+      payload: { players: state.players, publicGames: state.publicGames, leaderId: this.profile!.id }
     };
     const data = JSON.stringify(msg);
     this.clientConnections.forEach(conn => {
       if (conn.open) conn.send(data);
+    });
+  }
+
+  private sendHeartbeatToClients() {
+    if (!this.isLeader) return;
+    const msg = JSON.stringify({ type: 'HEARTBEAT' });
+    this.clientConnections.forEach(conn => {
+      if (conn.open) conn.send(msg);
     });
   }
 
@@ -268,6 +350,8 @@ export class LobbyManager {
       } else if (msg.type === 'LOBBY_JOIN') {
         store.dispatch(updatePlayerStatus({ ...msg.payload, lastSeen: Date.now() }));
         this.broadcastState();
+      } else if (msg.type === 'LOBBY_STATE') {
+         // Should not happen on leader, but for completeness
       }
     } else {
       if (this.leaderConnection && this.leaderConnection.open) {
@@ -285,12 +369,17 @@ export class LobbyManager {
     if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
     if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
     if (this.pruneInterval) clearInterval(this.pruneInterval);
+    if (this.leaderHeartbeatTimeout) clearTimeout(this.leaderHeartbeatTimeout);
     if (this.leaderConnection) this.leaderConnection.close();
     this.clientConnections.forEach(c => c.close());
     this.clientConnections.clear();
     this.peerIdToProfileId.clear();
     this.profileIdToPeerId.clear();
-    if (this.peer) this.peer.destroy();
+    if (this.peer) {
+      const p = this.peer;
+      this.peer = null;
+      p.destroy();
+    }
   }
 }
 
