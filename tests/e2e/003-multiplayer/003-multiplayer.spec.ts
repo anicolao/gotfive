@@ -41,4 +41,72 @@ test.describe('Multiplayer Lobby', () => {
 
 		tester.generateDocs();
 	});
+
+	test('should allow a client to join a public game from the lobby', async ({ browser }, testInfo) => {
+		const hostContext = await browser.newContext();
+		const clientContext = await browser.newContext();
+		const hostPage = await hostContext.newPage();
+		const clientPage = await clientContext.newPage();
+
+		const tester = new TestStepHelper(clientPage, testInfo);
+		tester.setMetadata('Public Game Lobby', 'Testing public game discovery and joining.');
+
+		const runId = Date.now();
+		const hostId = `public-host-${runId}`;
+		const clientId = `public-client-${runId}`;
+
+		// 1. Setup Host
+		await hostPage.goto(`/?seed=123&myId=${hostId}`);
+		await hostPage.getByLabel('Your Name:').fill('Host');
+		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
+		
+		// Wait for Host to connect to Lobby
+		await expect(hostPage.getByText('LOBBY_LEADER')).toBeVisible({ timeout: 15000 });
+
+		await hostPage.getByRole('button', { name: 'Host New Game' }).click();
+		await hostPage.getByLabel('Game Name:').fill("Host's Public Game");
+		await hostPage.getByLabel('Visibility:').selectOption('public');
+		await hostPage.getByRole('button', { name: 'Start Hosting' }).click();
+		
+		await expect(hostPage.getByText('Your Game ID')).toBeVisible();
+
+		// 2. Setup Client
+		await clientPage.goto(`/?seed=123&myId=${clientId}`);
+		await clientPage.getByLabel('Your Name:').fill('Client');
+		await clientPage.getByRole('button', { name: 'Join Lobby' }).click();
+		
+		// Wait for Client to connect to Lobby
+		await expect(clientPage.getByText('LOBBY_CLIENT')).toBeVisible({ timeout: 15000 });
+
+		// 3. Client checks for Public Game
+		await expect(clientPage.getByRole('heading', { name: 'Public Games' })).toBeVisible();
+		const gameCard = clientPage.locator('.game-card').filter({ hasText: "Host's Public Game" });
+		await expect(gameCard).toBeVisible({ timeout: 10000 });
+
+		await tester.step('public-game-visible', {
+			description: 'Public game is visible in the lobby',
+			verifications: [
+				{ spec: 'Game card is visible', check: async () => await expect(gameCard).toBeVisible() }
+			]
+		});
+
+		// 4. Client joins the game
+		await gameCard.getByRole('button', { name: 'Join' }).click();
+
+		// 5. Client verifies connection
+		await expect(clientPage.getByText('Connected to Host!')).toBeVisible({ timeout: 10000 });
+		await expect(hostPage.getByText('Client')).toBeVisible({ timeout: 10000 });
+
+		await tester.step('client-connected', {
+			description: 'Client successfully connected to the host',
+			verifications: [
+				{ spec: 'Connection message visible', check: async () => await expect(clientPage.getByText('Connected to Host!')).toBeVisible() }
+			]
+		});
+
+		tester.generateDocs();
+		
+		await hostContext.close();
+		await clientContext.close();
+	});
 });
