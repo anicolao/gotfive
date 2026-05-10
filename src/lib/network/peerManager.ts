@@ -30,10 +30,15 @@ export class PeerManager {
 
 	public connect(targetId: string) {
 		const conn = this.peer.connect(targetId);
-		this.setupConnection(conn);
+		if (conn) {
+			this.setupConnection(conn);
+		} else {
+			console.warn(`Failed to create connection to ${targetId}`);
+		}
 	}
 
 	private setupConnection(conn: DataConnection) {
+		if (!conn) return;
 		conn.on('open', () => {
 			this.connectionsMap.set(conn.peer, conn);
 			this.connections.update(c => [...new Set([...c, conn.peer])]);

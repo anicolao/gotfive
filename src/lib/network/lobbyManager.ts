@@ -11,7 +11,13 @@ import {
   type GameInfo
 } from '../store/lobbySlice';
 
-const LOBBY_LEADER_ID = 'gotfive-lobby-leader';
+function getLobbyLeaderId() {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('lobbyId') || 'gotfive-lobby-leader';
+  }
+  return 'gotfive-lobby-leader';
+}
 
 export type LobbyMessage =
   | { type: 'LOBBY_JOIN'; payload: PlayerProfile }
@@ -37,7 +43,7 @@ export class LobbyManager {
 
   private init() {
     store.dispatch(setMyStatus('CONNECTING'));
-    this.peer = new Peer(LOBBY_LEADER_ID);
+    this.peer = new Peer(getLobbyLeaderId());
 
     this.peer.on('open', (id) => {
       this.isLeader = true;
@@ -76,8 +82,10 @@ export class LobbyManager {
 
   private connectToLeader() {
     if (!this.peer) return;
-    const conn = this.peer.connect(LOBBY_LEADER_ID);
+    const conn = this.peer.connect(getLobbyLeaderId());
     
+    if (!conn) return;
+
     conn.on('open', () => {
       this.leaderConnection = conn;
       this.sendToLeader({ type: 'LOBBY_JOIN', payload: { ...this.profile!, lastSeen: Date.now() } });
@@ -125,6 +133,8 @@ export class LobbyManager {
   }
 
   private handleClientConnection(conn: DataConnection) {
+    if (!conn) return;
+
     conn.on('open', () => {
       this.clientConnections.set(conn.peer, conn);
     });

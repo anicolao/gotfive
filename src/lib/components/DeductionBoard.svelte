@@ -76,6 +76,7 @@
 	function resizeCanvas() {
 		if (!canvas) return;
 		const rect = canvas.getBoundingClientRect();
+		if (!rect) return;
 		canvas.width = rect.width;
 		canvas.height = rect.height;
 

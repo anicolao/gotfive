@@ -11,8 +11,12 @@ test.describe('Multiplayer Turn-Taking', () => {
 		const tester = new TestStepHelper(hostPage, testInfo);
 		tester.setMetadata('Multiplayer Turn-Taking', 'Testing turn rotation and elimination in multiplayer.');
 
+		const hostId = `turn-taking-host`;
+		const clientId = `turn-taking-client`;
+		const lobbyId = `lobby-004-1`;
+
 		// 1. Setup Lobby
-		await hostPage.goto(`/?seed=123&myId=turn-taking-host-test-user`);
+		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}`);
 		await hostPage.getByLabel('Your Name:').fill('Host');
 		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
 		await hostPage.getByRole('button', { name: 'Host New Game' }).click();
@@ -20,7 +24,7 @@ test.describe('Multiplayer Turn-Taking', () => {
 		
 		const gameId = (await hostPage.locator('code').innerText()).trim();
 		
-		await clientPage.goto(`/?seed=123&myId=turn-taking-client-test-user`);
+		await clientPage.goto(`/?seed=123&myId=${clientId}&lobbyId=${lobbyId}`);
 		await clientPage.getByLabel('Your Name:').fill('Client');
 		await clientPage.getByRole('button', { name: 'Join Lobby' }).click();
 		await clientPage.getByPlaceholder('Enter Game ID').fill(gameId);
