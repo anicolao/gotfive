@@ -336,7 +336,7 @@
 
 		.opponents-area {
 			min-height: 60px;
-			flex: 0 0 auto;
+			flex: 0 1 auto;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -354,7 +354,7 @@
 		.player-area {
 			padding-bottom: 2px;
 			min-height: 60px;
-			flex: 0 0 auto;
+			flex: 0 1 auto;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -363,7 +363,7 @@
 		.deduction-area {
 			flex: 1;
 			width: 100%;
-			min-height: 210px;
+			min-height: 150px;
 			max-height: 50vh;
 			overflow-y: auto;
 			border-top: 1px solid var(--color-glass-border);
