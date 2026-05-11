@@ -53,7 +53,7 @@ export class LobbyManager {
     store.dispatch(setMyStatus('CONNECTING'));
     
     // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
-    const initialDelay = isReconnect ? 0 : 5000;
+    const initialDelay = isReconnect ? 0 : 1500;
     
     this.initTimeout = setTimeout(() => {
       this.initTimeout = null;
@@ -84,7 +84,7 @@ export class LobbyManager {
           // 1. The old leader session is still active (ghost)
           // 2. Someone else beat us to it and is now the leader
           // We'll retry a few times if we were already a member, then fall back to client mode.
-          if (isReconnect && this.electionRetryCount < 3) {
+          if (isReconnect && this.electionRetryCount < 5) {
             this.electionRetryCount++;
             console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in 500ms...`);
             this.peer?.destroy();
