@@ -3,7 +3,7 @@ import { TestStepHelper } from '../helpers/test-step-helper';
 
 test.describe('Lobby Leader Handoff', () => {
 	test('should hand off leadership to the senior client when the leader leaves', async ({ browser }, testInfo) => {
-		const lobbyId = `handoff-seniority-${Math.random().toString(36).substring(7)}`;
+		const lobbyId = `handoff-seniority-deterministic`;
 		
 		const context1 = await browser.newContext();
 		const context2 = await browser.newContext();
@@ -16,7 +16,7 @@ test.describe('Lobby Leader Handoff', () => {
 		const tester = new TestStepHelper(p2, testInfo);
 		tester.setMetadata('Lobby Leader Handoff', 'Testing that leadership is handed off correctly based on seniority.');
 
-		const suffix = Math.random().toString(36).substring(7);
+		const suffix = 'seniority';
 		const id1 = `p1-${suffix}`;
 		const id2 = `p2-${suffix}`;
 		const id3 = `p3-${suffix}`;
@@ -79,7 +79,7 @@ test.describe('Lobby Leader Handoff', () => {
 	});
 
 	test('should hand off leadership correctly even if a newcomer arrives during handoff', async ({ browser }, testInfo) => {
-		const lobbyId = `handoff-newcomer-${Math.random().toString(36).substring(7)}`;
+		const lobbyId = `handoff-newcomer-deterministic`;
 		
 		const context1 = await browser.newContext();
 		const context2 = await browser.newContext();
@@ -92,7 +92,7 @@ test.describe('Lobby Leader Handoff', () => {
 		const tester = new TestStepHelper(p2, testInfo);
 		tester.setMetadata('Lobby Leader Handoff with Newcomer', 'Testing that a newcomer does not steal leadership during handoff.');
 
-		const suffix = Math.random().toString(36).substring(7);
+		const suffix = 'newcomer';
 		const id1 = `p1-${suffix}`;
 		const id2 = `p2-${suffix}`;
 		const id4 = `p4-${suffix}`;
@@ -137,7 +137,7 @@ test.describe('Lobby Leader Handoff', () => {
 	});
 
 	test('should keep playing players in lobby and allow them to become leader', async ({ browser }, testInfo) => {
-		const lobbyId = `playing-leader-${Math.random().toString(36).substring(7)}`;
+		const lobbyId = `playing-leader-deterministic`;
 		
 		const context1 = await browser.newContext();
 		const context2 = await browser.newContext();
@@ -150,7 +150,7 @@ test.describe('Lobby Leader Handoff', () => {
 		const tester = new TestStepHelper(p2, testInfo);
 		tester.setMetadata('Playing Player as Lobby Leader', 'Testing that players staying in lobby while playing can become leaders.');
 
-		const suffix = Math.random().toString(36).substring(7);
+		const suffix = 'playing';
 		const id1 = `p1-${suffix}`;
 		const id2 = `p2-${suffix}`;
 		const id3 = `p3-${suffix}`;

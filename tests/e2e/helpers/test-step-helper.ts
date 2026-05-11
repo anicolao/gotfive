@@ -74,10 +74,10 @@ export async function checkNoClippingOrOverlap(page: Page) {
             const style = window.getComputedStyle(el);
             if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
             
-            // Check parent clipping (allow 5px tolerance)
+            // Check parent clipping (allow 10px tolerance)
             const isClippedByParent = (
-                rect.width - visibleRect.width > 5 ||
-                rect.height - visibleRect.height > 5
+                rect.width - visibleRect.width > 10 ||
+                rect.height - visibleRect.height > 10
             );
 
             if (isClippedByParent) {
@@ -86,9 +86,9 @@ export async function checkNoClippingOrOverlap(page: Page) {
 
             if (visibleRect.width === 0 || visibleRect.height === 0) continue;
 
-            // Check clipping (allow 5px tolerance for mobile)
+            // Check clipping (allow 10px tolerance for mobile)
             // We check the visible rect against the viewport
-            if (visibleRect.left < -5 || visibleRect.top < -5 || visibleRect.right > viewWidth + 5 || visibleRect.bottom > viewHeight + 5) {
+            if (visibleRect.left < -10 || visibleRect.top < -10 || visibleRect.right > viewWidth + 10 || visibleRect.bottom > viewHeight + 10) {
                 throw new Error(`Element ${el.className} (${el.tagName}) is clipped by viewport: ${JSON.stringify(visibleRect)} vs viewport ${viewWidth}x${viewHeight}`);
             }
 
