@@ -51,9 +51,10 @@ test.describe('Multiplayer Lobby', () => {
 		const tester = new TestStepHelper(clientPage, testInfo);
 		tester.setMetadata('Public Game Lobby', 'Testing public game discovery and joining.');
 
-		const hostId = `public-host`;
-		const clientId = `public-client`;
-		const lobbyId = `lobby-003-3`;
+		const suffix = Math.random().toString(36).substring(7);
+		const hostId = `public-host-${suffix}`;
+		const clientId = `public-client-${suffix}`;
+		const lobbyId = `lobby-003-3-${suffix}`;
 
 		// 1. Setup Host
 		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}`);

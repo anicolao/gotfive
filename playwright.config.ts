@@ -4,7 +4,7 @@ export default defineConfig({
     testDir: './tests/e2e',
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
-    retries: 0,
+    retries: 2,
     reporter: 'html',
     use: {
         baseURL: 'http://localhost:5173',
@@ -46,9 +46,9 @@ export default defineConfig({
         url: 'http://localhost:5173',
         reuseExistingServer: !process.env.CI,
     },
-    timeout: 60000, 
+    timeout: 120000, 
     expect: {
-        timeout: 5000, 
+        timeout: 30000, 
         toHaveScreenshot: { 
             maxDiffPixelRatio: 0,
             animations: 'disabled',

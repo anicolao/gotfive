@@ -26,6 +26,13 @@ export class PeerManager {
 		this.peer.on('error', (err: any) => {
 			if (err.type === 'unavailable-id') {
 				console.warn('[PeerManager] Peer ID unavailable:', this.myId);
+			} else if (err.type === 'network' || err.type === 'server-error') {
+				console.warn(`[PeerManager] PeerJS ${err.type} error, attempting reconnect...`);
+				setTimeout(() => {
+					if (!this.peer.destroyed && this.peer.disconnected) {
+						this.peer.reconnect();
+					}
+				}, 1000);
 			} else {
 				console.error('[PeerManager] PeerJS error:', err);
 			}
