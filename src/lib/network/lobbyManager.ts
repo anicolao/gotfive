@@ -24,7 +24,8 @@ export type LobbyMessage =
   | { type: 'LOBBY_STATE'; payload: { players: Record<string, PlayerProfile>; publicGames: Record<string, GameInfo>; leaderId: string } }
   | { type: 'GAME_REGISTER'; payload: GameInfo }
   | { type: 'GAME_UNREGISTER'; payload: string }
-  | { type: 'HEARTBEAT' };
+  | { type: 'HEARTBEAT' }
+  | { type: 'LEADER_DISCONNECT' };
 
 export class LobbyManager {
   private peer: Peer | null = null;
@@ -53,7 +54,7 @@ export class LobbyManager {
     store.dispatch(setMyStatus('CONNECTING'));
     
     // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
-    const initialDelay = isReconnect ? 0 : 2500;
+    const initialDelay = isReconnect ? 0 : 1000;
     
     this.initTimeout = setTimeout(() => {
       this.initTimeout = null;
@@ -75,7 +76,7 @@ export class LobbyManager {
         this.pruneInterval = setInterval(() => {
           this.pruneDeadClients();
           this.sendHeartbeatToClients();
-        }, 800); // 0.8s prune/heartbeat
+        }, 1000); // 1s prune/heartbeat
       });
 
       this.peer.on('error', (err: any) => {
@@ -147,7 +148,7 @@ export class LobbyManager {
     this.connectTimeout = setTimeout(() => {
       console.warn('[LobbyManager] Connection to leader timed out (ghost?)');
       this.handleLeaderDisconnect();
-    }, 3000); // 3s connection timeout
+    }, 10000); // 10s connection timeout
 
     const conn = this.peer.connect(leaderId);
     
@@ -158,7 +159,7 @@ export class LobbyManager {
       this.leaderHeartbeatTimeout = setTimeout(() => {
         console.warn('[LobbyManager] Leader watchdog timeout! Assuming leader is dead.');
         this.handleLeaderDisconnect();
-      }, 2000); // 2s watchdog
+      }, 5000); // 5s watchdog
     };
 
     conn.on('open', () => {
@@ -190,6 +191,9 @@ export class LobbyManager {
         if (msg.type === 'LOBBY_STATE') {
           this.currentLeaderId = msg.payload.leaderId;
           store.dispatch(setLobbyState(msg.payload));
+        } else if (msg.type === 'LEADER_DISCONNECT') {
+          console.log('[LobbyManager] Received LEADER_DISCONNECT gracefully');
+          this.handleLeaderDisconnect();
         }
       } catch(e) {
         console.error('[LobbyManager] Failed parsing lobby msg', e);
@@ -423,6 +427,16 @@ export class LobbyManager {
     if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
     if (this.pruneInterval) clearInterval(this.pruneInterval);
     if (this.leaderHeartbeatTimeout) clearTimeout(this.leaderHeartbeatTimeout);
+    
+    if (this.isLeader) {
+      const msg = JSON.stringify({ type: 'LEADER_DISCONNECT' });
+      this.clientConnections.forEach(c => {
+        if (c.open) {
+           c.send(msg);
+        }
+      });
+    }
+    
     if (this.leaderConnection) this.leaderConnection.close();
     this.clientConnections.forEach(c => c.close());
     this.clientConnections.clear();
