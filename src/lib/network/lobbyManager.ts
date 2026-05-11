@@ -53,7 +53,7 @@ export class LobbyManager {
     store.dispatch(setMyStatus('CONNECTING'));
     
     // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
-    const initialDelay = isReconnect ? 0 : 1500;
+    const initialDelay = isReconnect ? 0 : 2500;
     
     this.initTimeout = setTimeout(() => {
       this.initTimeout = null;
@@ -75,7 +75,7 @@ export class LobbyManager {
         this.pruneInterval = setInterval(() => {
           this.pruneDeadClients();
           this.sendHeartbeatToClients();
-        }, 1000); // 1s prune/heartbeat
+        }, 800); // 0.8s prune/heartbeat
       });
 
       this.peer.on('error', (err: any) => {
@@ -158,7 +158,7 @@ export class LobbyManager {
       this.leaderHeartbeatTimeout = setTimeout(() => {
         console.warn('[LobbyManager] Leader watchdog timeout! Assuming leader is dead.');
         this.handleLeaderDisconnect();
-      }, 1500); // 1.5s watchdog
+      }, 2000); // 2s watchdog
     };
 
     conn.on('open', () => {
@@ -447,3 +447,8 @@ export function initLobby(profile: PlayerProfile) {
 export function getLobbyManager() {
   return globalLobbyManager;
 }
+
+
+
+
+

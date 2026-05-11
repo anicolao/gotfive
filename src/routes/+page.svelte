@@ -312,12 +312,11 @@
 		}
 
 		.main-play-area {
-			flex: 1.2;
+			flex: 1;
 			min-height: 0;
 			display: flex;
 			flex-direction: column;
 			gap: 4px;
-			overflow: hidden;
 		}
 
 		.status-banner {
@@ -361,14 +360,24 @@
 		}
 
 		.deduction-area {
-			flex: 1;
+			flex: 1.2;
 			width: 100%;
-			min-height: 150px;
+			min-height: 200px;
 			max-height: 50vh;
 			overflow-y: auto;
 			border-top: 1px solid var(--color-glass-border);
 		}
 		}
+
+	@media (orientation: portrait) and (min-width: 600px) {
+		.main-play-area {
+			flex: 1.5;
+		}
+		.deduction-area {
+			flex: 1;
+			max-height: none;
+		}
+	}
 	@media (orientation: landscape) and (max-height: 500px) {
 		main {
 			padding: 4px;
