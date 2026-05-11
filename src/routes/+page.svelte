@@ -309,6 +309,7 @@
 			flex-direction: column;
 			gap: 4px;
 			padding: 0;
+			justify-content: center;
 		}
 
 		.main-play-area {
@@ -320,13 +321,15 @@
 		}
 
 		.status-banner {
-			position: absolute;
-			top: 10px;
-			left: 10px;
-			right: 10px;
+			position: relative;
+			top: 0;
+			left: 0;
+			right: 0;
 			z-index: 20;
-			padding: 4px;
-			margin: 0;
+			padding: 8px;
+			margin: 4px auto;
+			width: 95%;
+			box-sizing: border-box;
 		}
 
 		.status-banner h2 {
@@ -360,10 +363,10 @@
 		}
 
 		.deduction-area {
-			flex: 1.2;
+			flex: 1;
 			width: 100%;
-			min-height: 200px;
-			max-height: 40vh;
+			min-height: 150px;
+			max-height: 35vh;
 			overflow-y: auto;
 			border-top: 1px solid var(--color-glass-border);
 		}
@@ -414,8 +417,8 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: flex-start;
-		gap: 2rem;
-		padding: 2rem;
+		gap: 1rem;
+		padding: 1.5rem;
 		align-self: center;
 		box-sizing: border-box;
 		overflow-y: auto;

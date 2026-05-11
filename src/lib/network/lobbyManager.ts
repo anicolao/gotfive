@@ -90,12 +90,12 @@ export class LobbyManager {
           // 1. The old leader session is still active (ghost)
           // 2. Someone else beat us to it and is now the leader
           // We'll retry a few times if we were already a member, then fall back to client mode.
-          if (isReconnect && this.electionRetryCount < 30) {
+          if (isReconnect && this.electionRetryCount < 60) {
             this.electionRetryCount++;
-            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in 500ms...`);
+            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in 1000ms...`);
             this.peer?.destroy();
             this.peer = null;
-            setTimeout(() => this.init(true), 500);
+            setTimeout(() => this.init(true), 1000);
             return;
           }
           console.log('[LobbyManager] Leader ID taken, starting as client');
@@ -169,7 +169,7 @@ export class LobbyManager {
       this.leaderHeartbeatTimeout = setTimeout(() => {
         console.warn('[LobbyManager] Leader watchdog timeout! Assuming leader is dead.');
         this.handleLeaderDisconnect();
-      }, 5000); // 5s watchdog
+      }, 10000); // 10s watchdog
     };
 
     conn.on('open', () => {

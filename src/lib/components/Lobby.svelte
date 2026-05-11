@@ -635,10 +635,11 @@
 
 	@media (max-width: 768px) {
 	        .step {
-	                margin-bottom: 10px;
+	                margin-bottom: 5px;
 	                padding: 10px;
 	        }
-	        .lobby-layout {			flex-direction: column;
+		.lobby-layout {
+			flex-direction: column;
 			gap: 5px;
 		}
 		.lobby-main {
