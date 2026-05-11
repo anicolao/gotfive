@@ -1,22 +1,14 @@
-# Public Game Lobby
+# Hosting Lobby
 
-Testing public game discovery and joining.
+Testing the hosting flow.
 
-## Public game is visible in the lobby
+## Hosting instructions are visible
 
-![Public game is visible in the lobby](./screenshots/000-public-game-visible.png)
-
-**Verifications:**
-- [x] Game card is visible
-
----
-
-## Client successfully connected to the host
-
-![Client successfully connected to the host](./screenshots/001-client-connected.png)
+![Hosting instructions are visible](./screenshots/000-hosting-flow.png)
 
 **Verifications:**
-- [x] Connection message visible
+- [x] Game ID is visible
+- [x] Copy button is visible
 
 ---
 
