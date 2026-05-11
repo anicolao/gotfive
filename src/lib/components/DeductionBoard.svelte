@@ -446,19 +446,18 @@
 
 	@media (max-width: 600px) {
 	        .deduction-board {
-	                padding: 2px;
+	                padding: 4px;
 	        }
 
 	        .mini-tile {
-	                width: 22px;
-	                height: 22px;
-	                font-size: 11px;
+	                width: 20px;
+	                height: 20px;
+	                font-size: 10px;
 	                border-radius: 3px;
 	        }
 
 	        .grid-container {
-	                padding: 1px;
-	                overflow: hidden;
+	                padding: 2px;
 	        }
 
 	        .row {
@@ -470,33 +469,33 @@
 	        }
 
 	        .guess-area {
-	                gap: 2px;
-	                margin-bottom: 2px;
-	                padding: 2px;
+	                gap: 4px;
+	                margin-bottom: 4px;
+	                padding: 4px;
 	        }
 
 	        .guess-inputs input {
-	                width: 26px;
-	                height: 26px;
+	                width: 24px;
+	                height: 24px;
 	                font-size: 0.8rem;
 	        }
 
 	        .header {
-	                margin-bottom: 2px;
+	                margin-bottom: 4px;
 	        }
 
 	        .header h2 {
-	                font-size: 0.7rem;
+	                font-size: 0.8rem;
 	        }
 
 	        .got-five-btn {
-	                padding: 4px 10px;
-	                font-size: 0.7rem;
+	                padding: 2px 8px;
+	                font-size: 0.75rem;
 	        }
 
 	        .dot {
-	                width: 3px;
-	                height: 3px;
+	                width: 2px;
+	                height: 2px;
 	        }
 	}
 

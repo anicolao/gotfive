@@ -308,11 +308,11 @@
 		main {
 			flex-direction: column;
 			gap: 4px;
-			padding: 4px;
+			padding: 0;
 		}
 
 		.main-play-area {
-			flex: 1.5;
+			flex: 1;
 			min-height: 0;
 			display: flex;
 			flex-direction: column;
@@ -360,7 +360,7 @@
 		}
 
 		.deduction-area {
-			flex: 1;
+			flex: 1.2;
 			width: 100%;
 			min-height: 200px;
 			max-height: 40vh;

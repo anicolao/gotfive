@@ -54,13 +54,18 @@ export class LobbyManager {
     store.dispatch(setMyStatus('CONNECTING'));
     
     // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
-    const initialDelay = isReconnect ? 2000 : 1500;
+    const initialDelay = isReconnect ? 0 : 1000;
     
     this.initTimeout = setTimeout(() => {
       this.initTimeout = null;
       if (this.peer) return; // Already initialized by something else?
       
-      this.peer = new Peer(getLobbyLeaderId());
+      this.peer = new Peer(getLobbyLeaderId(), {
+        host: '0.peerjs.com',
+        port: 443,
+        secure: true,
+        debug: 1
+      });
 
       this.peer.on('open', (id) => {
         console.log('[LobbyManager] Became LOBBY_LEADER with ID:', id);
@@ -85,12 +90,12 @@ export class LobbyManager {
           // 1. The old leader session is still active (ghost)
           // 2. Someone else beat us to it and is now the leader
           // We'll retry a few times if we were already a member, then fall back to client mode.
-          if (isReconnect && this.electionRetryCount < 20) {
+          if (isReconnect && this.electionRetryCount < 30) {
             this.electionRetryCount++;
-            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in 1000ms...`);
+            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in 500ms...`);
             this.peer?.destroy();
             this.peer = null;
-            setTimeout(() => this.init(true), 1000);
+            setTimeout(() => this.init(true), 500);
             return;
           }
           console.log('[LobbyManager] Leader ID taken, starting as client');
@@ -99,10 +104,10 @@ export class LobbyManager {
           this.peer = null;
           this.startAsClient();
         } else if (err.type === 'network' || err.type === 'server-error') {
-          console.warn(`[LobbyManager] Lobby peer ${err.type} error, retrying in 3s...`);
+          console.warn(`[LobbyManager] Lobby peer ${err.type} error, retrying in 1s...`);
           this.peer?.destroy();
           this.peer = null;
-          setTimeout(() => this.init(isReconnect), 3000);
+          setTimeout(() => this.init(isReconnect), 1000);
         } else {
           console.error('[LobbyManager] Lobby peer error:', err);
         }
@@ -153,7 +158,7 @@ export class LobbyManager {
     this.connectTimeout = setTimeout(() => {
       console.warn('[LobbyManager] Connection to leader timed out (ghost?)');
       this.handleLeaderDisconnect();
-    }, 15000); // 15s connection timeout
+    }, 10000); // 10s connection timeout
 
     const conn = this.peer.connect(leaderId);
     
@@ -164,7 +169,7 @@ export class LobbyManager {
       this.leaderHeartbeatTimeout = setTimeout(() => {
         console.warn('[LobbyManager] Leader watchdog timeout! Assuming leader is dead.');
         this.handleLeaderDisconnect();
-      }, 10000); // 10s watchdog
+      }, 5000); // 5s watchdog
     };
 
     conn.on('open', () => {

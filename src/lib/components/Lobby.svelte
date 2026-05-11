@@ -634,8 +634,11 @@
 	}
 
 	@media (max-width: 768px) {
-		.lobby-layout {
-			flex-direction: column;
+	        .step {
+	                margin-bottom: 10px;
+	                padding: 10px;
+	        }
+	        .lobby-layout {			flex-direction: column;
 			gap: 5px;
 		}
 		.lobby-main {

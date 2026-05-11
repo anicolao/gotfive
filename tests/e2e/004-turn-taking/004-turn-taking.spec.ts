@@ -11,9 +11,10 @@ test.describe('Multiplayer Turn-Taking', () => {
 		const tester = new TestStepHelper(hostPage, testInfo);
 		tester.setMetadata('Multiplayer Turn-Taking', 'Testing turn rotation and elimination in multiplayer.');
 
-		const hostId = `turn-taking-host`;
-		const clientId = `turn-taking-client`;
-		const lobbyId = `lobby-004-1`;
+		const suffix = Math.random().toString(36).substring(7);
+		const hostId = `turn-taking-host-${suffix}`;
+		const clientId = `turn-taking-client-${suffix}`;
+		const lobbyId = `lobby-004-1-${suffix}`;
 
 		// 1. Setup Lobby
 		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}`);

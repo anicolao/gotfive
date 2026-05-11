@@ -16,20 +16,25 @@ test.describe('Lobby Leader Handoff', () => {
 		const tester = new TestStepHelper(p2, testInfo);
 		tester.setMetadata('Lobby Leader Handoff', 'Testing that leadership is handed off correctly based on seniority.');
 
+		const suffix = Math.random().toString(36).substring(7);
+		const id1 = `p1-${suffix}`;
+		const id2 = `p2-${suffix}`;
+		const id3 = `p3-${suffix}`;
+
 		// 1. P1 joins (becomes leader)
-		await p1.goto(`/?myId=p1&lobbyId=${lobbyId}`);
+		await p1.goto(`/?myId=${id1}&lobbyId=${lobbyId}`);
 		await p1.getByLabel('Your Name:').fill('Player 1');
 		await p1.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p1.getByText('LOBBY_LEADER')).toBeVisible({ timeout: 15000 });
 
 		// 2. P2 joins
-		await p2.goto(`/?myId=p2&lobbyId=${lobbyId}`);
+		await p2.goto(`/?myId=${id2}&lobbyId=${lobbyId}`);
 		await p2.getByLabel('Your Name:').fill('Player 2');
 		await p2.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible({ timeout: 15000 });
 
 		// 3. P3 joins
-		await p3.goto(`/?myId=p3&lobbyId=${lobbyId}`);
+		await p3.goto(`/?myId=${id3}&lobbyId=${lobbyId}`);
 		await p3.getByLabel('Your Name:').fill('Player 3');
 		await p3.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p3.getByText('LOBBY_CLIENT')).toBeVisible({ timeout: 15000 });
@@ -87,14 +92,19 @@ test.describe('Lobby Leader Handoff', () => {
 		const tester = new TestStepHelper(p2, testInfo);
 		tester.setMetadata('Lobby Leader Handoff with Newcomer', 'Testing that a newcomer does not steal leadership during handoff.');
 
+		const suffix = Math.random().toString(36).substring(7);
+		const id1 = `p1-${suffix}`;
+		const id2 = `p2-${suffix}`;
+		const id4 = `p4-${suffix}`;
+
 		// 1. P1 joins (leader)
-		await p1.goto(`/?myId=p1&lobbyId=${lobbyId}`);
+		await p1.goto(`/?myId=${id1}&lobbyId=${lobbyId}`);
 		await p1.getByLabel('Your Name:').fill('Player 1');
 		await p1.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p1.getByText('LOBBY_LEADER')).toBeVisible({ timeout: 15000 });
 
 		// 2. P2 joins
-		await p2.goto(`/?myId=p2&lobbyId=${lobbyId}`);
+		await p2.goto(`/?myId=${id2}&lobbyId=${lobbyId}`);
 		await p2.getByLabel('Your Name:').fill('Player 2');
 		await p2.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible({ timeout: 15000 });
@@ -106,7 +116,7 @@ test.describe('Lobby Leader Handoff', () => {
 		// Give P2 a bit of a head start on the disconnection
 		await p2.waitForTimeout(500);
 
-		await p4.goto(`/?myId=p4&lobbyId=${lobbyId}`);
+		await p4.goto(`/?myId=${id4}&lobbyId=${lobbyId}`);
 		await p4.getByLabel('Your Name:').fill('Player 4');
 		await p4.getByRole('button', { name: 'Join Lobby' }).click();
 
@@ -140,20 +150,25 @@ test.describe('Lobby Leader Handoff', () => {
 		const tester = new TestStepHelper(p2, testInfo);
 		tester.setMetadata('Playing Player as Lobby Leader', 'Testing that players staying in lobby while playing can become leaders.');
 
+		const suffix = Math.random().toString(36).substring(7);
+		const id1 = `p1-${suffix}`;
+		const id2 = `p2-${suffix}`;
+		const id3 = `p3-${suffix}`;
+
 		// 1. P1 joins (leader)
-		await p1.goto(`/?myId=p1&lobbyId=${lobbyId}`);
+		await p1.goto(`/?myId=${id1}&lobbyId=${lobbyId}`);
 		await p1.getByLabel('Your Name:').fill('Player 1');
 		await p1.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p1.getByText('LOBBY_LEADER')).toBeVisible({ timeout: 15000 });
 
 		// 2. P2 joins
-		await p2.goto(`/?myId=p2&lobbyId=${lobbyId}`);
+		await p2.goto(`/?myId=${id2}&lobbyId=${lobbyId}`);
 		await p2.getByLabel('Your Name:').fill('Player 2');
 		await p2.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible({ timeout: 15000 });
 
 		// 3. P3 joins
-		await p3.goto(`/?myId=p3&lobbyId=${lobbyId}`);
+		await p3.goto(`/?myId=${id3}&lobbyId=${lobbyId}`);
 		await p3.getByLabel('Your Name:').fill('Player 3');
 		await p3.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p3.getByText('LOBBY_CLIENT')).toBeVisible({ timeout: 15000 });
