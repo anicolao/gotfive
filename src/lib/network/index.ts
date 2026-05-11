@@ -4,6 +4,9 @@ let peerManager: PeerManager | null = null;
 let isHost = false;
 
 export function initNetwork(myId: string, dispatch: any, host: boolean = false, getState?: () => any) {
+	if (peerManager) {
+		peerManager.disconnect();
+	}
 	peerManager = new PeerManager(myId);
 	isHost = host;
 	
