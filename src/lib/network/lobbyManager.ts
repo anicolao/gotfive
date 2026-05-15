@@ -11,6 +11,8 @@ import {
   type GameInfo
 } from '../store/lobbySlice';
 
+import { getPeerConfig, getLobbyConfig } from './peerConfig';
+
 function getLobbyLeaderId() {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
@@ -54,13 +56,14 @@ export class LobbyManager {
     store.dispatch(setMyStatus('CONNECTING'));
     
     // Newcomers wait a bit to give existing clients a chance to reclaim leader ID if it just became free
-    const initialDelay = isReconnect ? 0 : 1000;
+    const config = getLobbyConfig();
+    const initialDelay = isReconnect ? 0 : config.newcomerDelay;
     
     this.initTimeout = setTimeout(() => {
       this.initTimeout = null;
       if (this.peer) return; // Already initialized by something else?
       
-      this.peer = new Peer(getLobbyLeaderId(), {
+      this.peer = new Peer(getLobbyLeaderId(), getPeerConfig() || {
         host: '0.peerjs.com',
         port: 443,
         secure: true,
@@ -125,9 +128,9 @@ export class LobbyManager {
     }
     
     if (clientPeerId) {
-      this.peer = new Peer(clientPeerId);
+      this.peer = new Peer(clientPeerId, getPeerConfig());
     } else {
-      this.peer = new Peer();
+      this.peer = new Peer(getPeerConfig());
     }
 
     this.peer.on('open', (id) => {
@@ -169,7 +172,7 @@ export class LobbyManager {
       this.leaderHeartbeatTimeout = setTimeout(() => {
         console.warn('[LobbyManager] Leader watchdog timeout! Assuming leader is dead.');
         this.handleLeaderDisconnect();
-      }, 10000); // 10s watchdog
+      }, getLobbyConfig().watchdogTimeout);
     };
 
     conn.on('open', () => {
@@ -276,8 +279,10 @@ export class LobbyManager {
         } catch(e) {
            console.error('[LobbyManager] Error destroying peer:', e);
         }
+        setTimeout(() => this.init(true), getLobbyConfig().reconnectDelay);
+      } else {
+        this.init(true);
       }
-      this.init(true);
     }, delay);
   }
 

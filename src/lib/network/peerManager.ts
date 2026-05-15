@@ -1,5 +1,6 @@
 import { Peer, type DataConnection } from 'peerjs';
 import { writable, type Writable } from 'svelte/store';
+import { getPeerConfig } from './peerConfig';
 
 export interface NetworkMessage {
 	type: 'ACTION' | 'SYNC' | 'CHAT';
@@ -17,7 +18,7 @@ export class PeerManager {
 
 	constructor(myId: string) {
 		this.myId = myId;
-		this.peer = new Peer(myId);
+		this.peer = new Peer(myId, getPeerConfig());
 
 		this.peer.on('connection', (conn) => {
 			this.setupConnection(conn);

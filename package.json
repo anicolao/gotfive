@@ -9,8 +9,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "preview": "vite preview",
     "commit": "sh -c 'git add . && git commit -m \"#$1: $2\"' --",
-    "test:e2e": "VITE_APP_VERSION=1.0.0 VITE_GIT_HASH=test-hash playwright test",
-    "test:e2e:update-snapshots": "VITE_APP_VERSION=1.0.0 VITE_GIT_HASH=test-hash playwright test -u"
+    "test:e2e": "VITE_APP_VERSION=1.0.0 VITE_GIT_HASH=test-hash VITE_PEER_HOST=localhost VITE_PEER_PORT=9000 VITE_PEER_SECURE=false playwright test",
+    "test:e2e:update-snapshots": "VITE_APP_VERSION=1.0.0 VITE_GIT_HASH=test-hash VITE_PEER_HOST=localhost VITE_PEER_PORT=9000 VITE_PEER_SECURE=false playwright test -u"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
@@ -27,6 +27,7 @@
     "@types/node": "^24.12.2",
     "eslint": "^10.2.1",
     "globals": "^17.5.0",
+    "peer": "^1.0.2",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10",

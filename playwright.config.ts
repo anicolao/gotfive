@@ -2,7 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
     testDir: './tests/e2e',
-    fullyParallel: true,
+    fullyParallel: false,
+    workers: 1,
     forbidOnly: !!process.env.CI,
     retries: 2,
     reporter: 'html',
@@ -42,7 +43,7 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'npm run dev',
+        command: 'npx peerjs --port 9000 & npm run dev',
         url: 'http://localhost:5173',
         reuseExistingServer: !process.env.CI,
     },
