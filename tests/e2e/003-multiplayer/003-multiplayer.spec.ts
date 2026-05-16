@@ -62,7 +62,7 @@ test.describe('Multiplayer Lobby', () => {
 		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
 		
 		// Wait for Host to connect to Lobby
-		await expect(hostPage.getByText('LOBBY_LEADER')).toBeVisible({ timeout: 15000 });
+		await expect(hostPage.getByText('LOBBY_LEADER')).toBeVisible();
 
 		await hostPage.getByRole('button', { name: 'Host New Game' }).click();
 		await hostPage.getByLabel('Game Name:').fill("Host's Public Game");
@@ -77,12 +77,12 @@ test.describe('Multiplayer Lobby', () => {
 		await clientPage.getByRole('button', { name: 'Join Lobby' }).click();
 		
 		// Wait for Client to connect to Lobby
-		await expect(clientPage.getByText('LOBBY_CLIENT')).toBeVisible({ timeout: 15000 });
+		await expect(clientPage.getByText('LOBBY_CLIENT')).toBeVisible();
 
 		// 3. Client checks for Public Game
 		await expect(clientPage.getByRole('heading', { name: 'Public Games' })).toBeVisible();
 		const gameCard = clientPage.locator('.game-card').filter({ hasText: "Host's Public Game" });
-		await expect(gameCard).toBeVisible({ timeout: 10000 });
+		await expect(gameCard).toBeVisible();
 
 		await tester.step('public-game-visible', {
 			description: 'Public game is visible in the lobby',
@@ -95,8 +95,8 @@ test.describe('Multiplayer Lobby', () => {
 		await gameCard.getByRole('button', { name: 'Join' }).click();
 
 		// 5. Client verifies connection
-		await expect(clientPage.getByText('Connected to Host!')).toBeVisible({ timeout: 10000 });
-		await expect(hostPage.getByText('Client')).toBeVisible({ timeout: 10000 });
+		await expect(clientPage.getByText('Connected to Host!')).toBeVisible();
+		await expect(hostPage.getByText('Client')).toBeVisible();
 
 		await tester.step('client-connected', {
 			description: 'Client successfully connected to the host',
