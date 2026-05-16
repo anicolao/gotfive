@@ -45,78 +45,97 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
     }
   }
 
+  // Dynamically determine the colors in the player's hand
+  const handTiles = await page.evaluate(() => {
+    const state = (window as any).store.getState();
+    const myId = state.ui.myId;
+    const hand = state.players.players[myId].hand;
+    return hand.map((id: number) => {
+      const colorIdx = (id - 1) % 5;
+      return { id, colorIdx };
+    });
+  });
+
+  const firstSlotColorIdx = handTiles[0].colorIdx;
+  const secondSlotColorIdx = handTiles[1].colorIdx;
+
+  const tile1 = firstSlotColorIdx + 1;
+  const tile2 = firstSlotColorIdx + 1 + 5; // next tile in same color
+
   // 2. Test: Marking a tile OK fills the corresponding guess input
-  // Tile 1 is Red (color index 0)
-  // Toggle Tile 1: ? -> X
-  await clickCell(1);
-  await expect(page.locator('.deduction-board .cell[data-id="1"] .strike')).toBeVisible();
+  // Toggle tile1: ? -> X
+  await clickCell(tile1);
+  await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .strike`)).toBeVisible();
   
-  // Toggle Tile 1: X -> OK
-  await clickCell(1);
-  await expect(page.locator('.deduction-board .cell[data-id="1"] .check')).toBeVisible();
+  // Toggle tile1: X -> OK
+  await clickCell(tile1);
+  await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .check`)).toBeVisible();
   
   await tester.step('ok-syncs-to-input', {
-    description: 'Marking a tile OK fills the corresponding guess input',
+    description: 'Marking a tile OK fills the corresponding guess input based on rack position',
     verifications: [
       {
-        spec: 'Guess input 0 is filled with "1"',
+        spec: `Guess input 0 is filled with "${tile1}"`,
         check: async () => {
-          await expect(guessInputs.nth(0)).toHaveValue('1');
+          await expect(guessInputs.nth(0)).toHaveValue(tile1.toString());
         }
       }
     ]
   });
 
   // 3. Test: One OK per color row
-  // Tile 6 is also Red (color index 0)
-  // Toggle Tile 6: ? -> X -> OK
-  await clickCell(6);
-  await clickCell(6);
+  // Toggle tile2: ? -> X -> OK
+  await clickCell(tile2);
+  await clickCell(tile2);
   
   await tester.step('one-ok-per-row-clears-previous', {
     description: 'Marking a second tile OK in the same color row clears the first one',
     verifications: [
       {
-        spec: 'Tile 6 is OK',
+        spec: `Tile ${tile2} is OK`,
         check: async () => {
-          await expect(page.locator('.deduction-board .cell[data-id="6"] .check')).toBeVisible();
+          await expect(page.locator(`.deduction-board .cell[data-id="${tile2}"] .check`)).toBeVisible();
         }
       },
       {
-        spec: 'Tile 1 is now clear (neither OK nor X)',
+        spec: `Tile ${tile1} is now clear (neither OK nor X)`,
         check: async () => {
-          await expect(page.locator('.deduction-board .cell[data-id="1"] .check')).toBeHidden();
-          await expect(page.locator('.deduction-board .cell[data-id="1"] .strike')).toBeHidden();
+          await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .check`)).toBeHidden();
+          await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .strike`)).toBeHidden();
         }
       },
       {
-        spec: 'Guess input 0 is updated to "6"',
+        spec: `Guess input 0 is updated to "${tile2}"`,
         check: async () => {
-          await expect(guessInputs.nth(0)).toHaveValue('6');
+          await expect(guessInputs.nth(0)).toHaveValue(tile2.toString());
         }
       }
     ]
   });
 
   // 4. Test: Auto-fill based on remaining tiles
-  // For Blue (color index 1), tiles are 2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57
-  // Let's mark all but one as X.
-  // Actually, some might be in public pool or other players hands (visibleTiles).
-  // Let's check which ones are dimmed.
-  const blueRowIds = [2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57];
+  const secondColorRowIds = [];
+  for (let i = 0; i < 12; i++) {
+    secondColorRowIds.push(secondSlotColorIdx + 1 + i * 5);
+  }
   
   await tester.step('auto-fill-pre-state', {
-    description: 'Identify visible tiles in Blue row',
+    description: 'Identify visible tiles in the second slot color row',
     verifications: []
   });
 
-  for (const id of blueRowIds.slice(0, -1)) {
+  for (const id of secondColorRowIds.slice(0, -1)) {
     const cell = page.locator(`.deduction-board .cell[data-id="${id}"]`);
     const isDimmed = await cell.evaluate(el => el.classList.contains('dimmed'));
     if (!isDimmed) {
       const isX = await cell.locator('.strike').isVisible();
-      if (!isX) {
+      const isOk = await cell.locator('.check').isVisible();
+      if (!isX && !isOk) {
         // Toggle once to make it X
+        await clickCell(id);
+      } else if (isOk) {
+        // Toggle twice to clear and then X
+        await clickCell(id);
         await clickCell(id);
       }
     }
@@ -127,9 +146,9 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
     description: 'If only one tile is possible, it is automatically marked OK',
     verifications: [
       {
-        spec: 'At least one tile in Blue row is OK',
+        spec: 'At least one tile in the second slot color row is OK',
         check: async () => {
-          const okCells = page.locator('.deduction-board .row').nth(1).locator('.check');
+          const okCells = page.locator('.deduction-board .row').nth(secondSlotColorIdx).locator('.check');
           await expect(okCells).toHaveCount(1);
         }
       },

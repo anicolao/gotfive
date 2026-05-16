@@ -223,21 +223,31 @@
 
 	let lastOkTileIds = $state<(number|null)[]>([null, null, null, null, null]);
 	$effect(() => {
-		// Sync Guess Inputs with OK marks
-		COLORS.forEach((_, i) => {
-			const row = TILE_IDS_BY_COLOR[i];
-			const okTile = row.find(id => deductions[id] === 'OK');
-			if (okTile) {
-				guessInputs[i] = okTile.toString();
-				lastOkTileIds[i] = okTile;
-			} else if (lastOkTileIds[i] !== null) {
-				// If no tile is marked OK, and current guessInput was previously auto-filled, clear it
-				if (guessInputs[i] === lastOkTileIds[i]?.toString()) {
-					guessInputs[i] = '';
+		// Sync Guess Inputs with OK marks based on player's actual hand
+		const myId = uiState?.myId;
+		const myHand = myId ? playersState?.players[myId]?.hand : null;
+
+		if (myHand && myHand.length === 5) {
+			myHand.forEach((tileId: number, i: number) => {
+				const tileData = getTileData(tileId);
+				if (!tileData) return;
+				const colorIdx = COLORS.indexOf(tileData.color);
+				if (colorIdx === -1) return;
+				
+				const row = TILE_IDS_BY_COLOR[colorIdx];
+				const okTile = row.find(id => deductions[id] === 'OK');
+				if (okTile) {
+					guessInputs[i] = okTile.toString();
+					lastOkTileIds[i] = okTile;
+				} else if (lastOkTileIds[i] !== null) {
+					// If no tile is marked OK, and current guessInput was previously auto-filled, clear it
+					if (guessInputs[i] === lastOkTileIds[i]?.toString()) {
+						guessInputs[i] = '';
+					}
+					lastOkTileIds[i] = null;
 				}
-				lastOkTileIds[i] = null;
-			}
-		});
+			});
+		}
 	});
 
 	function clearDrawing() {
