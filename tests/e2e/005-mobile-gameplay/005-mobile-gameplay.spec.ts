@@ -143,12 +143,19 @@ test.describe('Mobile Gameplay', () => {
     await page.locator('.status-banner button:has-text("Play Again")').click();
 
     await tester.step('reset-flow', {
-      description: 'Game resets to lobby state without page reload',
+      description: 'Game resets and starts new game for host',
       verifications: [
         {
-          spec: 'Lobby is visible again',
+          spec: 'Status banner is gone',
           check: async () => {
-            await expect(page.locator('.lobby-wrapper')).toBeVisible();
+            await expect(page.locator('.status-banner')).not.toBeVisible();
+          }
+        },
+        {
+          spec: 'Player has 5 tiles',
+          check: async () => {
+             const youStand = page.locator('.stand-container').filter({ hasText: 'MobileUser' });
+             await expect(youStand.locator('.tile')).toHaveCount(5);
           }
         }
       ]

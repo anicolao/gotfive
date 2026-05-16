@@ -60,10 +60,15 @@
 	}
 
 	function handleResetGame() {
-		store.dispatch(resetGame());
-		store.dispatch(resetPlayers());
-		store.dispatch(resetUI());
-		acknowledgedEliminations = new Set();
+		if (isHost) {
+			store.dispatch(resetPlayers());
+			store.dispatch(resetUI());
+			acknowledgedEliminations = new Set();
+			handleStartGame();
+		} else {
+			store.dispatch(resetUI());
+			acknowledgedEliminations = new Set();
+		}
 	}
 
 	let currentPlayerId = $derived(gameState?.turnOrder[gameState?.currentPlayerIndex]);

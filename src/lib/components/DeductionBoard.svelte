@@ -189,10 +189,56 @@
 		const current = deductions[id] || '?';
 		let next: '?' | 'X' | 'OK';
 		if (current === '?') next = 'X';
-		else if (current === 'X') next = 'OK';
+		else if (current === 'X') {
+			next = 'OK';
+			// One OK per color row: if marking as OK, change any other OK in the same row to X
+			const colorIndex = (id - 1) % 5;
+			const rowIds = TILE_IDS_BY_COLOR[colorIndex];
+			rowIds.forEach(rowId => {
+				if (rowId !== id && deductions[rowId] === 'OK') {
+					store.dispatch(markDeduction({ id: rowId, mark: 'X' }));
+				}
+			});
+		}
 		else next = '?';
 		store.dispatch(markDeduction({ id, mark: next }));
 	}
+
+	$effect(() => {
+		// Auto-fill based on remaining tiles
+		TILE_IDS_BY_COLOR.forEach((row, colorIdx) => {
+			const possibleTiles = row.filter(id => {
+				const mark = deductions[id] || '?';
+				return mark !== 'X' && !visibleTiles.has(id);
+			});
+
+			if (possibleTiles.length === 1) {
+				const onlyPossibleId = possibleTiles[0];
+				if (deductions[onlyPossibleId] !== 'OK') {
+					store.dispatch(markDeduction({ id: onlyPossibleId, mark: 'OK' }));
+				}
+			}
+		});
+	});
+
+	let lastOkTileIds = $state<(number|null)[]>([null, null, null, null, null]);
+	$effect(() => {
+		// Sync Guess Inputs with OK marks
+		COLORS.forEach((_, i) => {
+			const row = TILE_IDS_BY_COLOR[i];
+			const okTile = row.find(id => deductions[id] === 'OK');
+			if (okTile) {
+				guessInputs[i] = okTile.toString();
+				lastOkTileIds[i] = okTile;
+			} else if (lastOkTileIds[i] !== null) {
+				// If no tile is marked OK, and current guessInput was previously auto-filled, clear it
+				if (guessInputs[i] === lastOkTileIds[i]?.toString()) {
+					guessInputs[i] = '';
+				}
+				lastOkTileIds[i] = null;
+			}
+		});
+	});
 
 	function clearDrawing() {
 		store.dispatch(clearStrokesAction());
