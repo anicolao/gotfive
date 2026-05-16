@@ -80,6 +80,9 @@
 				if (p.id !== uiState.myId) {
 					p.hand.forEach((id: number) => visible.add(id));
 				}
+				if (p.clues) {
+					p.clues.forEach((clue: any) => visible.add(clue.tileId));
+				}
 			});
 		}
 		visibleTiles = visible;
