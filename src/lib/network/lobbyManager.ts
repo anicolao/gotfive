@@ -93,12 +93,16 @@ export class LobbyManager {
           // 1. The old leader session is still active (ghost)
           // 2. Someone else beat us to it and is now the leader
           // We'll retry a few times if we were already a member, then fall back to client mode.
-          if (isReconnect && this.electionRetryCount < 60) {
+          const isTest = !!import.meta.env.VITE_PEER_HOST;
+          const maxRetries = isTest ? 2 : 60;
+          const retryDelay = isTest ? 100 : 1000;
+
+          if (isReconnect && this.electionRetryCount < maxRetries) {
             this.electionRetryCount++;
-            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in 1000ms...`);
+            console.warn(`[LobbyManager] Leader ID taken during election (attempt ${this.electionRetryCount}), retrying in ${retryDelay}ms...`);
             this.peer?.destroy();
             this.peer = null;
-            setTimeout(() => this.init(true), 1000);
+            setTimeout(() => this.init(true), retryDelay);
             return;
           }
           console.log('[LobbyManager] Leader ID taken, starting as client');
@@ -262,7 +266,10 @@ export class LobbyManager {
     console.log('[LobbyManager] Leader disconnected. Active players:', activePlayers, 'My index:', myIndex);
     
     // New senior (index 0) should be very aggressive
-    const delay = myIndex <= 0 ? (100 + Math.random() * 200) : (myIndex * 500 + Math.random() * 200);
+    const isTest = !!import.meta.env.VITE_PEER_HOST;
+    const delay = isTest 
+      ? (myIndex <= 0 ? 50 : myIndex * 150)
+      : (myIndex <= 0 ? (100 + Math.random() * 200) : (myIndex * 500 + Math.random() * 200));
     
     console.log(`[LobbyManager] Attempting to reconnect in ${delay}ms`);
     store.dispatch(setMyStatus('CONNECTING'));

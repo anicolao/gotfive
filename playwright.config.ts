@@ -5,7 +5,7 @@ export default defineConfig({
     fullyParallel: false,
     workers: 1,
     forbidOnly: !!process.env.CI,
-    retries: 2,
+    retries: 0,
     reporter: 'html',
     use: {
         baseURL: 'http://localhost:5173',
@@ -47,9 +47,9 @@ export default defineConfig({
         url: 'http://localhost:5173',
         reuseExistingServer: !process.env.CI,
     },
-    timeout: 120000, 
+    timeout: 30000, 
     expect: {
-        timeout: 30000, 
+        timeout: 2000, 
         toHaveScreenshot: { 
             maxDiffPixelRatio: 0,
             animations: 'disabled',

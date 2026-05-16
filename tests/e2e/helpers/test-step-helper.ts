@@ -175,11 +175,11 @@ export class TestStepHelper {
         const expectedStatus = options.networkStatus ?? 'synced';
         if (expectedStatus !== 'skip') {
             const statusVisible = await networkStatus.first()
-                .waitFor({ state: 'visible', timeout: 5000 })
+                .waitFor({ state: 'visible', timeout: 2000 })
                 .then(() => true)
                 .catch(() => false);
             if (statusVisible) {
-                await expect(networkStatus.first()).toHaveAttribute('data-status', expectedStatus, { timeout: 30000 });
+                await expect(networkStatus.first()).toHaveAttribute('data-status', expectedStatus, { timeout: 2000 });
             }
         }
 

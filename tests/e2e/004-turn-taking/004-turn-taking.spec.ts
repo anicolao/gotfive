@@ -32,8 +32,8 @@ test.describe('Multiplayer Turn-Taking', () => {
 		await clientPage.getByRole('button', { name: 'Connect' }).click();
 
 		// Wait for connection - Host should see "Connected Players (2)"
-		await expect(hostPage.getByText('Connected Players (2)')).toBeVisible({ timeout: 10000 });
-		await expect(clientPage.getByText('Connected to Host!')).toBeVisible({ timeout: 10000 });
+		await expect(hostPage.getByText('Connected Players (2)')).toBeVisible();
+		await expect(clientPage.getByText('Connected to Host!')).toBeVisible();
 
 		await tester.step('lobby-connected', {
 			description: 'Players are connected in lobby',
