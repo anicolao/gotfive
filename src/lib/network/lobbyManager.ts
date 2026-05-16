@@ -81,10 +81,12 @@ export class LobbyManager {
         
         // Periodically prune dead clients and send heartbeats
         if (this.pruneInterval) clearInterval(this.pruneInterval);
+        const isTest = !!import.meta.env.VITE_PEER_HOST;
+        const heartbeatInterval = isTest ? 200 : 1000;
         this.pruneInterval = setInterval(() => {
           this.pruneDeadClients();
           this.sendHeartbeatToClients();
-        }, 1000); // 1s prune/heartbeat
+        }, heartbeatInterval);
       });
 
       this.peer.on('error', (err: any) => {
@@ -94,7 +96,7 @@ export class LobbyManager {
           // 2. Someone else beat us to it and is now the leader
           // We'll retry a few times if we were already a member, then fall back to client mode.
           const isTest = !!import.meta.env.VITE_PEER_HOST;
-          const maxRetries = isTest ? 2 : 60;
+          const maxRetries = isTest ? 5 : 60;
           const retryDelay = isTest ? 100 : 1000;
 
           if (isReconnect && this.electionRetryCount < maxRetries) {
