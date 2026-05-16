@@ -73,8 +73,8 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
   await clickCell(6);
   await clickCell(6);
   
-  await tester.step('one-ok-per-row', {
-    description: 'Marking a second tile OK in the same color row marks the first one as X',
+  await tester.step('one-ok-per-row-clears-previous', {
+    description: 'Marking a second tile OK in the same color row clears the first one',
     verifications: [
       {
         spec: 'Tile 6 is OK',
@@ -83,9 +83,10 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
         }
       },
       {
-        spec: 'Tile 1 is now X',
+        spec: 'Tile 1 is now clear (neither OK nor X)',
         check: async () => {
-          await expect(page.locator('.deduction-board .cell[data-id="1"] .strike')).toBeVisible();
+          await expect(page.locator('.deduction-board .cell[data-id="1"] .check')).toBeHidden();
+          await expect(page.locator('.deduction-board .cell[data-id="1"] .strike')).toBeHidden();
         }
       },
       {
