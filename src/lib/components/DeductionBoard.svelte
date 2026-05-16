@@ -191,12 +191,12 @@
 		if (current === '?') next = 'X';
 		else if (current === 'X') {
 			next = 'OK';
-			// One OK per color row: if marking as OK, change any other OK in the same row to X
+			// One OK per color row: if marking as OK, change any other OK in the same row to ?
 			const colorIndex = (id - 1) % 5;
 			const rowIds = TILE_IDS_BY_COLOR[colorIndex];
 			rowIds.forEach(rowId => {
 				if (rowId !== id && deductions[rowId] === 'OK') {
-					store.dispatch(markDeduction({ id: rowId, mark: 'X' }));
+					store.dispatch(markDeduction({ id: rowId, mark: '?' }));
 				}
 			});
 		}
