@@ -31,7 +31,8 @@ export default defineConfig({
         viewport: { width: 1280, height: 1000 },
         deviceScaleFactor: 1, 
         timezoneId: 'America/New_York',
-        locale: 'en-CA', 
+        locale: 'en-CA',
+        actionTimeout: 2000,
     },
     snapshotPathTemplate: '{testDir}/{testFileDir}/screenshots/{arg}.png',
     projects: [
