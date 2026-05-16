@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { initNetwork, getPeerManager } from '../network';
 	import { initLobby, getLobbyManager } from '../network/lobbyManager';
+	import { getLobbyConfig } from '../network/peerConfig';
 	import { store } from '../store';
 	import { setProfile, type PlayerProfile, type GameInfo } from '../store/lobbySlice';
 	import { addPlayer } from '../store/playersSlice';
@@ -205,7 +206,7 @@
 		
 		setTimeout(() => {
 			peerManager.connect(targetHostId);
-		}, 500);
+		}, getLobbyConfig().reconnectDelay);
 	}
 
 	async function joinGameFromLink() {
@@ -226,7 +227,7 @@
 		
 		setTimeout(() => {
 			peerManager.connect(targetHostId);
-		}, 500);
+		}, getLobbyConfig().reconnectDelay);
 	}
 
 	function copyToClipboard(text: string) {

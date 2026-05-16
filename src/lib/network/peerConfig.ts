@@ -21,8 +21,8 @@ export function getPeerConfig(): PeerJSOption | undefined {
 export function getLobbyConfig() {
   const isTest = !!import.meta.env.VITE_PEER_HOST;
   return {
-    newcomerDelay: isTest ? 1500 : 1000,
-    watchdogTimeout: isTest ? 1000 : 10000,
+    newcomerDelay: isTest ? 1000 : 1000,
+    watchdogTimeout: isTest ? 500 : 10000,
     reconnectDelay: isTest ? 100 : 0
   };
 }

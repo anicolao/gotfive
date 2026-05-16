@@ -9,15 +9,17 @@ We enforce a strict **Zero-Pixel Tolerance** policy for visual regression. Since
 *   **Software Rendering**: We use software rendering to ensure 100% consistent snapshots across CI and local environments.
 *   **Determinism**: Tests must be perfectly deterministic. Random seeds must be fixed.
 
-## 2. Prohibitions
+## 2. Absolute Prohibitions
+
+The following rules are absolute. Any violation will result in a failed PR.
 
 - **0 pixel tolerance**: We enforce a strict Zero-Pixel Tolerance policy for visual regression.
-- **No masking**: Never use the `mask` property in `toHaveScreenshot()`. All non-deterministic components (version numbers, IDs, etc.) must be fixed at the infrastructure or test level.
-- **No manual screenshots**: Never use `page.screenshot()`. Always use the `TestStepHelper`.
-- **No arbitrary waits**: Never use `page.waitForTimeout()`. Use `locator.waitFor()` or wait for network/animation stabilization via the helper.
+- **No waitForTimeout**: The use of `page.waitForTimeout()` or `setTimeout` is strictly prohibited.
 - **No timeouts > 2000ms**: No action or expectation timeout should exceed 2000ms.
-- **No polling**: Avoid manual polling loops. Use Playwright's built-in auto-waiting and web-first assertions.
+- **No polling**: Avoid manual polling loops. Use Playwright's built-in auto-waiting.
 - **No retries**: Tests must be deterministic and pass on the first try. Global and per-test retries are prohibited.
+- **No masking**: Never use the `mask` property in `toHaveScreenshot()`.
+- **No manual screenshots**: Never use `page.screenshot()`. Always use the `TestStepHelper`.
 - **No ignored tests**: Tests must either pass or be removed.
 
 ## 3. Directory Convention
