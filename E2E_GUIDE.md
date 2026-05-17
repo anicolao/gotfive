@@ -30,7 +30,14 @@ To ensure tests are stable and repeatable:
 - **Fixed IDs**: Always use a fixed `myId` for each test context to ensure PeerJS IDs are predictable and screenshots remain consistent.
 - **Fixed Seeds**: Always use a fixed `seed` parameter for the RNG to ensure game state is identical every run.
 
-## 4. Directory Convention
+## 4. Viewport Integrity
+
+As we use responsive, viewport-based sizing, we must ensure that all critical UI components are fully within the viewport and do not overlap.
+
+- **Use `checkNoClippingOrOverlap`**: Use this helper (available in `test-step-helper.ts`) to verify that components are properly positioned.
+- **Test Multiple Viewports**: Always include tests for Mobile Portrait, Mobile Landscape, and Desktop.
+
+## 5. Directory Convention
 
 All E2E tests live in `tests/e2e/`. Each test case gets its own directory, prefixed with a three-digit number.
 
@@ -43,7 +50,7 @@ tests/e2e/
 │   └── screenshots/           # Committed baseline images
 ```
 
-## 4. The "Unified Step Pattern"
+## 6. The "Unified Step Pattern"
 
 To prevent synchronization errors between documentation and screenshots, we use a **Unified Step API**. You must **NEVER** manually manage filenames or counters.
 
@@ -76,7 +83,7 @@ test('User logs food', async ({ page }, testInfo) => {
 });
 ```
 
-## 5. Running Tests
+## 7. Running Tests
 
 Always run tests through `nix develop` to ensure tool version consistency.
 
