@@ -339,327 +339,200 @@
 </div>
 
 <style>
-	.deduction-board {
-		background: var(--color-bg-panel);
-		backdrop-filter: blur(12px);
-		padding: 10px;
-		border-radius: 12px;
-		border: 1px solid var(--color-glass-border);
-		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 229, 255, 0.1);
-		color: var(--color-text-main);
-		width: fit-content;
-		position: relative;
-		margin: 0 auto;
-		max-width: 100%;
-		box-sizing: border-box;
-	}
+        .deduction-board {
+                background: var(--color-bg-panel);
+                backdrop-filter: blur(12px);
+                padding: var(--gap-base);
+                border-radius: 12px;
+                border: 1px solid var(--color-glass-border);
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 229, 255, 0.1);
+                color: var(--color-text-main);
+                width: fit-content;
+                position: relative;
+                margin: 0 auto;
+                max-width: 100%;
+                box-sizing: border-box;
+        }
 
-	.header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 8px;
-	}
+        .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--gap-base);
+        }
 
-	h2 {
-		margin: 0;
-		font-family: 'Courier New', Courier, monospace;
-		text-transform: uppercase;
-		font-size: 1rem;
-		letter-spacing: 1px;
-		color: var(--color-neon-cyan);
-		text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
-	}
+        h2 {
+                margin: 0;
+                font-family: 'Courier New', Courier, monospace;
+                text-transform: uppercase;
+                font-size: var(--font-size-small);
+                letter-spacing: 1px;
+                color: var(--color-neon-cyan);
+                text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+        }
 
-	button {
-		font-family: 'Courier New', Courier, monospace;
-		background: none;
-		border: 1px solid var(--color-text-muted);
-		color: var(--color-text-muted);
-		cursor: pointer;
-		padding: 1px 6px;
-		font-size: 0.7rem;
-		border-radius: 4px;
-	}
+        .guess-area {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: var(--gap-base);
+                margin-bottom: var(--gap-base);
+                padding: var(--gap-base);
+                background: rgba(0,0,0,0.5);
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-	button:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--color-text-main);
-	}
+        .guess-inputs {
+                display: flex;
+                gap: 4px;
+        }
 
-	.guess-area {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 8px;
-		margin-bottom: 10px;
-		padding: 8px;
-		background: rgba(0,0,0,0.5);
-		border-radius: 8px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-	}
+        .guess-inputs input {
+                width: var(--mini-tile-size);
+                height: var(--mini-tile-size);
+                text-align: center;
+                border: 1px solid var(--color-neon-yellow);
+                border-radius: 4px;
+                font-family: 'Courier New', Courier, monospace;
+                font-weight: bold;
+                background: rgba(0, 0, 0, 0.8);
+                color: var(--color-neon-yellow);
+                font-size: var(--font-size-small);
+        }
 
-	.guess-inputs {
-		display: flex;
-		gap: 4px;
-	}
+        .got-five-btn {
+                font-size: var(--font-size-small);
+                padding: 8px 16px;
+        }
 
-	.guess-inputs input {
-		width: 40px;
-		height: 40px;
-		text-align: center;
-		border: 1px solid var(--color-neon-yellow);
-		border-radius: 4px;
-		font-family: 'Courier New', Courier, monospace;
-		font-weight: bold;
-		background: rgba(0, 0, 0, 0.8);
-		color: var(--color-neon-yellow);
-		font-size: 1.1rem;
-	}
+        .grid-container {
+                position: relative;
+                border: 1px solid var(--color-glass-border);
+                padding: var(--gap-base);
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 8px;
+                overflow: auto;
+                max-height: 100%;
+        }
 
-	.guess-inputs input:focus {
-		outline: none;
-		box-shadow: 0 0 5px var(--color-neon-yellow);
-	}
+        .grid {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                z-index: 2;
+                position: relative;
+                min-width: min-content;
+        }
 
-	.got-five-btn {
-		background-color: rgba(0, 0, 0, 0.6);
-		color: var(--color-neon-magenta);
-		font-weight: bold;
-		padding: 8px 16px;
-		border: 1px solid var(--color-neon-magenta);
-		border-radius: 4px;
-		cursor: pointer;
-		font-family: 'Courier New', Courier, monospace;
-		text-shadow: 0 0 5px rgba(255, 0, 212, 0.5);
-		box-shadow: 0 0 10px rgba(255, 0, 212, 0.2);
-		font-size: 1rem;
-	}
+        .row {
+                display: flex;
+                gap: 4px;
+                align-items: center;
+        }
 
-	.got-five-btn:hover:not(:disabled) {
-		background-color: rgba(255, 0, 212, 0.1);
-		box-shadow: 0 0 15px rgba(255, 0, 212, 0.5);
-	}
+        .cell {
+                padding: 0;
+                background: none;
+                border: none;
+                cursor: pointer;
+                position: relative;
+                width: var(--mini-tile-size);
+                height: var(--mini-tile-size);
+        }
 
-	.got-five-btn:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-		border-color: var(--color-text-muted);
-		color: var(--color-text-muted);
-		box-shadow: none;
-		text-shadow: none;
-	}
+        .mini-tile {
+                width: 100%;
+                height: 100%;
+                flex-shrink: 0;
+                border-radius: 4px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: calc(var(--mini-tile-size) * 0.5);
+                font-weight: bold;
+                color: white;
+                position: relative;
+                box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+                transition: transform 0.1s;
+                padding: 0;
+                box-sizing: border-box;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-	.grid-container {
-		position: relative;
-		border: 1px solid var(--color-glass-border);
-		padding: 6px;
-		background: rgba(0, 0, 0, 0.4);
-		border-radius: 8px;
-		overflow: auto;
-		max-height: 100%;
-	}
+        .red { background-color: #D84315; }
+        .blue { background-color: #1565C0; }
+        .yellow { background-color: #F9A825; }
+        .green { background-color: #2E7D32; }
+        .purple { background-color: #6A1B9A; }
 
-	.grid {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		z-index: 2;
-		position: relative;
-		min-width: min-content;
-	}
+        .num {
+                z-index: 1;
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+                line-height: 1;
+        }
 
-	.row {
-		display: flex;
-		gap: 6px;
-		align-items: center;
-	}
+        .dots {
+                display: flex;
+                gap: 1px;
+                margin-top: 1px;
+        }
 
-	.cell {
-		padding: 0;
-		background: none;
-		border: none;
-		cursor: pointer;
-		position: relative;
-	}
+        .dot {
+                width: calc(var(--mini-tile-size) * 0.15);
+                height: calc(var(--mini-tile-size) * 0.15);
+                background-color: white;
+                border-radius: 50%;
+                box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
 
-	.mini-tile {
-	        width: 28px;
-	        height: 28px;
-	        flex-shrink: 0;
-	        border-radius: 4px;
-	        display: flex;
-	        flex-direction: column;
-	        align-items: center;
-	        justify-content: center;
-	        font-size: 12px;
-	        font-weight: bold;
-	        color: white;
-	        position: relative;
-	        box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-	        transition: transform 0.1s;
-	        padding: 0;
-	        box-sizing: border-box;
-	        border: 1px solid rgba(255, 255, 255, 0.2);
-	}
+        .strike {
+                position: absolute;
+                width: 100%;
+                height: 2px;
+                background-color: white;
+                transform: rotate(45deg);
+                z-index: 2;
+                top: calc(50% - 1px);
+        }
 
-	@media (min-width: 1200px) {
-		.mini-tile {
-			width: 36px;
-			height: 36px;
-			font-size: 14px;
-		}
+        .strike::after {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 2px;
+                background-color: white;
+                transform: rotate(-90deg);
+                top: 0;
+                left: 0;
+        }
 
-		.row {
-			gap: 8px;
-		}
+        .check {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                border: 3px solid var(--color-neon-cyan);
+                border-radius: 3px;
+                box-sizing: border-box;
+                z-index: 2;
+                top: 0;
+                box-shadow: inset 0 0 5px var(--color-neon-cyan), 0 0 5px var(--color-neon-cyan);
+        }
 
-		.grid {
-			gap: 6px;
-		}
-	}
+        .dimmed {
+                opacity: 0.3;
+                filter: grayscale(0.5);
+        }
 
-	@media (max-width: 600px) {
-	        .deduction-board {
-	                padding: 4px;
-	        }
-
-	        .mini-tile {
-	                width: 20px;
-	                height: 20px;
-	                font-size: 10px;
-	                border-radius: 3px;
-	        }
-
-	        .grid-container {
-	                padding: 2px;
-	        }
-
-	        .row {
-	                gap: 1px;
-	        }
-
-	        .grid {
-	                gap: 2px;
-	        }
-
-	        .guess-area {
-	                gap: 4px;
-	                margin-bottom: 4px;
-	                padding: 4px;
-	        }
-
-	        .guess-inputs input {
-	                width: 24px;
-	                height: 24px;
-	                font-size: 0.8rem;
-	        }
-
-	        .header {
-	                margin-bottom: 4px;
-	        }
-
-	        .header h2 {
-	                font-size: 0.8rem;
-	        }
-
-	        .got-five-btn {
-	                padding: 2px 8px;
-	                font-size: 0.75rem;
-	        }
-
-	        .dot {
-	                width: 2px;
-	                height: 2px;
-	        }
-	}
-
-	@media (max-width: 350px) {
-	        .mini-tile {
-	                width: 20px;
-	                height: 20px;
-	                font-size: 10px;
-	        }
-	}
-	.mini-tile:hover {
-		transform: scale(1.1);
-		z-index: 2;
-	}
-
-	.red { background-color: #D84315; }
-	.blue { background-color: #1565C0; }
-	.yellow { background-color: #F9A825; }
-	.green { background-color: #2E7D32; }
-	.purple { background-color: #6A1B9A; }
-
-	.num {
-		z-index: 1;
-		text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
-		line-height: 1;
-	}
-
-	.dots {
-		display: flex;
-		gap: 1px;
-		margin-top: 1px;
-	}
-
-	.dot {
-		width: 4px;
-		height: 4px;
-		background-color: white;
-		border-radius: 50%;
-		box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-	}
-
-	.strike {
-		position: absolute;
-		width: 100%;
-		height: 2px;
-		background-color: white;
-		transform: rotate(45deg);
-		z-index: 2;
-		top: calc(50% - 1px);
-		box-shadow: 0 0 2px rgba(0,0,0,0.8);
-	}
-
-	.strike::after {
-		content: '';
-		position: absolute;
-		width: 100%;
-		height: 2px;
-		background-color: white;
-		transform: rotate(-90deg);
-		top: 0;
-		left: 0;
-		box-shadow: 0 0 2px rgba(0,0,0,0.8);
-	}
-
-	.check {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		border: 3px solid var(--color-neon-cyan);
-		border-radius: 3px;
-		box-sizing: border-box;
-		z-index: 2;
-		top: 0;
-		box-shadow: inset 0 0 5px var(--color-neon-cyan), 0 0 5px var(--color-neon-cyan);
-	}
-
-	.dimmed {
-		opacity: 0.3;
-		filter: grayscale(0.5);
-	}
-
-	canvas {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		pointer-events: auto;
-		cursor: crosshair;
-		z-index: 3;
-	}
+        canvas {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: auto;
+                cursor: crosshair;
+                z-index: 3;
+        }
 </style>
