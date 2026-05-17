@@ -10,12 +10,16 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
 
-let gitHash = 'unknown';
-try {
-	gitHash = execSync('git rev-parse --short HEAD').toString().trim();
-} catch (e) {
-	console.warn('Failed to get git hash', e);
+let gitHash = process.env.VITE_GIT_HASH || 'unknown';
+if (gitHash === 'unknown') {
+	try {
+		gitHash = execSync('git rev-parse --short HEAD').toString().trim();
+	} catch (e) {
+		console.warn('Failed to get git hash', e);
+	}
 }
+gitHash = gitHash.substring(0, 7);
+
 export default defineConfig({
 	base: (process.env.PUBLIC_BASE_PATH || '').replace(/\/$/, ''),
 	define: {

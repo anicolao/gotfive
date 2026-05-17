@@ -48,7 +48,7 @@ jobs:
         env:
           PUBLIC_BASE_PATH: ${{ steps.base_path.outputs.path }}
           VITE_APP_VERSION: ${{ steps.build_env.outputs.version }}
-          VITE_GIT_HASH: ${{ steps.build_env.outputs.git_hash }}
+          VITE_GIT_HASH: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Deploy to gh-pages branch
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && success())
