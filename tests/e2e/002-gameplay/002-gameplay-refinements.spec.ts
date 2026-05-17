@@ -6,7 +6,7 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
   tester.setMetadata('Refinements', 'Verify Deduction Board auto-fill, sync, and Play Again button behavior.');
 
   // 1. Load the game with deterministic seed
-  await page.goto(`/?seed=123&myId=refinement-test-user`);
+  await page.goto(`/?seed=123&myId=refinement-test-user&lobbyId=lobby-002-ref`);
 
   // Handle Lobby
   await page.getByLabel('Your Name:').fill('You');
