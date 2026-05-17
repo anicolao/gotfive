@@ -73,270 +73,152 @@
 </div>
 
 <style>
-	.stand-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 10px;
-		transition: transform 0.2s, filter 0.2s;
-	}
+        .stand-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: var(--gap-base);
+                transition: transform 0.2s, filter 0.2s;
+        }
 
-	.current-turn .name-tag {
-		background-color: var(--color-neon-cyan);
-		color: #000;
-		animation: pulse 2s infinite;
-		box-shadow: 0 0 10px var(--color-neon-cyan);
-	}
+        .current-turn .name-tag {
+                background-color: var(--color-neon-cyan);
+                color: #000;
+                animation: pulse 2s infinite;
+                box-shadow: 0 0 10px var(--color-neon-cyan);
+        }
 
-	.current-turn .stand {
-		animation: breathing-glow 3s ease-in-out infinite;
-	}
+        .current-turn .stand {
+                animation: breathing-glow 3s ease-in-out infinite;
+        }
 
-	@keyframes breathing-glow {
-		0%, 100% { filter: drop-shadow(0 0 5px var(--color-neon-cyan)); }
-		50% { filter: drop-shadow(0 0 20px var(--color-neon-cyan)); }
-	}
+        @keyframes breathing-glow {
+                0%, 100% { filter: drop-shadow(0 0 5px var(--color-neon-cyan)); }
+                50% { filter: drop-shadow(0 0 20px var(--color-neon-cyan)); }
+        }
 
-	@keyframes pulse {
-		0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
-		70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
-		100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
-	}
+        @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+        }
 
-	.can-target {
-		cursor: pointer;
-	}
+        .can-target {
+                cursor: pointer;
+        }
 
-	.can-target:hover {
-		transform: scale(1.05);
-	}
+        .can-target:hover {
+                transform: scale(1.05);
+        }
 
-	.can-target .stand {
-		filter: drop-shadow(0 0 15px var(--color-neon-yellow));
-	}
+        .can-target .stand {
+                filter: drop-shadow(0 0 15px var(--color-neon-yellow));
+        }
 
-	.name-tag {
-		background-color: rgba(0, 0, 0, 0.6);
-		color: var(--color-neon-yellow);
-		padding: 4px 12px;
-		border-radius: 4px;
-		font-weight: bold;
-		text-transform: uppercase;
-		border: 1px solid var(--color-neon-yellow);
-		box-shadow: 0 0 5px rgba(255, 234, 0, 0.3);
-	}
+        .name-tag {
+                background-color: rgba(0, 0, 0, 0.6);
+                color: var(--color-neon-yellow);
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-weight: bold;
+                text-transform: uppercase;
+                border: 1px solid var(--color-neon-yellow);
+                box-shadow: 0 0 5px rgba(255, 234, 0, 0.3);
+                font-size: var(--font-size-small);
+        }
 
-	.stand {
-		position: relative;
-		padding-bottom: 2px;
-		max-width: 100%;
-	}
+        .stand {
+                position: relative;
+                padding-bottom: 2px;
+                max-width: 100%;
+        }
 
-	.tiles-area {
-	        display: grid;
-	        grid-template-columns: repeat(5, auto 60px) auto;
-	        align-items: center;
-	        background: rgba(31, 40, 51, 0.8);
-	        backdrop-filter: blur(10px);
-	        border: 1px solid var(--color-glass-border);
-	        padding: 12px 8px 8px 8px;
-	        border-radius: 12px 12px 0 0;
-	        gap: 8px;
-	}
+        .tiles-area {
+                display: grid;
+                grid-template-columns: repeat(5, auto var(--tile-size)) auto;
+                align-items: center;
+                background: rgba(31, 40, 51, 0.8);
+                backdrop-filter: blur(10px);
+                border: 1px solid var(--color-glass-border);
+                padding: calc(var(--gap-base) * 1.5) var(--gap-base) var(--gap-base) var(--gap-base);
+                border-radius: 12px 12px 0 0;
+                gap: var(--gap-base);
+        }
 
-	@media (min-width: 1200px) {
-	        .tiles-area {
-	                grid-template-columns: repeat(5, auto 80px) auto;
-	                gap: 12px;
-	        }
+        .slot {
+                width: var(--tile-size);
+                height: var(--tile-size);
+                position: relative;
+                cursor: inherit;
+        }
+        .slot:hover {
+                filter: brightness(1.2);
+        }
 
-	        .slot {
-	                width: 80px;
-	                height: 80px;
-	        }
-	}
+        .empty-slot {
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                border: 1px dashed var(--color-text-muted);
+                border-radius: 8px;
+        }
 
-	@media (max-width: 800px) {
-	        .tiles-area {
-	                grid-template-columns: repeat(5, auto 40px) auto;
-	                gap: 4px;
-	                padding: 6px 4px 4px 4px;
-	        }
+        .notch {
+                width: calc(var(--tile-size) * 0.15);
+                height: calc(var(--tile-size) * 0.15);
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid var(--color-text-muted);
+                border-radius: 50%;
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-self: flex-end;
+                margin-bottom: calc(var(--tile-size) * 0.1);
+        }
 
-	        .slot {
-	                width: 40px;
-	                height: 40px;
-	        }
+        .notch.active {
+                background: var(--color-neon-yellow);
+                box-shadow: 0 0 8px var(--color-neon-yellow);
+                border-color: var(--color-neon-yellow);
+        }
 
-	        .notch {
-	                width: 10px;
-	                height: 10px;
-	                margin-bottom: 5px;
-	        }
+        .clue-stack {
+                position: absolute;
+                bottom: calc(var(--tile-size) * 0.15);
+                display: flex;
+                flex-direction: column-reverse;
+                align-items: center;
+                gap: 2px;
+                z-index: 10;
+        }
 
-	        .name-tag {
-	                font-size: 0.8rem;
-	                padding: 2px 8px;
-	        }
-	}
+        .compare-indicators {
+                position: absolute;
+                top: calc(var(--tile-size) * -0.6);
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: center;
+                gap: 3px;
+                z-index: 10;
+        }
 
-	@media (max-height: 500px) and (orientation: landscape) {
-	        .tiles-area {
-	                grid-template-columns: repeat(5, auto 32px) auto;
-	                gap: 4px;
-	                padding: 4px;
-	        }
+        .compare-clue {
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-	        .slot {
-	                width: 32px;
-	                height: 32px;
-	        }
+        .compare-clue.no-match {
+                transform: rotate(-15deg) translateY(2px);
+        }
 
-	        .notch {
-	                width: 8px;
-	                height: 8px;
-	                margin-bottom: 2px;
-	        }
-
-	        .name-tag {
-	                font-size: 0.7rem;
-	                padding: 1px 6px;
-	        }
-
-	        .clue-stack {
-	                bottom: 6px;
-	        }
-
-	        .compare-indicators {
-	                top: -24px;
-	        }
-
-	        .stand-container {
-	                gap: 4px;
-	        }
-	}
-
-	@media (max-width: 450px) {
-	        .tiles-area {
-	                grid-template-columns: repeat(5, auto 32px) auto;
-	                gap: 2px;
-	                padding: 2px;
-	        }
-
-	        .slot {
-	                width: 32px;
-	                height: 32px;
-	        }
-
-	        .notch {
-	                width: 4px;
-	                height: 4px;
-	                margin-bottom: 0px;
-	        }
-
-	        .clue-stack {
-	                bottom: 4px;
-	        }
-
-	        .compare-indicators {
-	                top: -12px;
-	        }
-
-	        .name-tag {
-	                font-size: 0.6rem;
-	                padding: 1px 4px;
-	        }
-
-	        .stand-container {
-	                gap: 4px;
-	        }
-	}
-	.slot {
-	        width: 60px;
-	        height: 60px;
-	        position: relative;
-	        cursor: inherit;
-	}
-	.slot:hover {
-		filter: brightness(1.2);
-	}
-
-	.empty-slot {
-		width: 100%;
-		height: 100%;
-		background-color: rgba(0, 0, 0, 0.5);
-		border: 1px dashed var(--color-text-muted);
-		border-radius: 8px;
-	}
-
-	.notch {
-		width: 12px;
-		height: 12px;
-		background: rgba(0, 0, 0, 0.5);
-		border: 1px solid var(--color-text-muted);
-		border-radius: 50%;
-		position: relative;
-		display: flex;
-		justify-content: center;
-		align-self: flex-end;
-		margin-bottom: 10px;
-	}
-
-	.notch.active {
-		background: var(--color-neon-yellow);
-		box-shadow: 0 0 8px var(--color-neon-yellow);
-		border-color: var(--color-neon-yellow);
-	}
-
-	.clue-stack {
-		position: absolute;
-		bottom: 12px;
-		display: flex;
-		flex-direction: column-reverse;
-		align-items: center;
-		gap: 2px;
-		z-index: 10;
-	}
-
-	.compare-indicators {
-		position: absolute;
-		top: -45px;
-		left: 0;
-		right: 0;
-		display: flex;
-		justify-content: center;
-		gap: 3px;
-		z-index: 10;
-	}
-
-	@media (max-width: 800px) {
-		.compare-indicators {
-			top: -35px;
-		}
-	}
-
-	@media (max-width: 450px) {
-		.compare-indicators {
-			top: -30px;
-		}
-	}
-
-	.compare-clue {
-		transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-	}
-
-	.compare-clue.no-match {
-		transform: rotate(-15deg) translateY(2px);
-	}
-
-	.base {
-		height: 10px;
-		background: rgba(0, 0, 0, 0.7);
-		border-left: 1px solid var(--color-glass-border);
-		border-right: 1px solid var(--color-glass-border);
-		border-bottom: 1px solid var(--color-glass-border);
-		width: 100%;
-		border-radius: 0 0 12px 12px;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-	}
+        .base {
+                height: 10px;
+                background: rgba(0, 0, 0, 0.7);
+                border-left: 1px solid var(--color-glass-border);
+                border-right: 1px solid var(--color-glass-border);
+                border-bottom: 1px solid var(--color-glass-border);
+                width: 100%;
+                border-radius: 0 0 12px 12px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
 </style>

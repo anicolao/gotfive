@@ -47,169 +47,104 @@
 </div>
 
 <style>
-	.table {
-	        padding: 10px;
-	        width: 100%;
-	        max-width: 600px;
-	        display: flex;
-	        flex-direction: column;
-	        align-items: center;
-	        justify-content: center;
-	}
+        .table {
+                padding: var(--gap-base);
+                width: 100%;
+                max-width: 800px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+        }
 
-	@media (min-width: 1000px) {
-	        .table {
-	                max-width: 800px;
-	                padding: 16px;
-	        }
-	}
+        .decks-area {
+                display: flex;
+                gap: var(--gap-base);
+                margin-bottom: var(--gap-base);
+                flex-wrap: wrap;
+                justify-content: center;
+        }
 
-	@media (max-width: 600px) {
-	        .table {
-	                padding: 5px;
-	        }
+        .deck-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                position: relative;
+                padding: 0;
+                transition: transform 0.2s;
+        }
 
-	        .decks-area {
-	                gap: 4px;
-	                margin-bottom: 4px;
-	        }
+        .deck-btn:hover:not(:disabled) {
+                transform: scale(1.05);
+        }
 
-	        .pool-tiles {
-	                gap: 4px;
-	                min-height: 40px;
-	        }
-	}
+        .deck-btn:disabled {
+                cursor: default;
+                opacity: 0.5;
+        }
 
-	.decks-area {
-	        display: flex;
-	        gap: 8px;
-	        margin-bottom: 10px;
-	        flex-wrap: wrap;
-	        justify-content: center;
-	}
+        .deck-count {
+                position: absolute;
+                bottom: -4px;
+                right: -4px;
+                background: rgba(0, 0, 0, 0.8);
+                color: var(--color-text-main);
+                border-radius: 50%;
+                width: calc(var(--tile-size) * 0.3);
+                height: calc(var(--tile-size) * 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: calc(var(--tile-size) * 0.15);
+                border: 1px solid var(--color-glass-border);
+                z-index: 2;
+        }
 
-	.deck-btn {
-	        background: none;
-	        border: none;
-	        cursor: pointer;
-	        position: relative;
-	        padding: 0;
-	        transition: transform 0.2s;
-	}
+        .pool-area {
+                text-align: center;
+                width: 100%;
+        }
 
-	.deck-btn:hover:not(:disabled) {
-	        transform: scale(1.05);
-	}
+        .pool-tiles {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--gap-base);
+                justify-content: center;
+                min-height: var(--tile-size);
+        }
 
-	.deck-btn:disabled {
-	        cursor: default;
-	        opacity: 0.5;
-	}
+        .tile-btn {
+                background: none;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                transition: transform 0.2s;
+        }
 
-	.deck-count {
-	        position: absolute;
-	        bottom: -4px;
-	        right: -4px;
-	        background: rgba(0, 0, 0, 0.8);
-	        color: var(--color-text-main);
-	        border-radius: 50%;
-	        width: 18px;
-	        height: 18px;
-	        display: flex;
-	        align-items: center;
-	        justify-content: center;
-	        font-weight: bold;
-	        font-size: 10px;
-	        border: 1px solid var(--color-glass-border);
-	        z-index: 2;
-	}
+        .tile-btn:hover {
+                transform: scale(1.05);
+        }
 
-	.pool-area {
-	        text-align: center;
-	        width: 100%;
-	}
+        .tile-btn.selected {
+                outline: 2px solid var(--color-neon-yellow);
+                outline-offset: 4px;
+                border-radius: 8px;
+                transform: scale(1.1);
+                box-shadow: 0 0 15px var(--color-neon-yellow);
+        }
 
-	.pool-tiles {
-	        display: flex;
-	        flex-wrap: wrap;
-	        gap: 12px;
-	        justify-content: center;
-	        min-height: 60px;
-	}
-
-	@media (max-width: 600px) {
-	        .pool-tiles {
-	                gap: 10px;
-	        }
-	}
-
-	.tile-btn {
-	        background: none;
-	        border: none;
-	        padding: 0;
-	        cursor: pointer;
-	        transition: transform 0.2s;
-	}
-
-	.tile-btn:hover {
-	        transform: scale(1.05);
-	}
-
-	.tile-btn.selected {
-	        outline: 2px solid var(--color-neon-yellow);
-	        outline-offset: 4px;
-	        border-radius: 8px;
-	        transform: scale(1.1);
-	        box-shadow: 0 0 15px var(--color-neon-yellow);
-	}
-
-	.empty-deck {
-	        width: 60px;
-	        height: 60px;
-	        border: 1px dashed var(--color-text-muted);
-	        border-radius: 8px;
-	        display: flex;
-	        align-items: center;
-	        justify-content: center;
-	        color: var(--color-text-muted);
-	        font-weight: bold;
-	        background: rgba(255, 255, 255, 0.05);
-	}
-
-	@media (min-width: 1000px) {
-	        .empty-deck {
-	                width: 80px;
-	                height: 80px;
-	        }
-	}
-
-	@media (max-height: 500px) and (orientation: landscape) {
-	        .table {
-	                padding: 4px;
-	        }
-
-	        .empty-deck {
-	                width: 32px;
-	                height: 32px;
-	                font-size: 10px;
-	        }
-
-	        .decks-area {
-	                gap: 4px;
-	                margin-bottom: 4px;
-	        }
-
-	        .pool-tiles {
-	                gap: 6px;
-	                min-height: 40px;
-	        }
-	}
-
-	@media (max-width: 450px) {
-	        .empty-deck {
-	                width: 32px;
-	                height: 32px;
-	                font-size: 10px;
-	        }
-	}
+        .empty-deck {
+                width: var(--tile-size);
+                height: var(--tile-size);
+                border: 1px dashed var(--color-text-muted);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--color-text-muted);
+                font-weight: bold;
+                background: rgba(255, 255, 255, 0.05);
+                font-size: var(--font-size-small);
+        }
 </style>

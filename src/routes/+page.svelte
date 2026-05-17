@@ -236,252 +236,255 @@
 </div>
 
 <style>
-	.game-container {
-		width: 100vw;
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		position: relative;
-	}
+        .game-container {
+                width: 100vw;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                position: relative;
+        }
 
-	main {
-		flex: 1;
-		display: flex;
-		flex-direction: row;
-		padding: 10px;
-		gap: 10px;
-		overflow: hidden;
-		box-sizing: border-box;
-	}
+        main {
+                flex: 1;
+                display: flex;
+                flex-direction: row;
+                padding: var(--gap-base);
+                gap: var(--gap-base);
+                overflow: visible;
+                box-sizing: border-box;
+        }
 
-	.main-play-area {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		overflow: hidden;
-	}
+        .main-play-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: var(--gap-base);
+                overflow: visible;
+        }
 
-	.deduction-area {
-		width: auto;
-		max-width: 400px;
-		flex-shrink: 0;
-		overflow-y: auto;
-		display: flex;
-		flex-direction: column;
-	}
+        .deduction-area {
+                width: auto;
+                max-width: 380px;
+                flex-shrink: 0;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+        }
 
-	@media (min-width: 1200px) {
-	        .deduction-area {
-	                max-width: 600px;
-	        }
-	}
+        @media (min-width: 1200px) {
+                .deduction-area {
+                        max-width: 500px;
+                }
+        }
 
-	.opponents-area {
-		display: flex;
-		flex-direction: row;
-		justify-content: center;
-		gap: 10px;
-		flex-wrap: wrap;
-		flex-shrink: 0;
-	}
+        .opponents-area {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: var(--gap-base);
+                flex-wrap: wrap;
+                flex-shrink: 0;
+        }
 
-	.public-area {
-		display: flex;
-		justify-content: center;
-		flex: 1;
-		align-items: center;
-		min-height: 100px;
-		flex-shrink: 1;
-		overflow: hidden;
-	}
+        .public-area {
+                display: flex;
+                justify-content: center;
+                flex: 1;
+                align-items: center;
+                min-height: 80px;
+                flex-shrink: 1;
+                overflow: visible;
+        }
 
-	.player-area {
-		display: flex;
-		justify-content: center;
-		align-items: flex-end;
-		position: relative;
-		padding-bottom: 10px;
-		min-height: 80px;
-		flex-shrink: 0;
-	}
+        .player-area {
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                position: relative;
+                padding-bottom: var(--gap-base);
+                min-height: 80px;
+                flex-shrink: 0;
+        }
 
-	.controls-left, .controls-right {
-		position: absolute;
-		bottom: 10px;
-	}
+        .controls-left, .controls-right {
+                position: absolute;
+                bottom: 10px;
+        }
 
-	.controls-left { left: 10px; }
-	.controls-right { right: 10px; }
+        .controls-left { left: 10px; }
+        .controls-right { right: 10px; }
 
-	@media (orientation: portrait) {
-		main {
-			flex-direction: column;
-			gap: 4px;
-			padding: 0;
-			justify-content: center;
-		}
+        @media (orientation: portrait) {
+                main {
+                        flex-direction: column;
+                        gap: 8px;
+                        padding: 8px;
+                        justify-content: flex-start;
+                        overflow-y: auto;
+                }
 
-		.main-play-area {
-			flex: 1;
-			min-height: 0;
-			display: flex;
-			flex-direction: column;
-			gap: 4px;
-		}
+                .main-play-area {
+                        flex: 1;
+                        min-height: 0;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                        overflow: visible;
+                }
 
-		.status-banner {
-			position: relative;
-			top: 0;
-			left: 0;
-			right: 0;
-			z-index: 20;
-			padding: 8px;
-			margin: 4px auto;
-			width: 95%;
-			box-sizing: border-box;
-		}
+                .status-banner {
+                        position: relative;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        z-index: 20;
+                        padding: 8px;
+                        margin: 4px auto;
+                        width: 95%;
+                        box-sizing: border-box;
+                }
 
-		.status-banner h2 {
-			font-size: 1rem;
-		}
+                .status-banner h2 {
+                        font-size: 1rem;
+                }
 
-		.opponents-area {
-			min-height: 50px;
-			flex: 0 1 auto;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
+                .opponents-area {
+                        min-height: 0;
+                        flex: 0 1 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                }
 
-		.public-area {
-			min-height: 120px;
-			flex: 1;
-			overflow: auto;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
+                .public-area {
+                        min-height: 0;
+                        flex: 1;
+                        overflow: visible;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                }
 
-		.player-area {
-			padding-bottom: 2px;
-			min-height: 50px;
-			flex: 0 1 auto;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
+                .player-area {
+                        padding-bottom: 2px;
+                        min-height: 0;
+                        flex: 0 1 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                }
 
-		.deduction-area {
-			flex: 1;
-			width: 100%;
-			min-height: 150px;
-			max-height: 35vh;
-			overflow-y: auto;
-			border-top: 1px solid var(--color-glass-border);
-		}
-		}
+                .deduction-area {
+                        flex: 1;
+                        width: 100%;
+                        min-height: 150px;
+                        max-height: none;
+                        overflow: visible;
+                        border-top: 1px solid var(--color-glass-border);
+                        padding-top: 8px;
+                }
+                }
 
-	@media (orientation: portrait) and (min-width: 600px) {
-		.main-play-area {
-			flex: 1.5;
-		}
-		.deduction-area {
-			flex: 1;
-			max-height: none;
-		}
-	}
-	@media (orientation: landscape) and (max-height: 500px) {
-		main {
-			padding: 4px;
-			gap: 6px;
-		}
+        @media (orientation: portrait) and (min-width: 600px) {
+                .main-play-area {
+                        flex: 1.5;
+                }
+                .deduction-area {
+                        flex: 1;
+                        max-height: none;
+                }
+        }
+        @media (orientation: landscape) and (max-height: 500px) {
+                main {
+                        padding: 4px;
+                        gap: 6px;
+                }
 
-		.main-play-area {
-			overflow-y: visible;
-		}
+                .main-play-area {
+                        overflow-y: visible;
+                }
 
-		.deduction-area {
-			width: 340px;
-			max-width: 40vw;
-			flex: 0 0 auto;
-			border-left: 1px solid var(--color-glass-border);
-			padding-left: 6px;
-		}
+                .deduction-area {
+                        width: 230px;
+                        max-width: 35vw;
+                        flex: 0 0 auto;
+                        border-left: 1px solid var(--color-glass-border);
+                        padding-left: 6px;
+                }
 
-		.opponents-area {
-			gap: 4px;
-		}
+                .opponents-area {
+                        gap: 4px;
+                }
 
-		.player-area {
-			padding-bottom: 2px;
-			min-height: 50px;
-		}
+                .player-area {
+                        padding-bottom: 2px;
+                        min-height: 60px;
+                }
 
-		.public-area {
-			min-height: 80px;
-		}
-	}
+                .public-area {
+                        min-height: 100px;
+                }
+        }
 
-	.lobby-wrapper {
-		width: 100%;
-		max-width: 500px;
-		margin: 0 auto;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: flex-start;
-		gap: 1rem;
-		padding: 1.5rem;
-		align-self: center;
-		box-sizing: border-box;
-		overflow-y: auto;
-		max-height: 100%;
-	}
+        .lobby-wrapper {
+                width: 100%;
+                max-width: 500px;
+                margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 1rem;
+                padding: 1.5rem;
+                align-self: center;
+                box-sizing: border-box;
+                overflow-y: auto;
+                max-height: 100%;
+        }
 
-	@media (max-width: 600px) {
-		.lobby-wrapper {
-			padding: 0.25rem;
-			gap: 0.25rem;
-		}
-	}
+        @media (max-width: 600px) {
+                .lobby-wrapper {
+                        padding: 0.25rem;
+                        gap: 0.25rem;
+                }
+        }
 
-	.host-actions {
-		display: flex;
-		justify-content: center;
-	}
+        .host-actions {
+                display: flex;
+                justify-content: center;
+        }
 
-	.status-banner {
-		padding: 10px;
-		text-align: center;
-		border: 1px solid var(--color-neon-magenta);
-		box-shadow: 0 0 15px rgba(255, 0, 212, 0.3);
-		margin-bottom: 5px;
-		flex-shrink: 0;
-	}
+        .status-banner {
+                padding: 10px;
+                text-align: center;
+                border: 1px solid var(--color-neon-magenta);
+                box-shadow: 0 0 15px rgba(255, 0, 212, 0.3);
+                margin-bottom: 5px;
+                flex-shrink: 0;
+        }
 
-	.status-banner h2 {
-		margin: 0;
-		font-size: 1.2rem;
-		color: var(--color-neon-magenta);
-		text-shadow: 0 0 10px rgba(255, 0, 212, 0.5);
-	}
+        .status-banner h2 {
+                margin: 0;
+                font-size: 1.2rem;
+                color: var(--color-neon-magenta);
+                text-shadow: 0 0 10px rgba(255, 0, 212, 0.5);
+        }
 
-	.winner-msg {
-		font-size: 1.1rem;
-		font-weight: bold;
-		color: var(--color-neon-yellow);
-		margin: 5px 0;
-		text-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
-	}
+        .winner-msg {
+                font-size: 1.1rem;
+                font-weight: bold;
+                color: var(--color-neon-yellow);
+                margin: 5px 0;
+                text-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
+        }
 
-	.version-info {
-		position: absolute;
-		bottom: 5px;
-		right: 10px;
-		font-size: 0.7rem;
-		opacity: 0.5;
-		font-family: monospace;
-	}
+        .version-info {
+                position: absolute;
+                bottom: 5px;
+                right: 10px;
+                font-size: 0.7rem;
+                opacity: 0.5;
+                font-family: monospace;
+        }
 </style>

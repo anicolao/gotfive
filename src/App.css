@@ -25,9 +25,15 @@
 	--color-orange: var(--color-neon-magenta);
 	--color-wood: var(--color-bg-base);
 	--color-cream: var(--color-text-main);
-}
 
-body {
+	/* Responsive Sizing */
+	--tile-size: clamp(20px, min(7vw, 12vh), 70px);
+	--mini-tile-size: clamp(14px, min(3.5vw, 6vh), 26px);
+	--gap-base: clamp(1px, 0.8vw, 6px);
+	--font-size-large: clamp(0.8rem, 1.8vw, 1.6rem);
+	--font-size-medium: clamp(0.6rem, 1.2vw, 1rem);
+	--font-size-small: clamp(0.5rem, 1vw, 0.75rem);
+	}body {
 	background-color: var(--color-bg-base);
 	background-image: radial-gradient(circle at center, var(--color-bg-light) 0%, var(--color-bg-base) 100%);
 	color: var(--color-text-main);

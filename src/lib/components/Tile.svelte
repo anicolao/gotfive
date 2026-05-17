@@ -77,11 +77,11 @@
 
 <style>
 	.tile {
-	        width: var(--tile-width, 60px);
-	        height: var(--tile-width, 60px);
+	        width: var(--tile-size, 60px);
+	        height: var(--tile-size, 60px);
 	        background-color: var(--tile-color);
-	        border: 1px solid rgba(255, 255, 255, 0.3);
-	        border-radius: 8px;
+	        border: 2px solid rgba(255, 255, 255, 0.3);
+	        border-radius: calc(var(--tile-size) * 0.15);
 	        display: flex;
 	        flex-direction: column;
 	        align-items: center;
@@ -94,79 +94,6 @@
 	        color: white;
 	}
 
-	@media (min-width: 1200px) {
-	        .tile {
-	                --tile-width: 80px;
-	        }
-	}
-
-	@media (max-width: 600px) {
-	        .tile {
-	                --tile-width: 40px;
-	                border-radius: 6px;
-	        }
-
-	        .number {
-	                font-size: 14px !important;
-	        }
-
-	        .dot {
-	                width: 5px !important;
-	                height: 5px !important;
-	        }
-
-	        .sassy-face {
-	                height: 25px !important;
-	        }
-
-	        .eyes {
-	                gap: 3px !important;
-	        }
-
-	        .eye {
-	                width: 3px !important;
-	                height: 3px !important;
-	        }
-
-	        .mouth {
-	                width: 8px !important;
-	        }
-	}
-
-	@media (max-height: 500px) and (orientation: landscape) {
-	        .tile {
-	                --tile-width: 32px;
-	                border-radius: 4px;
-	        }
-
-	        .number {
-	                font-size: 12px !important;
-	        }
-
-	        .dot {
-	                width: 4px !important;
-	                height: 4px !important;
-	        }
-
-	        .sassy-face {
-	                height: 20px !important;
-	        }
-
-	        .eyes {
-	                gap: 2px !important;
-	        }
-
-	        .eye {
-	                width: 2px !important;
-	                height: 2px !important;
-	        }
-
-	        .mouth {
-	                width: 6px !important;
-	                height: 3px !important;
-	                border-bottom-width: 2px !important;
-	        }
-	}
 	.front-content, .back-content {
 	        width: 100%;
 	        height: 100%;
@@ -174,9 +101,9 @@
 	        flex-direction: column;
 	        align-items: center;
 	        justify-content: center;
-	        padding: 2px;
+	        padding: calc(var(--tile-size) * 0.05);
 	        box-sizing: border-box;
-	        gap: 2px;
+	        gap: calc(var(--tile-size) * 0.05);
 	}
 	.face-down {
 		border-color: rgba(255, 255, 255, 0.1);
@@ -187,12 +114,12 @@
 		width: 100%;
 		height: 100%;
 		background-image: radial-gradient(rgba(0,0,0,0.2) 10%, transparent 10%);
-		background-size: 10px 10px;
+		background-size: calc(var(--tile-size) * 0.15) calc(var(--tile-size) * 0.15);
 	}
 
 	.number {
 		font-family: 'Arial Black', sans-serif;
-		font-size: 24px;
+		font-size: calc(var(--tile-size) * 0.4);
 		color: white;
 		line-height: 1;
 		text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
@@ -200,92 +127,92 @@
 
 	.sassy-face {
 		width: 100%;
-		height: 40px;
+		height: calc(var(--tile-size) * 0.6);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		background: rgba(255, 255, 255, 0.2);
 		border-radius: 50%;
-		padding: 5px;
+		padding: calc(var(--tile-size) * 0.08);
 		box-sizing: border-box;
 	}
 
 	.eyes {
 		display: flex;
-		gap: 8px;
+		gap: calc(var(--tile-size) * 0.1);
 	}
 
 	.eye {
-		width: 6px;
-		height: 6px;
+		width: calc(var(--tile-size) * 0.08);
+		height: calc(var(--tile-size) * 0.08);
 		background: white;
 		border-radius: 50%;
 		box-shadow: 1px 1px 1px rgba(0,0,0,0.3);
 	}
 
 	.eye.large {
-		width: 8px;
-		height: 8px;
+		width: calc(var(--tile-size) * 0.12);
+		height: calc(var(--tile-size) * 0.12);
 	}
 
 	.wink {
 		height: 2px;
 		border-radius: 0;
-		margin-top: 3px;
+		margin-top: calc(var(--tile-size) * 0.04);
 	}
 
 	.star {
 		background: none;
-		font-size: 10px;
+		font-size: calc(var(--tile-size) * 0.15);
 		line-height: 1;
-		margin-top: -2px;
+		margin-top: calc(var(--tile-size) * -0.03);
 		color: white;
 		box-shadow: none;
 	}
 
 	.mouth {
-		width: 14px;
-		height: 7px;
+		width: calc(var(--tile-size) * 0.2);
+		height: calc(var(--tile-size) * 0.1);
 		border-bottom: 3px solid white;
 		border-radius: 0 0 50% 50%;
-		margin-top: 4px;
+		margin-top: calc(var(--tile-size) * 0.05);
 	}
 
 	.smirk {
-		width: 12px;
+		width: calc(var(--tile-size) * 0.18);
 		transform: rotate(-10deg);
 	}
 
 	.o-mouth {
-		width: 8px;
-		height: 8px;
+		width: calc(var(--tile-size) * 0.12);
+		height: calc(var(--tile-size) * 0.12);
 		border: 3px solid white;
 		border-radius: 50%;
 	}
 
 	.o-mouth.large {
-		width: 10px;
-		height: 10px;
+		width: calc(var(--tile-size) * 0.15);
+		height: calc(var(--tile-size) * 0.15);
 	}
 
 	.neutral {
-		width: 12px;
+		width: calc(var(--tile-size) * 0.18);
 		height: 0;
 		border-bottom: 3px solid white;
 		border-radius: 0;
-		margin-top: 8px;
+		margin-top: calc(var(--tile-size) * 0.1);
 	}
 
 	.dots {
 		display: flex;
-		gap: 2px;
-		margin-bottom: 4px;
+		gap: calc(var(--tile-size) * 0.04);
+		margin-bottom: calc(var(--tile-size) * 0.05);
 	}
 
 	.dot {
-		width: 8px;
-		height: 8px;
+		width: calc(var(--tile-size) * 0.12);
+		height: calc(var(--tile-size) * 0.12);
 		background-color: white;
 		border-radius: 50%;
 		box-shadow: 1px 1px 1px rgba(0,0,0,0.3);
@@ -293,7 +220,7 @@
 
 	.color-symbol {
 		font-weight: bold;
-		font-size: 14px;
+		font-size: calc(var(--tile-size) * 0.2);
 		opacity: 0.8;
 	}
 </style>
