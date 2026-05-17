@@ -272,6 +272,12 @@
 		flex-direction: column;
 	}
 
+	@media (min-width: 1200px) {
+	        .deduction-area {
+	                max-width: 600px;
+	        }
+	}
+
 	.opponents-area {
 		display: flex;
 		flex-direction: row;
@@ -390,6 +396,10 @@
 		main {
 			padding: 4px;
 			gap: 6px;
+		}
+
+		.main-play-area {
+			overflow-y: visible;
 		}
 
 		.deduction-area {

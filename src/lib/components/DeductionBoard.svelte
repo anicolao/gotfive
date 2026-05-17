@@ -603,7 +603,7 @@
 		background-color: white;
 		transform: rotate(45deg);
 		z-index: 2;
-		top: 16px;
+		top: calc(50% - 1px);
 		box-shadow: 0 0 2px rgba(0,0,0,0.8);
 	}
 

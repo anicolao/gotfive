@@ -94,6 +94,12 @@
 	        color: white;
 	}
 
+	@media (min-width: 1200px) {
+	        .tile {
+	                --tile-width: 80px;
+	        }
+	}
+
 	@media (max-width: 600px) {
 	        .tile {
 	                --tile-width: 40px;

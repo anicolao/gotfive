@@ -57,6 +57,13 @@
 	        justify-content: center;
 	}
 
+	@media (min-width: 1000px) {
+	        .table {
+	                max-width: 800px;
+	                padding: 16px;
+	        }
+	}
+
 	@media (max-width: 600px) {
 	        .table {
 	                padding: 5px;
@@ -167,6 +174,13 @@
 	        color: var(--color-text-muted);
 	        font-weight: bold;
 	        background: rgba(255, 255, 255, 0.05);
+	}
+
+	@media (min-width: 1000px) {
+	        .empty-deck {
+	                width: 80px;
+	                height: 80px;
+	        }
 	}
 
 	@media (max-height: 500px) and (orientation: landscape) {
