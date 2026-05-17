@@ -144,6 +144,18 @@
 	        gap: 8px;
 	}
 
+	@media (min-width: 1200px) {
+	        .tiles-area {
+	                grid-template-columns: repeat(5, auto 80px) auto;
+	                gap: 12px;
+	        }
+
+	        .slot {
+	                width: 80px;
+	                height: 80px;
+	        }
+	}
+
 	@media (max-width: 800px) {
 	        .tiles-area {
 	                grid-template-columns: repeat(5, auto 40px) auto;
