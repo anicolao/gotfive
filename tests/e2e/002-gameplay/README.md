@@ -1,67 +1,53 @@
-# Gameplay
+# Refinements
 
-As a user, I want to play through a game with deterministic results.
+Verify Deduction Board auto-fill, sync, and Play Again button behavior.
 
-## Game initializes with correct number of tiles
+## Marking a tile OK fills the corresponding guess input based on rack position
 
-![Game initializes with correct number of tiles](./screenshots/000-initial-state.png)
+![Marking a tile OK fills the corresponding guess input based on rack position](./screenshots/000-ok-syncs-to-input.png)
 
 **Verifications:**
-- [x] Player "You" has 5 tiles
-- [x] Public pool has 5 initial tiles
-- [x] Each of the 5 colored decks has 9 tiles remaining
+- [x] Guess input 0 is filled with "2"
 
 ---
 
-## Revealing a tile updates the public pool and deck count
+## Marking a second tile OK in the same color row clears the first one
 
-![Revealing a tile updates the public pool and deck count](./screenshots/001-reveal-tile.png)
+![Marking a second tile OK in the same color row clears the first one](./screenshots/001-one-ok-per-row-clears-previous.png)
 
 **Verifications:**
-- [x] Public pool now has 6 tiles
-- [x] Red deck has 8 tiles remaining
+- [x] Tile 7 is OK
+- [x] Tile 2 is now clear (neither OK nor X)
+- [x] Guess input 0 is updated to "7"
 
 ---
 
-## Asking for a clue records it on the stand and consumes the tile
+## Identify visible tiles in the second slot color row
 
-![Asking for a clue records it on the stand and consumes the tile](./screenshots/002-ask-clue.png)
+![Identify visible tiles in the second slot color row](./screenshots/002-auto-fill-pre-state.png)
 
 **Verifications:**
-- [x] Alice stand has one active sorting notch
-- [x] The active notch contains a MiniTile representation of the consumed tile
-- [x] The consumed tile is removed from the public pool
-- [x] Public tile is deselected after action
 
 ---
 
-## Asking for a dot clue records it above the slot and consumes the tile
+## If only one tile is possible, it is automatically marked OK
 
-![Asking for a dot clue records it above the slot and consumes the tile](./screenshots/003-ask-compare-clue.png)
+![If only one tile is possible, it is automatically marked OK](./screenshots/003-auto-fill-trigger.png)
 
 **Verifications:**
-- [x] Alice stand has a compare clue above the first slot
-- [x] The consumed tile is removed from the public pool
+- [x] At least one tile in the second slot color row is OK
+- [x] Guess input 1 is filled
 
 ---
 
-## Deduction board cells show dots and automated marking
+## Clicking Play Again as a host immediately starts a new game
 
-![Deduction board cells show dots and automated marking](./screenshots/004-deduction-board.png)
-
-**Verifications:**
-- [x] Cells show dot counts
-- [x] First cell shows a strike (X)
-- [x] Public tiles are dimmed on the deduction board
-
----
-
-## Guessing flow processes the guess from the deduction board
-
-![Guessing flow processes the guess from the deduction board](./screenshots/005-guessing-flow.png)
+![Clicking Play Again as a host immediately starts a new game](./screenshots/004-play-again-host.png)
 
 **Verifications:**
-- [x] End game status is shown (Eliminated or Winner)
+- [x] Game status is PLAYING (status banner is gone)
+- [x] Deduction board is reset
+- [x] Players have new hands (5 tiles)
 
 ---
 
