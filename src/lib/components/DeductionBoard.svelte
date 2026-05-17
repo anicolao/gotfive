@@ -405,8 +405,8 @@
 	}
 
 	.guess-inputs input {
-		width: 30px;
-		height: 30px;
+		width: 40px;
+		height: 40px;
 		text-align: center;
 		border: 1px solid var(--color-neon-yellow);
 		border-radius: 4px;
@@ -414,7 +414,7 @@
 		font-weight: bold;
 		background: rgba(0, 0, 0, 0.8);
 		color: var(--color-neon-yellow);
-		font-size: 0.9rem;
+		font-size: 1.1rem;
 	}
 
 	.guess-inputs input:focus {
@@ -426,14 +426,14 @@
 		background-color: rgba(0, 0, 0, 0.6);
 		color: var(--color-neon-magenta);
 		font-weight: bold;
-		padding: 4px 12px;
+		padding: 8px 16px;
 		border: 1px solid var(--color-neon-magenta);
 		border-radius: 4px;
 		cursor: pointer;
 		font-family: 'Courier New', Courier, monospace;
 		text-shadow: 0 0 5px rgba(255, 0, 212, 0.5);
 		box-shadow: 0 0 10px rgba(255, 0, 212, 0.2);
-		font-size: 0.8rem;
+		font-size: 1rem;
 	}
 
 	.got-five-btn:hover:not(:disabled) {
@@ -471,7 +471,7 @@
 
 	.row {
 		display: flex;
-		gap: 4px;
+		gap: 6px;
 		align-items: center;
 	}
 
@@ -484,15 +484,15 @@
 	}
 
 	.mini-tile {
-	        width: 24px;
-	        height: 24px;
+	        width: 28px;
+	        height: 28px;
 	        flex-shrink: 0;
 	        border-radius: 4px;
 	        display: flex;
 	        flex-direction: column;
 	        align-items: center;
 	        justify-content: center;
-	        font-size: 10px;
+	        font-size: 12px;
 	        font-weight: bold;
 	        color: white;
 	        position: relative;
@@ -501,6 +501,22 @@
 	        padding: 0;
 	        box-sizing: border-box;
 	        border: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	@media (min-width: 1200px) {
+		.mini-tile {
+			width: 36px;
+			height: 36px;
+			font-size: 14px;
+		}
+
+		.row {
+			gap: 8px;
+		}
+
+		.grid {
+			gap: 6px;
+		}
 	}
 
 	@media (max-width: 600px) {
