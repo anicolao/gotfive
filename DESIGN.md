@@ -14,6 +14,7 @@ Got Five! is a digital adaptation of the logic and deduction board game. This do
 - **P2P Communication**: WebRTC via `RTCPeerConnection` (Host-Peer Mesh).
 - **Styling**: Svelte-scoped CSS with CSS Variables for a 70s-inspired color palette.
 - **3D**: Threlte (Future expansion phase).
+- **Responsive Layout**: Use viewport-based units (`vw`, `vh`) and `clamp()` for component sizing to ensure the UI fills the screen and remains interactable across all devices and zoom levels.
 - **No-Go List**: No React, no Tailwind, no centralized server for game logic.
 
 ## 3. Data Structures (Redux State)
