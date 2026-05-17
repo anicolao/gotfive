@@ -476,3 +476,21 @@
 - Used `${FULL_HASH:0:7}` in bash to shorten the hash in the workflow.
 - Confirmed that `vite.config.ts` already has logic to shorten the hash, but it was being bypassed by the environment variable taking precedence in the `define` block.
 
+## 2026-05-17: Improving UI Layout and Sizing (Issue #59)
+
+**User Prompt:**
+> The tiles and deduction grid are really too small. On Chrome for desktop I found it much more comfortable zoomed in substantially. Change the layout strategy to size the tiles to make use of the user's screen — remember even on phones we need the deduction grid to be easily tappable and the tiles should be large and clear.
+
+**Last Human Comment:**
+> No this still looks bad. Here's an iPad layout for example:
+>
+> <img width="796" height="1066" alt="Image" src="https://github.com/user-attachments/assets/4a592429-7d16-4d95-bf2c-83c0e7893d4f <!-- CONDUCTOR_MEDIA_PATH: /tmp/gemini-media-4giWQV/4a592429-7d16-4d95-bf2c-83c0e7893d4f -->" />
+>
+> Maybe use %vh or %vw to size things, make sure you use available real estate and make the UI larger and more interactable.
+
+**Action Plan (Orchestration):**
+- Analyzed the current layout strategy and identified hardcoded `px` sizes in `Tile.svelte`, `MiniTile.svelte`, `DeductionBoard.svelte`, and `PlayerStand.svelte`.
+- Formulated a plan to refactor the UI to use viewport-based units (`vw`, `vh`) and `clamp()` for responsive sizing.
+- Identified the need to scale internal tile elements (dots, numbers, sassy faces) relative to the tile size.
+- Planned to improve space distribution in `+page.svelte` to allow components to grow and fill the screen.
+- Delegating implementation to `@coder`.
