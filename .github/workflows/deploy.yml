@@ -41,14 +41,15 @@ jobs:
         id: build_env
         run: |
           echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-          echo "git_hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          FULL_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "git_hash=${FULL_HASH:0:7}" >> $GITHUB_OUTPUT
 
       - name: Build
         run: nix develop --command bun run build
         env:
           PUBLIC_BASE_PATH: ${{ steps.base_path.outputs.path }}
           VITE_APP_VERSION: ${{ steps.build_env.outputs.version }}
-          VITE_GIT_HASH: ${{ github.event.pull_request.head.sha || github.sha }}
+          VITE_GIT_HASH: ${{ steps.build_env.outputs.git_hash }}
 
       - name: Deploy to gh-pages branch
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && success())

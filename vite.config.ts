@@ -24,7 +24,7 @@ export default defineConfig({
 	base: (process.env.PUBLIC_BASE_PATH || '').replace(/\/$/, ''),
 	define: {
 		'import.meta.env.VITE_APP_VERSION': JSON.stringify(process.env.VITE_APP_VERSION || pkg.version),
-		'import.meta.env.VITE_GIT_HASH': JSON.stringify(process.env.VITE_GIT_HASH || gitHash)
+		'import.meta.env.VITE_GIT_HASH': JSON.stringify(gitHash)
 	},
 	plugins: [
 		nodePolyfills({
