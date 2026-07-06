@@ -457,3 +457,22 @@
 - Updated `E2E_GUIDE.md` to strictly prohibit masking.
 - Verified all 8 tests pass with `npm run test:e2e`.
 
+## 2026-05-17: Fix PR Deploy Hash Shortening (Issue #61)
+
+**User Prompt:**
+> The PR deploy workflow doesn't show the right hash in teh version so i can't tell if I'm looking at the correct deploy. You can refer to github.com:anicolao/food for an example of a working PR deploy workflow to fix it.
+
+**Last Human Comment:**
+> your shorten is in the wrong place because while you've fixed the environment variable, you passed the full hash in and that is what gets embedded in the UI. You need to shorten the env var itself for this to be correct.
+
+**Action Plan (Coder):**
+- Updated `.github/workflows/deploy.yml` to shorten the hash to 7 characters in the "Prepare build environment" step and use it for `VITE_GIT_HASH`.
+- Updated `vite.config.ts` to use the `gitHash` variable directly in the `define` block, ensuring it's always shortened.
+- Updated `package.json` E2E scripts to use a 7-character string (`test7ch`) for `VITE_GIT_HASH`.
+- Regenerated all E2E snapshots to reflect the updated `VITE_GIT_HASH` in the UI.
+- Verified all E2E tests pass with `npm run test:e2e`.
+
+**Notes:**
+- Used `${FULL_HASH:0:7}` in bash to shorten the hash in the workflow.
+- Confirmed that `vite.config.ts` already has logic to shorten the hash, but it was being bypassed by the environment variable taking precedence in the `define` block.
+

@@ -22,7 +22,15 @@ The following rules are absolute. Any violation will result in a failed PR.
 - **No manual screenshots**: Never use `page.screenshot()`. Always use the `TestStepHelper`.
 - **No ignored tests**: Tests must either pass or be removed.
 
-## 3. Directory Convention
+## 3. Test Isolation and Determinism
+
+To ensure tests are stable and repeatable:
+
+- **Unique lobbyId**: Always use a unique `lobbyId` in the URL for each test (e.g., `&lobbyId=lobby-001`) to prevent PeerJS ID collisions and "extra player" bugs.
+- **Fixed IDs**: Always use a fixed `myId` for each test context to ensure PeerJS IDs are predictable and screenshots remain consistent.
+- **Fixed Seeds**: Always use a fixed `seed` parameter for the RNG to ensure game state is identical every run.
+
+## 4. Directory Convention
 
 All E2E tests live in `tests/e2e/`. Each test case gets its own directory, prefixed with a three-digit number.
 

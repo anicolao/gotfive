@@ -20,7 +20,7 @@ test.describe('Mobile Gameplay', () => {
     const tester = new TestStepHelper(page, testInfo);
     tester.setMetadata('Mobile Portrait', 'Verify layout and gameplay on mobile portrait.');
 
-    await page.goto(`/?seed=123&myId=mobile-portrait-test-user`);
+    await page.goto(`/?seed=123&myId=mobile-portrait-test-user&lobbyId=lobby-005-portrait`);
 
     // 1. Lobby Check
     const lobby = page.locator('.lobby-wrapper');
@@ -169,7 +169,7 @@ test.describe('Mobile Gameplay', () => {
     tester.setMetadata('Mobile Landscape', 'Verify layout on mobile landscape.');
 
     await page.setViewportSize({ width: 667, height: 450 });
-    await page.goto(`/?seed=123&myId=mobile-landscape-test-user`);
+    await page.goto(`/?seed=123&myId=mobile-landscape-test-user&lobbyId=lobby-005-landscape`);
 
     await page.getByLabel('Your Name:').fill('LandscapeUser');
     await page.getByRole('button', { name: 'Join Lobby' }).click();
@@ -263,7 +263,7 @@ test.describe('Mobile Gameplay', () => {
     tester.setMetadata('Tablet Portrait', 'Verify layout on tablet portrait.');
 
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto(`/?seed=123&myId=tablet-portrait-test-user`);
+    await page.goto(`/?seed=123&myId=tablet-portrait-test-user&lobbyId=lobby-005-tablet`);
 
     await page.getByLabel('Your Name:').fill('TabletUser');
     await page.getByRole('button', { name: 'Join Lobby' }).click();
