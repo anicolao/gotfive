@@ -8,6 +8,7 @@ Testing public game discovery and joining.
 
 **Verifications:**
 - [x] Game card is visible
+- [x] Host is projected as playing
 
 ---
 
