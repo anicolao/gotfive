@@ -61,8 +61,8 @@ test.describe('Multiplayer Lobby', () => {
 		await hostPage.getByLabel('Your Name:').fill('Host');
 		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
 		
-		// Wait for Host to connect to Lobby
-		await expect(hostPage.getByText('LOBBY_CLIENT')).toBeVisible();
+		// Wait for Host to enter the lobby.
+		await expect(hostPage.getByRole('button', { name: 'Host New Game' })).toBeVisible();
 
 		await hostPage.getByRole('button', { name: 'Host New Game' }).click();
 		await hostPage.getByLabel('Game Name:').fill("Host's Public Game");
@@ -76,8 +76,8 @@ test.describe('Multiplayer Lobby', () => {
 		await clientPage.getByLabel('Your Name:').fill('Client');
 		await clientPage.getByRole('button', { name: 'Join Lobby' }).click();
 		
-		// Wait for Client to connect to Lobby
-		await expect(clientPage.getByText('LOBBY_CLIENT')).toBeVisible();
+		// Wait for Client to enter the lobby.
+		await expect(clientPage.getByRole('button', { name: 'Host New Game' })).toBeVisible();
 
 		// 3. Client checks for Public Game
 		await expect(clientPage.getByRole('heading', { name: 'Public Games' })).toBeVisible();

@@ -207,13 +207,6 @@
 <div class="lobby groovy-panel">
 	<div class="lobby-header-row">
 		<h2>Got Five! Lobby</h2>
-		{#if mode !== 'ONBOARDING'}
-			<div class="global-status">
-				<span class={lobbyState.myStatus === 'CONNECTING' ? 'text-yellow' : 'text-cyan'}>
-					{lobbyState.myStatus}
-				</span>
-			</div>
-		{/if}
 	</div>
 
 	{#if mode === 'ONBOARDING'}
@@ -387,15 +380,6 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 10px;
-	}
-
-	.global-status {
-		font-size: 0.8rem;
-		font-weight: bold;
-		border: 1px solid var(--color-glass-border);
-		padding: 4px 8px;
-		border-radius: 4px;
-		background: rgba(0,0,0,0.2);
 	}
 
 	.input-group {
@@ -578,7 +562,6 @@
 	}
 
 	.text-cyan { color: var(--color-neon-cyan); }
-	.text-yellow { color: var(--color-neon-yellow); }
 	.text-muted { color: var(--color-text-muted); }
 	.groovy-button-small {
 		background: rgba(0, 229, 255, 0.1);
