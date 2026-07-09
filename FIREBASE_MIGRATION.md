@@ -107,9 +107,6 @@ interface FirebaseEvent<TType extends string = string, TPayload = unknown> {
   payload: TPayload;
   actorUid: string;
   createdAt: Timestamp;
-  ordinal: number;
-  clientCreatedAt: number;
-  clientNonce: string;
   schemaVersion: number;
   reducerVersion: number;
 }
@@ -121,13 +118,10 @@ Fields:
 - `payload`: existing Redux action payload where practical.
 - `actorUid`: Firebase Auth UID of the writer.
 - `createdAt`: Firestore server timestamp.
-- `ordinal`: per-writer ordering value used when one client writes several events that must replay in order.
-- `clientCreatedAt`: local timestamp for diagnostics and optimistic ordering before server timestamp resolves.
-- `clientNonce`: unique per-client event id for duplicate detection.
 - `schemaVersion`: event envelope version.
 - `reducerVersion`: reducer semantics version used by the client that wrote the event.
 
-The Firestore document ID is part of the cursor and final tie-break ordering. Clients should order by `createdAt`, then `ordinal`, then document ID. During pending local writes where `createdAt` is unresolved, the UI may show optimistic state, but durable cache cursors should only advance through events with server timestamps.
+Clients query by `createdAt` and locally use the Firestore document ID as a final tie-break if two events have the same server timestamp. During pending local writes where `createdAt` is unresolved, durable cache cursors should only advance through events with server timestamps.
 
 ## Local Hydrated Cache
 
@@ -162,7 +156,7 @@ There is no mutable lobby state document.
 Ordering:
 
 - Primary: `createdAt`
-- Tie-breaks: `ordinal`, then document ID
+- Tie-break: document ID if server timestamps are identical
 
 Retention:
 
@@ -342,7 +336,7 @@ There should be no mutable game state document. The path `/games/{gameId}` may e
 Ordering:
 
 - Primary: `createdAt`
-- Tie-breaks: `ordinal`, then document ID
+- Tie-break: document ID if server timestamps are identical
 
 Membership:
 
@@ -598,10 +592,9 @@ Reducer effect:
 
 Ordering note:
 
-- The host should write game setup actions in a batch if possible.
-- Clients order by `createdAt`, then `ordinal`, then document ID.
-- The setup batch must assign increasing ordinals so all clients apply `players/addPlayer`, then `players/setHand`, then `game/start`.
-- Justification: existing WebRTC sent actions in order over a connection. Firestore batch writes with identical timestamps need a deterministic tie-break that preserves setup order.
+- The host writes game setup actions sequentially and awaits each append.
+- Clients order by `createdAt`, with document ID as a local tie-break for identical timestamps.
+- Justification: existing WebRTC sent actions in order over a connection. Sequential Firestore appends preserve that model without adding custom client-side ordering fields.
 
 ### Reveal and Ask Clue
 
