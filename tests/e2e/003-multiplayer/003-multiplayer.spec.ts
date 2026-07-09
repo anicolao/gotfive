@@ -82,12 +82,15 @@ test.describe('Multiplayer Lobby', () => {
 		// 3. Client checks for Public Game
 		await expect(clientPage.getByRole('heading', { name: 'Public Games' })).toBeVisible();
 		const gameCard = clientPage.locator('.game-card').filter({ hasText: "Host's Public Game" });
+		const hostLobbyEntry = clientPage.locator('.players-list li').filter({ hasText: 'Host' });
 		await expect(gameCard).toBeVisible();
+		await expect(hostLobbyEntry).toContainText('playing');
 
 		await tester.step('public-game-visible', {
 			description: 'Public game is visible in the lobby',
 			verifications: [
-				{ spec: 'Game card is visible', check: async () => await expect(gameCard).toBeVisible() }
+				{ spec: 'Game card is visible', check: async () => await expect(gameCard).toBeVisible() },
+				{ spec: 'Host is projected as playing', check: async () => await expect(hostLobbyEntry).toContainText('playing') }
 			]
 		});
 
