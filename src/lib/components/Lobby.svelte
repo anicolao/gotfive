@@ -1,11 +1,18 @@
 <script lang="ts">
-	import { initNetwork, getPeerManager } from '../network';
-	import { initLobby, getLobbyManager } from '../network/lobbyManager';
-	import { getLobbyConfig } from '../network/peerConfig';
 	import { store } from '../store';
-	import { setProfile, type PlayerProfile, type GameInfo } from '../store/lobbySlice';
-	import { addPlayer } from '../store/playersSlice';
-	import { setMyId, setIsHost } from '../store/uiSlice';
+	import { setProfile, type PlayerProfile } from '../store/lobbySlice';
+	import { setGameId, setIsHost, setMyId } from '../store/uiSlice';
+	import {
+		getLobbyRoster,
+		initializeFirebaseProfile,
+		linkCurrentUserWithGoogle,
+		subscribeGame,
+		subscribeLobby,
+		unsubscribeLobby,
+		updateUserPresence,
+		updateUserVisibility,
+		writeLobbyEvent
+	} from '../firebase/events';
 	import { onMount, onDestroy } from 'svelte';
 
 	let myName = $state('');
@@ -18,9 +25,11 @@
 	let hostGameName = $state('');
 	let hostGameVisibility: 'public' | 'hidden' = $state('public');
 	let hostMaxPlayers = $state(5);
-	
+
 	let targetHostId = $state('');
 	let connections: string[] = $state([]);
+	let currentGameId = $state('');
+	let authError = $state('');
 	
 	let lobbyState = $state(store.getState().lobby);
 	let unsubscribe: () => void;
@@ -28,13 +37,10 @@
 	onMount(() => {
 		unsubscribe = store.subscribe(() => {
 			lobbyState = store.getState().lobby;
+			if (currentGameId) {
+				connections = getLobbyRoster(currentGameId).filter((id) => id !== myId);
+			}
 		});
-
-		const handleUnload = () => {
-			const lm = getLobbyManager();
-			if (lm) lm.disconnect();
-		};
-		window.addEventListener('beforeunload', handleUnload);
 
 		const urlParams = new URLSearchParams(window.location.search);
 		const paramMyId = urlParams.get('myId');
@@ -42,6 +48,11 @@
 			myId = paramMyId;
 		} else {
 			myId = Math.random().toString(36).substring(7);
+		}
+
+		const gameId = urlParams.get('gameId');
+		if (gameId) {
+			targetHostId = gameId;
 		}
 
 		const savedProfileStr = localStorage.getItem('playerProfile');
@@ -52,82 +63,69 @@
 				myAvatar = savedProfile.avatar || 'default';
 				myVisibility = savedProfile.status || 'visible';
 				myId = savedProfile.id || myId;
-				
 				if (myName) {
-					joinGlobalLobby();
+					(async () => {
+						await joinGlobalLobby();
+						if (gameId) {
+							mode = 'JOINING_FROM_LINK';
+							await joinGameFromLink();
+						}
+					})();
 				}
 			} catch (e) {
 				console.error("Failed to parse profile", e);
 			}
+		} else if (gameId) {
+			mode = 'ONBOARDING';
 		}
-
-		const peerId = urlParams.get('peerId');
-		if (peerId) {
-			targetHostId = peerId;
-			if (myName) {
-				mode = 'JOINING_FROM_LINK';
-				joinGameFromLink();
-			} else {
-				mode = 'ONBOARDING'; // Needs to enter name first
-			}
-		}
-
-		return () => {
-			window.removeEventListener('beforeunload', handleUnload);
-		};
 	});
-	
+
 	onDestroy(() => {
 		if (unsubscribe) unsubscribe();
-		// Only disconnect if we are not in a game-related mode
-		if (mode === 'ONBOARDING' || mode === 'LOBBY') {
-			const lm = getLobbyManager();
-			if (lm) lm.disconnect();
-		}
+		unsubscribeLobby();
 	});
 
-	function saveProfileAndJoinLobby() {
+	async function saveProfileAndJoinLobby() {
 		if (!myName) return;
-		const profile: PlayerProfile = {
-			id: myId,
-			name: myName,
-			avatar: myAvatar,
-			status: myVisibility,
-			activity: 'idle',
-			lastSeen: Date.now()
-		};
-		localStorage.setItem('playerProfile', JSON.stringify(profile));
-		
-		const urlParams = new URLSearchParams(window.location.search);
-		if (urlParams.get('peerId')) {
-			mode = 'JOINING_FROM_LINK';
-			joinGameFromLink();
-		} else {
-			joinGlobalLobby();
+		authError = '';
+		try {
+			await joinGlobalLobby();
+			const urlParams = new URLSearchParams(window.location.search);
+			const gameId = urlParams.get('gameId');
+			if (gameId) {
+				targetHostId = gameId;
+				mode = 'JOINING_FROM_LINK';
+				await joinGameFromLink();
+			}
+		} catch (error) {
+			authError = error instanceof Error ? error.message : String(error);
 		}
 	}
 	
-	function joinGlobalLobby() {
+	async function joinGlobalLobby() {
+		const user = await initializeFirebaseProfile(myName, myAvatar, myVisibility);
+		myId = user.uid;
 		const profile: PlayerProfile = {
-			id: myId,
-			name: myName,
-			avatar: myAvatar,
-			status: myVisibility,
+			id: user.uid,
+			name: user.displayName,
+			avatar: user.avatar,
+			status: user.visibility,
 			activity: 'idle',
-			lastSeen: Date.now()
+			lastSeen: user.lastSeenAt
 		};
+		localStorage.setItem('playerProfile', JSON.stringify({ ...profile, id: user.uid }));
 		store.dispatch(setProfile(profile));
-		initLobby(profile);
+		store.dispatch(setMyId(user.uid));
+		await subscribeLobby(store.dispatch);
 		mode = 'LOBBY';
 	}
 	
-	function updateProfileVisibility() {
+	async function updateProfileVisibility() {
 		myVisibility = myVisibility === 'visible' ? 'lurking' : 'visible';
-		const lm = getLobbyManager();
-		if (lm && lobbyState.profile) {
+		if (lobbyState.profile) {
 			const updatedProfile = { ...lobbyState.profile, status: myVisibility };
 			store.dispatch(setProfile(updatedProfile));
-			lm.updateProfile(updatedProfile);
+			await updateUserVisibility(myVisibility);
 			localStorage.setItem('playerProfile', JSON.stringify(updatedProfile));
 		}
 	}
@@ -142,92 +140,37 @@
 	}
 
 	async function confirmHostGame() {
-		const lm = getLobbyManager();
-		// We still keep the lobby connection to broadcast the game
-		if (lm && lobbyState.profile) {
-			const updatedProfile = { ...lobbyState.profile, activity: 'playing' as const };
-			store.dispatch(setProfile(updatedProfile));
-			lm.updateProfile(updatedProfile);
-		}
-		
-		const peerManager = initNetwork(myId, store.dispatch, true, store.getState);
-		peerManager.connections.subscribe((c: string[]) => {
-			connections = c;
-			// Update player count in lobby
-			const updatedGameInfo: GameInfo = {
-				hostId: myId,
-				hostName: myName,
-				name: hostGameName,
-				visibility: hostGameVisibility,
-				playerCount: c.length + 1,
-				maxPlayers: hostMaxPlayers
-			};
-			if (lm) lm.sendToLeader({ type: 'GAME_REGISTER', payload: updatedGameInfo });
-		});
-		
-		store.dispatch(setMyId(myId));
+		const urlParams = new URLSearchParams(window.location.search);
+		currentGameId = urlParams.get('hostGameId') || crypto.randomUUID();
 		store.dispatch(setIsHost(true));
-		store.dispatch(addPlayer({ id: myId, name: myName }));
-		
-		if (lm && hostGameVisibility === 'public') {
-			const gameInfo: GameInfo = {
-				hostId: myId,
-				hostName: myName,
-				name: hostGameName,
-				visibility: hostGameVisibility,
-				playerCount: 1,
-				maxPlayers: hostMaxPlayers
-			};
-			lm.sendToLeader({ type: 'GAME_REGISTER', payload: gameInfo });
-		}
-		
+		store.dispatch(setGameId(currentGameId));
+		await updateUserPresence(currentGameId);
+		await writeLobbyEvent('lobby/createGame', {
+			gameId: currentGameId,
+			name: hostGameName,
+			visibility: hostGameVisibility,
+			maxPlayers: hostMaxPlayers
+		});
+		await writeLobbyEvent('lobby/joinGame', { gameId: currentGameId, uid: myId });
+		await subscribeGame(currentGameId, store.dispatch);
 		mode = 'HOSTING';
 	}
 
 	async function joinGame(hostId: string) {
-		const lm = getLobbyManager();
-		if (lm && lobbyState.profile) {
-			const updatedProfile = { ...lobbyState.profile, activity: 'playing' as const };
-			store.dispatch(setProfile(updatedProfile));
-			lm.updateProfile(updatedProfile);
-		}
-		
+		if (!hostId) return;
 		targetHostId = hostId;
+		currentGameId = hostId;
 		mode = 'JOINING';
-		
-		const peerManager = initNetwork(myId, store.dispatch, false, store.getState);
-		peerManager.connections.subscribe((c: string[]) => {
-			connections = c;
-		});
-		
-		store.dispatch(setMyId(myId));
 		store.dispatch(setIsHost(false));
-		store.dispatch(addPlayer({ id: myId, name: myName }));
-		
-		setTimeout(() => {
-			peerManager.connect(targetHostId);
-		}, getLobbyConfig().reconnectDelay);
+		store.dispatch(setGameId(hostId));
+		await updateUserPresence(hostId);
+		await writeLobbyEvent('lobby/joinGame', { gameId: hostId, uid: myId });
+		await subscribeGame(hostId, store.dispatch);
+		connections = getLobbyRoster(hostId).filter((id) => id !== myId);
 	}
 
 	async function joinGameFromLink() {
-		const lm = getLobbyManager();
-		if (lm && lobbyState.profile) {
-			const updatedProfile = { ...lobbyState.profile, activity: 'playing' as const };
-			store.dispatch(setProfile(updatedProfile));
-			lm.updateProfile(updatedProfile);
-		}
-
-		const peerManager = initNetwork(myId, store.dispatch, false, store.getState);
-		peerManager.connections.subscribe((c: string[]) => {
-			connections = c;
-		});
-		store.dispatch(setMyId(myId));
-		store.dispatch(setIsHost(false));
-		store.dispatch(addPlayer({ id: myId, name: myName }));
-		
-		setTimeout(() => {
-			peerManager.connect(targetHostId);
-		}, getLobbyConfig().reconnectDelay);
+		await joinGame(targetHostId);
 	}
 
 	function copyToClipboard(text: string) {
@@ -236,7 +179,7 @@
 
 	function copyInviteLink() {
 		const url = new URL(window.location.href);
-		url.searchParams.set('peerId', myId);
+		url.searchParams.set('gameId', currentGameId);
 		navigator.clipboard.writeText(url.toString());
 	}
 	
@@ -250,6 +193,14 @@
 	
 	function getPublicGamesArray() {
 		return Object.values(lobbyState.publicGames).filter(g => g.visibility === 'public');
+	}
+
+	function getCurrentRoster() {
+		return myId ? [myId, ...connections] : connections;
+	}
+
+	async function signInWithGoogle() {
+		await linkCurrentUserWithGoogle();
 	}
 </script>
 
@@ -282,6 +233,9 @@
 			<div class="actions">
 				<button class="groovy-button" onclick={saveProfileAndJoinLobby} disabled={!myName}>Join Lobby</button>
 			</div>
+			{#if authError}
+				<p class="waiting">{authError}</p>
+			{/if}
 		</div>
 
 	{:else if mode === 'LOBBY'}
@@ -293,6 +247,9 @@
 					<p>Status: <span class={myVisibility === 'visible' ? 'text-cyan' : 'text-muted'}>{myVisibility}</span></p>
 					<button class="groovy-button-small" onclick={updateProfileVisibility}>
 						Toggle Visibility
+					</button>
+					<button class="groovy-button-small" onclick={signInWithGoogle}>
+						Link Google Account
 					</button>
 				</div>
 
@@ -375,18 +332,18 @@
 		<div class="step">
 			<p>Your Game ID (share this with friends):</p>
 			<div class="id-display">
-				<code>{myId}</code>
-				<button onclick={() => copyToClipboard(myId)}>Copy</button>
+				<code>{currentGameId}</code>
+				<button onclick={() => copyToClipboard(currentGameId)}>Copy</button>
 			</div>
 			<p>Or share this invite link:</p>
 			<button class="groovy-button" onclick={copyInviteLink}>Copy Invite Link</button>
 		</div>
 
 		<div class="status">
-			<h3>Connected Players ({connections.length + 1})</h3>
+			<h3>Connected Players ({getCurrentRoster().length})</h3>
 			<ul>
 				<li>{myName} (You - Host)</li>
-				{#each connections as id}
+				{#each getCurrentRoster().filter(id => id !== myId) as id}
 					<li>{id}</li>
 				{/each}
 			</ul>
@@ -395,11 +352,11 @@
 	{:else if mode === 'JOINING' || mode === 'JOINING_FROM_LINK'}
 		<div class="status">
 			<h3>Connection Status</h3>
-			{#if connections.length > 0}
+			{#if currentGameId}
 				<p class="connected">Connected to Host!</p>
 				<ul>
 					<li>{myName} (You)</li>
-					<li>Host: {targetHostId}</li>
+					<li>Game: {targetHostId}</li>
 				</ul>
 				<p>Waiting for host to start...</p>
 			{:else}

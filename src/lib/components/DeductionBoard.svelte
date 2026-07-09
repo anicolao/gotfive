@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { store } from '$lib/store';
 	import { markDeduction, addStroke, clearStrokes as clearStrokesAction } from '$lib/store/uiSlice';
-	import { guess, eliminatePlayer } from '$lib/store/playersSlice';
-	import { setWinner, nextTurn } from '$lib/store/gameSlice';
 	import { getTileData } from '$lib/game/tiles';
+	import { writeGameEvents } from '$lib/firebase/events';
 	import { onMount } from 'svelte';
 
 	let { deductions = {} } = $props();
@@ -254,30 +253,34 @@
 		store.dispatch(clearStrokesAction());
 	}
 
-	function submitGuess() {
-		if (!uiState?.myId) return;
+	async function submitGuess() {
+		if (!uiState?.myId || !uiState.gameId) return;
 		const playerId = uiState.myId;
-		store.dispatch(guess({ playerId, guessedHand: guessInputs.map(v => parseInt(v)) }));
-		
 		const state = store.getState();
+		const guessedHand = guessInputs.map(v => parseInt(v));
 		const player = state.players.players[playerId];
-		
-		if (player && player.eliminated) {
-			// Notify game slice about elimination (it tracks this in its own state for turn skip logic)
-			store.dispatch(eliminatePlayer(playerId));
-			
-			// If we guessed wrong and were eliminated, move to next turn
-			store.dispatch(nextTurn());
-			
+		if (!player) return;
+
+		const actualHandSorted = [...player.hand].sort((a, b) => a - b);
+		const guessedHandSorted = [...guessedHand].sort((a, b) => a - b);
+		const isCorrect = actualHandSorted.length === guessedHandSorted.length &&
+			actualHandSorted.every((value, index) => value === guessedHandSorted[index]);
+		const events: Array<{ type: string; payload: any }> = [
+			{ type: 'players/guess', payload: { playerId, guessedHand } }
+		];
+
+		if (!isCorrect) {
+			events.push({ type: 'players/eliminatePlayer', payload: playerId });
+			events.push({ type: 'game/nextTurn', payload: undefined });
 			// Check if only one player remains
-			const activePlayers = Object.values(state.players.players).filter(p => !p.eliminated);
+			const activePlayers = Object.values(state.players.players).filter(p => p.id !== playerId && !p.eliminated);
 			if (activePlayers.length === 1) {
-				store.dispatch(setWinner(activePlayers[0].id));
+				events.push({ type: 'game/setWinner', payload: activePlayers[0].id });
 			}
-		} else if (player) {
-			// Correct guess!
-			store.dispatch(setWinner(playerId));
+		} else {
+			events.push({ type: 'game/setWinner', payload: playerId });
 		}
+		await writeGameEvents(uiState.gameId, events);
 	}
 </script>
 

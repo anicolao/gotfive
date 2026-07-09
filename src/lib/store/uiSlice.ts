@@ -7,6 +7,7 @@ export interface UIState {
 	strokes: number[][][]; // [strokeIndex][pointIndex][x, y]
 	overlay: 'RULES' | 'GUESS' | 'NONE';
 	selectedTileId: number | null;
+	gameId: string | null;
 }
 
 const initialState: UIState = {
@@ -15,7 +16,8 @@ const initialState: UIState = {
 	deductionBoard: {},
 	strokes: [],
 	overlay: 'NONE',
-	selectedTileId: null
+	selectedTileId: null,
+	gameId: null
 };
 
 export const uiSlice = createSlice({
@@ -27,6 +29,9 @@ export const uiSlice = createSlice({
 		},
 		setIsHost: (state, action: PayloadAction<boolean>) => {
 			state.isHost = action.payload;
+		},
+		setGameId: (state, action: PayloadAction<string | null>) => {
+			state.gameId = action.payload;
 		},
 		markDeduction: (state, action: PayloadAction<{ id: number; mark: '?' | 'X' | 'OK' }>) => {
 			state.deductionBoard[action.payload.id] = action.payload.mark;
@@ -52,5 +57,5 @@ export const uiSlice = createSlice({
 	}
 });
 
-export const { setMyId, setIsHost, markDeduction, addStroke, clearStrokes, setOverlay, selectTile, resetUI } = uiSlice.actions;
+export const { setMyId, setIsHost, setGameId, markDeduction, addStroke, clearStrokes, setOverlay, selectTile, resetUI } = uiSlice.actions;
 export default uiSlice.reducer;

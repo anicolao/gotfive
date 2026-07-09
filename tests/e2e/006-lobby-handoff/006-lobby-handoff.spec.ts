@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
 
-test.describe('Lobby Leader Handoff', () => {
-	test('should hand off leadership to the senior client when the leader leaves', async ({ browser }, testInfo) => {
-		const lobbyId = `handoff-seniority-deterministic`;
-		
+test.describe('Firebase Lobby Event Replay', () => {
+	test('should project multiple lobby players from the shared event stream', async ({ browser }, testInfo) => {
+		const lobbyId = `event-replay-multi-player`;
 		const context1 = await browser.newContext();
 		const context2 = await browser.newContext();
 		const context3 = await browser.newContext();
@@ -14,196 +13,113 @@ test.describe('Lobby Leader Handoff', () => {
 		const p3 = await context3.newPage();
 
 		const tester = new TestStepHelper(p2, testInfo);
-		tester.setMetadata('Lobby Leader Handoff', 'Testing that leadership is handed off correctly based on seniority.');
+		tester.setMetadata('Firebase Lobby Event Replay', 'Testing that clients replay lobby events into the same projected state.');
 
-		const suffix = 'seniority';
-		const id1 = `p1-${suffix}`;
-		const id2 = `p2-${suffix}`;
-		const id3 = `p3-${suffix}`;
-
-		// 1. P1 joins (becomes leader)
-		await p1.goto(`/?myId=${id1}&lobbyId=${lobbyId}`);
+		await p1.goto(`/?myId=p1-event&lobbyId=${lobbyId}`);
 		await p1.getByLabel('Your Name:').fill('Player 1');
 		await p1.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p1.getByText('LOBBY_LEADER')).toBeVisible();
+		await expect(p1.getByText('LOBBY_CLIENT')).toBeVisible();
 
-		// 2. P2 joins
-		await p2.goto(`/?myId=${id2}&lobbyId=${lobbyId}`);
+		await p2.goto(`/?myId=p2-event&lobbyId=${lobbyId}`);
 		await p2.getByLabel('Your Name:').fill('Player 2');
 		await p2.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible();
 
-		// 3. P3 joins
-		await p3.goto(`/?myId=${id3}&lobbyId=${lobbyId}`);
+		await p3.goto(`/?myId=p3-event&lobbyId=${lobbyId}`);
 		await p3.getByLabel('Your Name:').fill('Player 3');
 		await p3.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(p3.getByText('LOBBY_CLIENT')).toBeVisible();
 
-		// Verify all see each other
 		await expect(p2.locator('.players-list').getByText('Player 1')).toBeVisible();
 		await expect(p2.locator('.players-list').getByText('Player 3')).toBeVisible();
 
 		await tester.step('initial-state', {
-			description: 'Three players in lobby, P1 is leader',
+			description: 'Three players are projected from lobby events',
 			verifications: [
-				{ spec: 'P2 is client', check: async () => await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible() },
-				{ spec: 'P1 is visible in list', check: async () => await expect(p2.locator('.players-list').getByText('Player 1')).toBeVisible() }
+				{ spec: 'P2 is connected to Firebase lobby', check: async () => await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible() },
+				{ spec: 'P1 is visible in list', check: async () => await expect(p2.locator('.players-list').getByText('Player 1')).toBeVisible() },
+				{ spec: 'P3 is visible in list', check: async () => await expect(p2.locator('.players-list').getByText('Player 3')).toBeVisible() }
 			],
-            networkStatus: 'skip'
+			networkStatus: 'skip'
 		});
-
-		// 4. P1 leaves (closes page)
-		await p1.close();
-
-		// 5. P2 should become leader (seniority)
-		await expect(p2.getByText('LOBBY_LEADER')).toBeVisible();
-		
-		await tester.step('p2-becomes-leader', {
-			description: 'P2 becomes leader after P1 leaves',
-			verifications: [
-				{ spec: 'P2 is now leader', check: async () => await expect(p2.getByText('LOBBY_LEADER')).toBeVisible() },
-				{ spec: 'P3 is still visible', check: async () => await expect(p2.locator('.players-list').getByText('Player 3')).toBeVisible() }
-			],
-            networkStatus: 'skip'
-		});
-
-		// 6. P3 should still be a client and connected to P2
-		await expect(p3.getByText('LOBBY_CLIENT')).toBeVisible();
-		await expect(p3.locator('.players-list').getByText('Player 2')).toBeVisible();
 
 		tester.generateDocs();
-		
 		await context1.close();
 		await context2.close();
 		await context3.close();
 	});
 
-	test('should hand off leadership correctly even if a newcomer arrives during handoff', async ({ browser }, testInfo) => {
-		const lobbyId = `handoff-newcomer-deterministic`;
-		
+	test('should show games created before a later client joins', async ({ browser }, testInfo) => {
+		const lobbyId = `event-replay-late-joiner`;
 		const context1 = await browser.newContext();
 		const context2 = await browser.newContext();
-		const context4 = await browser.newContext();
 
-		const p1 = await context1.newPage();
-		const p2 = await context2.newPage();
-		const p4 = await context4.newPage();
+		const host = await context1.newPage();
+		const lateJoiner = await context2.newPage();
 
-		const tester = new TestStepHelper(p2, testInfo);
-		tester.setMetadata('Lobby Leader Handoff with Newcomer', 'Testing that a newcomer does not steal leadership during handoff.');
+		const tester = new TestStepHelper(lateJoiner, testInfo);
+		tester.setMetadata('Firebase Lobby Event Replay with Newcomer', 'Testing that a newcomer replays existing game creation events.');
 
-		const suffix = 'newcomer';
-		const id1 = `p1-${suffix}`;
-		const id2 = `p2-${suffix}`;
-		const id4 = `p4-${suffix}`;
+		await host.goto(`/?myId=host-event&lobbyId=${lobbyId}`);
+		await host.getByLabel('Your Name:').fill('Host');
+		await host.getByRole('button', { name: 'Join Lobby' }).click();
+		await host.getByRole('button', { name: 'Host New Game' }).click();
+		await host.getByLabel('Game Name:').fill('Replay Visible Game');
+		await host.getByRole('button', { name: 'Start Hosting' }).click();
+		await expect(host.getByText('Your Game ID')).toBeVisible();
 
-		// 1. P1 joins (leader)
-		await p1.goto(`/?myId=${id1}&lobbyId=${lobbyId}`);
-		await p1.getByLabel('Your Name:').fill('Player 1');
-		await p1.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p1.getByText('LOBBY_LEADER')).toBeVisible();
+		await lateJoiner.goto(`/?myId=late-event&lobbyId=${lobbyId}`);
+		await lateJoiner.getByLabel('Your Name:').fill('Late Joiner');
+		await lateJoiner.getByRole('button', { name: 'Join Lobby' }).click();
 
-		// 2. P2 joins
-		await p2.goto(`/?myId=${id2}&lobbyId=${lobbyId}`);
-		await p2.getByLabel('Your Name:').fill('Player 2');
-		await p2.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible();
+		const gameCard = lateJoiner.locator('.game-card').filter({ hasText: 'Replay Visible Game' });
+		await expect(gameCard).toBeVisible();
 
-		// 3. P1 leaves
-		await p1.close();
-
-		// 4. Simultaneously (almost), P4 joins
-		// No waiting allowed!
-		
-		await p4.goto(`/?myId=${id4}&lobbyId=${lobbyId}`);
-		await p4.getByLabel('Your Name:').fill('Player 4');
-		await p4.getByRole('button', { name: 'Join Lobby' }).click();
-
-		// 5. P2 should still become leader because it was already in the lobby
-		await expect(p2.getByText('LOBBY_LEADER')).toBeVisible();
-		
-		await tester.step('p2-leader-despite-newcomer', {
-			description: 'P2 becomes leader even with P4 joining',
+		await tester.step('late-joiner-sees-game', {
+			description: 'Late joiner sees existing public game',
 			verifications: [
-				{ spec: 'P2 is leader', check: async () => await expect(p2.getByText('LOBBY_LEADER')).toBeVisible() }
+				{ spec: 'Game card is visible after replay', check: async () => await expect(gameCard).toBeVisible() }
 			],
-            networkStatus: 'skip'
+			networkStatus: 'skip'
 		});
 
 		await context1.close();
 		await context2.close();
-		await context4.close();
 	});
 
-	test('should keep playing players in lobby and allow them to become leader', async ({ browser }, testInfo) => {
-		const lobbyId = `playing-leader-deterministic`;
-		
+	test('should keep hosting players visible in the lobby projection', async ({ browser }, testInfo) => {
+		const lobbyId = `event-replay-playing-visible`;
 		const context1 = await browser.newContext();
 		const context2 = await browser.newContext();
-		const context3 = await browser.newContext();
 
-		const p1 = await context1.newPage();
-		const p2 = await context2.newPage();
-		const p3 = await context3.newPage();
+		const host = await context1.newPage();
+		const observer = await context2.newPage();
 
-		const tester = new TestStepHelper(p2, testInfo);
-		tester.setMetadata('Playing Player as Lobby Leader', 'Testing that players staying in lobby while playing can become leaders.');
+		const tester = new TestStepHelper(observer, testInfo);
+		tester.setMetadata('Playing Player in Firebase Lobby', 'Testing that players in games remain visible through user and lobby event projection.');
 
-		const suffix = 'playing';
-		const id1 = `p1-${suffix}`;
-		const id2 = `p2-${suffix}`;
-		const id3 = `p3-${suffix}`;
+		await host.goto(`/?myId=playing-host&lobbyId=${lobbyId}`);
+		await host.getByLabel('Your Name:').fill('Playing Host');
+		await host.getByRole('button', { name: 'Join Lobby' }).click();
+		await host.getByRole('button', { name: 'Host New Game' }).click();
+		await host.getByRole('button', { name: 'Start Hosting' }).click();
+		await expect(host.getByText('Your Game ID')).toBeVisible();
 
-		// 1. P1 joins (leader)
-		await p1.goto(`/?myId=${id1}&lobbyId=${lobbyId}`);
-		await p1.getByLabel('Your Name:').fill('Player 1');
-		await p1.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p1.getByText('LOBBY_LEADER')).toBeVisible();
+		await observer.goto(`/?myId=observer&lobbyId=${lobbyId}`);
+		await observer.getByLabel('Your Name:').fill('Observer');
+		await observer.getByRole('button', { name: 'Join Lobby' }).click();
+		await expect(observer.locator('.players-list').getByText('Playing Host')).toBeVisible();
+		await expect(observer.locator('.players-list').getByText('playing')).toBeVisible();
 
-		// 2. P2 joins
-		await p2.goto(`/?myId=${id2}&lobbyId=${lobbyId}`);
-		await p2.getByLabel('Your Name:').fill('Player 2');
-		await p2.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible();
-
-		// 3. P3 joins
-		await p3.goto(`/?myId=${id3}&lobbyId=${lobbyId}`);
-		await p3.getByLabel('Your Name:').fill('Player 3');
-		await p3.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p3.getByText('LOBBY_CLIENT')).toBeVisible();
-
-		// 4. P2 starts hosting a game
-		await p2.getByRole('button', { name: 'Host New Game' }).click();
-		await p2.getByRole('button', { name: 'Start Hosting' }).click();
-		await expect(p2.getByText('Your Game ID')).toBeVisible();
-
-		// 5. Verify P2 is still visible in P3's lobby list
-		await expect(p3.locator('.players-list').getByText('Player 2')).toBeVisible();
-
-		await tester.step('p2-playing-visible', {
-			description: 'P2 is hosting/playing but still visible in lobby',
+		await tester.step('playing-player-visible', {
+			description: 'Hosting player remains visible in lobby',
 			verifications: [
-				{ spec: 'P2 visible in P3 lobby', check: async () => await expect(p3.locator('.players-list').getByText('Player 2')).toBeVisible() }
+				{ spec: 'Playing host visible in observer lobby', check: async () => await expect(observer.locator('.players-list').getByText('Playing Host')).toBeVisible() }
 			],
-            networkStatus: 'skip'
-		});
-
-		// 6. P1 leaves
-		await p1.close();
-
-		// 7. P2 should become leader even though it is in "HOSTING" mode
-		await expect(p2.getByText('LOBBY_LEADER')).toBeVisible();
-		
-		await tester.step('p2-playing-becomes-leader', {
-			description: 'P2 becomes leader while hosting',
-			verifications: [
-				{ spec: 'P2 is leader', check: async () => await expect(p2.getByText('LOBBY_LEADER')).toBeVisible() }
-			],
-            networkStatus: 'skip'
+			networkStatus: 'skip'
 		});
 
 		await context1.close();
 		await context2.close();
-		await context3.close();
 	});
 });

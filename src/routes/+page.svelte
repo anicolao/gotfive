@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { store } from '$lib/store';
-	import { start, reveal, nextTurn, setWinner, resetGame } from '$lib/store/gameSlice';
-	import { addPlayer, setHand, clue_sort, clue_compare, guess, resetPlayers } from '$lib/store/playersSlice';
-	import { setMyId, selectTile, setOverlay, resetUI } from '$lib/store/uiSlice';
+	import { resetGame } from '$lib/store/gameSlice';
+	import { resetPlayers } from '$lib/store/playersSlice';
+	import { selectTile, resetUI } from '$lib/store/uiSlice';
 	import { createRNG } from '$lib/game/rng';
 	import { createDeck, shuffle } from '$lib/game/deck';
+	import { getLobbyRoster, getUserDisplay, writeGameEvent, writeGameEvents, writeLobbyEvent } from '$lib/firebase/events';
 	import Table from '$lib/components/Table.svelte';
 	import PlayerStand from '$lib/components/PlayerStand.svelte';
 	import DeductionBoard from '$lib/components/DeductionBoard.svelte';
@@ -15,7 +15,6 @@
 	let gameState = $state(store.getState().game);
 	let playersState = $state(store.getState().players);
 	let uiState = $state(store.getState().ui);
-	let showSidebar = $state(false);
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -24,16 +23,28 @@
 		uiState = state.ui;
 	});
 
-	function handleStartGame() {
+	async function handleStartGame() {
+		if (!uiState.gameId) return;
 		const urlParams = new URLSearchParams(window.location.search);
 		const seedParam = urlParams.get('seed');
 		const seed = seedParam ? parseInt(seedParam) : Math.floor(Math.random() * 1000000);
 		const rng = createRNG(seed);
-		const playerIds = Object.keys(playersState.players);
+		const playerIds = [...new Set([...getLobbyRoster(uiState.gameId), ...Object.keys(playersState.players)])];
+		if (uiState.myId && !playerIds.includes(uiState.myId)) {
+			playerIds.unshift(uiState.myId);
+		}
+		const events: Array<{ type: string; payload: any }> = [];
 
 		// Create deck 1-60 and shuffle
 		let deck = createDeck();
 		deck = shuffle(deck, rng);
+
+		playerIds.forEach(pid => {
+			events.push({
+				type: 'players/addPlayer',
+				payload: { id: pid, name: playersState.players[pid]?.name || getUserDisplay(pid).name }
+			});
+		});
 
 		// Deal 5 tiles to each player (1 of each color)
 		playerIds.forEach(pid => {
@@ -44,7 +55,7 @@
 					hand.push(deck.splice(tileIdx, 1)[0]);
 				}
 			}
-			store.dispatch(setHand({ id: pid, hand }));
+			events.push({ type: 'players/setHand', payload: { id: pid, hand } });
 		});
 
 		// 5 public tiles (1 of each color)
@@ -56,7 +67,9 @@
 			}
 		}
 
-		store.dispatch(start({ deck, turnOrder: playerIds, initialPublic, seed }));
+		events.push({ type: 'game/start', payload: { deck, turnOrder: playerIds, initialPublic, seed } });
+		await writeGameEvents(uiState.gameId, events);
+		await writeLobbyEvent('lobby/startGame', { gameId: uiState.gameId });
 	}
 
 	function handleResetGame() {
@@ -91,22 +104,22 @@
 	}
 
 	function handleAskSort(targetId: string) {
-		if (!isMyTurn || uiState.selectedTileId === null) return;
-		store.dispatch(clue_sort({ targetId, tileId: uiState.selectedTileId }));
+		if (!isMyTurn || uiState.selectedTileId === null || !uiState.gameId) return;
+		writeGameEvent(uiState.gameId, 'players/clue_sort', { targetId, tileId: uiState.selectedTileId });
 		store.dispatch(selectTile(null));
-		store.dispatch(nextTurn());
+		writeGameEvent(uiState.gameId, 'game/nextTurn', undefined);
 	}
 
 	function handleAskCompare(targetId: string, slot: number) {
-		if (!isMyTurn || uiState.selectedTileId === null) return;
-		store.dispatch(clue_compare({ targetId, tileId: uiState.selectedTileId, targetSlot: slot }));
+		if (!isMyTurn || uiState.selectedTileId === null || !uiState.gameId) return;
+		writeGameEvent(uiState.gameId, 'players/clue_compare', { targetId, tileId: uiState.selectedTileId, targetSlot: slot });
 		store.dispatch(selectTile(null));
-		store.dispatch(nextTurn());
+		writeGameEvent(uiState.gameId, 'game/nextTurn', undefined);
 	}
 
 	function handleReveal(color: any) {
-		if (!isMyTurn) return;
-		store.dispatch(reveal(color));
+		if (!isMyTurn || !uiState.gameId) return;
+		writeGameEvent(uiState.gameId, 'game/reveal', color);
 	}
 
 	let acknowledgedEliminations = $state(new Set<string>());
@@ -130,7 +143,9 @@
 			// If it's my turn but I'm eliminated, pass it
 			// Or if I'm the host, I'm responsible for advancing the turn if the current player is eliminated
 			if (currentPlayerId === uiState?.myId || isHost) {
-				store.dispatch(nextTurn());
+				if (uiState?.gameId) {
+					writeGameEvent(uiState.gameId, 'game/nextTurn', undefined);
+				}
 			}
 		}
 	});
@@ -148,7 +163,7 @@
 				{#if gameState?.status === 'LOBBY'}
 				<div class="lobby-wrapper glass-panel">
 					<Lobby />
-					{#if isHost && Object.keys(playersState?.players || {}).length >= 1}
+					{#if isHost && uiState?.gameId}
 						<div class="host-actions">
 							<button class="got-five-btn" onclick={handleStartGame}>START GAME</button>
 						</div>
