@@ -1,7 +1,6 @@
 import {
 	addDoc,
 	collection,
-	documentId,
 	getDocs,
 	onSnapshot,
 	orderBy,
@@ -45,9 +44,6 @@ export interface FirebaseEvent<TPayload = any> {
 	payload: TPayload;
 	actorUid: string;
 	createdAt: Timestamp;
-	ordinal: number;
-	clientCreatedAt: number;
-	clientNonce: string;
 	schemaVersion: number;
 	reducerVersion: number;
 }
@@ -78,19 +74,9 @@ let lobbyEvents: EventWithId[] = [];
 let lobbyUnsubscribe: Unsubscribe | null = null;
 let usersUnsubscribe: Unsubscribe | null = null;
 let gameUnsubscribe: Unsubscribe | null = null;
-let ordinalCounter = 0;
 let currentLobbyId = 'default';
 
 type EventWithId = FirebaseEvent & { id: string };
-
-function nextOrdinal() {
-	ordinalCounter += 1;
-	return Date.now() * 1000 + ordinalCounter;
-}
-
-function nonce() {
-	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
 
 function getTestUid() {
 	if (typeof window === 'undefined' || import.meta.env.VITE_USE_FIREBASE_EMULATORS !== 'true') return null;
@@ -127,8 +113,6 @@ function eventFromDoc(snapshot: QueryDocumentSnapshot): EventWithId | null {
 function compareEvents(a: EventWithId, b: EventWithId) {
 	const createdDelta = a.createdAt.toMillis() - b.createdAt.toMillis();
 	if (createdDelta !== 0) return createdDelta;
-	const ordinalDelta = (a.ordinal || 0) - (b.ordinal || 0);
-	if (ordinalDelta !== 0) return ordinalDelta;
 	return a.id.localeCompare(b.id);
 }
 
@@ -263,7 +247,7 @@ export async function updateUserPresence(activeGameId: string | null) {
 	}, { merge: true });
 }
 
-async function writeEvent(db: Firestore, path: string[], type: string, payload: any, ordinal = nextOrdinal()) {
+async function writeEvent(db: Firestore, path: string[], type: string, payload: any) {
 	const user = await ensureAuth();
 	const target = path.length === 1
 		? collection(db, path[0])
@@ -273,26 +257,22 @@ async function writeEvent(db: Firestore, path: string[], type: string, payload: 
 		payload: payload ?? null,
 		actorUid: user.uid,
 		createdAt: serverTimestamp(),
-		ordinal,
-		clientCreatedAt: Date.now(),
-		clientNonce: nonce(),
 		schemaVersion: EVENT_SCHEMA_VERSION,
 		reducerVersion: path[0] === 'lobby' ? LOBBY_REDUCER_VERSION : GAME_REDUCER_VERSION
 	});
 }
 
-export async function writeLobbyEvent(type: string, payload: any, ordinal?: number) {
-	await writeEvent(getFirebase().db, ['lobby'], type, { ...payload, lobbyId: currentLobbyId }, ordinal);
+export async function writeLobbyEvent(type: string, payload: any) {
+	await writeEvent(getFirebase().db, ['lobby'], type, { ...payload, lobbyId: currentLobbyId });
 }
 
-export async function writeGameEvent(gameId: string, type: string, payload: any, ordinal?: number) {
-	await writeEvent(getFirebase().db, ['games', gameId, 'actions'], type, payload, ordinal);
+export async function writeGameEvent(gameId: string, type: string, payload: any) {
+	await writeEvent(getFirebase().db, ['games', gameId, 'actions'], type, payload);
 }
 
 export async function writeGameEvents(gameId: string, events: Array<{ type: string; payload: any }>) {
-	const base = nextOrdinal();
 	for (let i = 0; i < events.length; i += 1) {
-		await writeGameEvent(gameId, events[i].type, events[i].payload, base + i);
+		await writeGameEvent(gameId, events[i].type, events[i].payload);
 	}
 }
 
@@ -426,17 +406,31 @@ export async function subscribeLobby(dispatch: AppDispatch) {
 	const cached = loadCache<ReturnType<typeof projectLobby>>(`lobby:${currentLobbyId}`, LOBBY_REDUCER_VERSION);
 	if (cached) dispatch(setLobbyState(cached.state));
 
-	usersUnsubscribe = onSnapshot(collection(getFirebase().db, 'users'), (snapshot) => {
-		userRecords = new Map(snapshot.docs.map((docSnap) => [docSnap.id, docSnap.data() as UserRecord]));
-		applyLobbyProjection(dispatch);
-	});
+	usersUnsubscribe = onSnapshot(
+		collection(getFirebase().db, 'users'),
+		(snapshot) => {
+			userRecords = new Map(snapshot.docs.map((docSnap) => [docSnap.id, docSnap.data() as UserRecord]));
+			applyLobbyProjection(dispatch);
+		},
+		(error) => {
+			console.error('Firebase users subscription failed', error);
+			dispatch(setMyStatus('OFFLINE'));
+		}
+	);
 
-	const lobbyQuery = query(collection(getFirebase().db, 'lobby'), orderBy('createdAt'), orderBy('ordinal'), orderBy(documentId()));
-	lobbyUnsubscribe = onSnapshot(lobbyQuery, (snapshot) => {
-		lobbyEvents = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event);
-		applyLobbyProjection(dispatch);
-		dispatch(setMyStatus('LOBBY_CLIENT'));
-	});
+	const lobbyQuery = query(collection(getFirebase().db, 'lobby'), orderBy('createdAt'));
+	lobbyUnsubscribe = onSnapshot(
+		lobbyQuery,
+		(snapshot) => {
+			lobbyEvents = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event);
+			applyLobbyProjection(dispatch);
+			dispatch(setMyStatus('LOBBY_CLIENT'));
+		},
+		(error) => {
+			console.error('Firebase lobby subscription failed', error);
+			dispatch(setMyStatus('OFFLINE'));
+		}
+	);
 
 	await writeLobbyEvent('lobby/join', { uid: user.uid });
 }
@@ -481,25 +475,31 @@ export async function subscribeGame(gameId: string, dispatch: AppDispatch) {
 		dispatch(syncGame(cached.state.game));
 	}
 
-	const gameQuery = query(collection(getFirebase().db, 'games', gameId, 'actions'), orderBy('createdAt'), orderBy('ordinal'), orderBy(documentId()));
-	gameUnsubscribe = onSnapshot(gameQuery, (snapshot) => {
-		const events = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event).sort(compareEvents);
-		if (events.length === 0) return;
-		dispatch(resetPlayers());
-		dispatch(resetGame());
-		for (const event of events) {
-			dispatch({ type: event.type, payload: event.payload, meta: { remote: true } });
-		}
-		const last = events.at(-1);
-		import('$lib/store').then(({ store }) => {
-			const state = store.getState();
-			saveCache(`game:${gameId}`, {
-				reducerVersion: GAME_REDUCER_VERSION,
-				cursor: last ? cursorFor(last) : null,
-				state: { game: state.game, players: state.players }
+	const gameQuery = query(collection(getFirebase().db, 'games', gameId, 'actions'), orderBy('createdAt'));
+	gameUnsubscribe = onSnapshot(
+		gameQuery,
+		(snapshot) => {
+			const events = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event).sort(compareEvents);
+			if (events.length === 0) return;
+			dispatch(resetPlayers());
+			dispatch(resetGame());
+			for (const event of events) {
+				dispatch({ type: event.type, payload: event.payload, meta: { remote: true } });
+			}
+			const last = events.at(-1);
+			import('$lib/store').then(({ store }) => {
+				const state = store.getState();
+				saveCache(`game:${gameId}`, {
+					reducerVersion: GAME_REDUCER_VERSION,
+					cursor: last ? cursorFor(last) : null,
+					state: { game: state.game, players: state.players }
+				});
 			});
-		});
-	});
+		},
+		(error) => {
+			console.error('Firebase game subscription failed', error);
+		}
+	);
 }
 
 export function unsubscribeGame() {
