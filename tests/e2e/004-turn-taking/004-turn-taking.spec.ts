@@ -47,6 +47,13 @@ test.describe('Multiplayer Turn-Taking', () => {
 		await expect(hostPage.locator('.stand-container.current-turn')).toBeVisible();
 		await expect(clientPage.locator('.stand-container.current-turn')).toBeVisible();
 
+		const observerContext = await browser.newContext();
+		const observerPage = await observerContext.newPage();
+		await observerPage.goto(`/?seed=123&lobbyId=${lobbyId}&gameId=${gameId}`);
+		await expect(observerPage.locator('.main-play-area')).toBeVisible();
+		await expect(observerPage.locator('.stand-container').filter({ hasText: 'Host' })).toBeVisible();
+		await expect(observerPage.locator('.stand-container').filter({ hasText: 'Client' })).toBeVisible();
+
 		// Check whose turn it is
 		let hostIsCurrent = await hostPage.locator('.stand-container.current-turn').filter({ hasText: 'Host' }).count() > 0;
 		console.log('Is Host current turn?', hostIsCurrent);
@@ -91,5 +98,6 @@ test.describe('Multiplayer Turn-Taking', () => {
 		
 		await hostContext.close();
 		await clientContext.close();
+		await observerContext.close();
 	});
 });

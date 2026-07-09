@@ -581,6 +581,14 @@ Reducer effect:
 3. Client hydrates game state from cache or replay.
 4. If game has not started, local lobby projection includes the player in the roster.
 
+### Observe Game URL
+
+1. Visitor opens a URL containing `gameId`.
+2. Client signs in anonymously if needed.
+3. Client subscribes to `/games/{gameId}/actions` without writing `lobby/joinGame`.
+4. If the game has started, replayed actions render the current game state.
+5. If the game has not started and the visitor wants to play, the normal profile and join flow remains available.
+
 ### Start Game
 
 1. Host derives roster from replayed `/lobby` events.
