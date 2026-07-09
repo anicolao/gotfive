@@ -121,7 +121,7 @@ Fields:
 - `schemaVersion`: event envelope version.
 - `reducerVersion`: reducer semantics version used by the client that wrote the event.
 
-Clients query by `createdAt` and locally use the Firestore document ID as a final tie-break if two events have the same server timestamp. During pending local writes where `createdAt` is unresolved, durable cache cursors should only advance through events with server timestamps.
+Clients query by `createdAt` and locally use the Firestore document ID as a final tie-break if two events have the same server timestamp. Event document IDs are generated with a sortable local append prefix so sequential writes from one client replay in write order even when Firestore assigns identical server timestamps. During pending local writes where `createdAt` is unresolved, durable cache cursors should only advance through events with server timestamps.
 
 ## Local Hydrated Cache
 
@@ -561,10 +561,11 @@ Reducer effect:
 ### Create Public Game
 
 1. User is anonymously or Google authenticated.
-2. Client creates a new random `gameId`.
-3. Client writes `/lobby/{eventId}` with `type: lobby/createGame`.
-4. Client writes `/lobby/{eventId}` with `type: lobby/joinGame`.
-5. All clients replay `/lobby` and show the new public game.
+2. Client creates a 5-letter uppercase game code and checks `/lobby` for an existing `lobby/createGame` event with the same code.
+3. If the code already exists, client generates another code and retries.
+4. Client writes `/lobby/{eventId}` with `type: lobby/createGame`.
+5. Client writes `/lobby/{eventId}` with `type: lobby/joinGame`.
+6. All clients replay `/lobby` and show the new public game.
 
 ### Create Hidden Game
 
@@ -594,7 +595,7 @@ Ordering note:
 
 - The host writes game setup actions sequentially and awaits each append.
 - Clients order by `createdAt`, with document ID as a local tie-break for identical timestamps.
-- Justification: existing WebRTC sent actions in order over a connection. Sequential Firestore appends preserve that model without adding custom client-side ordering fields.
+- Justification: existing WebRTC sent actions in order over a connection. Sequential Firestore appends use sortable event document IDs to preserve that model without adding custom client-side ordering fields.
 
 ### Reveal and Ask Clue
 

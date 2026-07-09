@@ -1,5 +1,4 @@
 import {
-	addDoc,
 	collection,
 	getDocs,
 	onSnapshot,
@@ -75,6 +74,7 @@ let lobbyUnsubscribe: Unsubscribe | null = null;
 let usersUnsubscribe: Unsubscribe | null = null;
 let gameUnsubscribe: Unsubscribe | null = null;
 let currentLobbyId = 'default';
+let eventDocumentCounter = 0;
 
 type EventWithId = FirebaseEvent & { id: string };
 
@@ -121,6 +121,13 @@ function cursorFor(event: EventWithId): EventCursor {
 		createdAtMillis: event.createdAt.toMillis(),
 		documentId: event.id
 	};
+}
+
+function nextEventDocumentId(target: ReturnType<typeof collection>) {
+	eventDocumentCounter += 1;
+	const millis = Date.now().toString(36).padStart(10, '0');
+	const sequence = eventDocumentCounter.toString(36).padStart(4, '0');
+	return `${millis}-${sequence}-${doc(target).id}`;
 }
 
 function cacheKey(stream: string) {
@@ -252,7 +259,7 @@ async function writeEvent(db: Firestore, path: string[], type: string, payload: 
 	const target = path.length === 1
 		? collection(db, path[0])
 		: collection(db, path[0], path[1], path[2]);
-	await addDoc(target, {
+	await setDoc(doc(target, nextEventDocumentId(target)), {
 		type,
 		payload: payload ?? null,
 		actorUid: user.uid,
@@ -274,6 +281,18 @@ export async function writeGameEvents(gameId: string, events: Array<{ type: stri
 	for (let i = 0; i < events.length; i += 1) {
 		await writeGameEvent(gameId, events[i].type, events[i].payload);
 	}
+}
+
+export async function lobbyGameCodeExists(gameId: string) {
+	const snapshot = await getDocs(query(
+		collection(getFirebase().db, 'lobby'),
+		where('payload.gameId', '==', gameId),
+		limit(1)
+	));
+	return snapshot.docs.some((docSnap) => {
+		const event = docSnap.data() as FirebaseEvent;
+		return event.type === 'lobby/createGame';
+	});
 }
 
 function userProfile(uid: string): UserRecord {

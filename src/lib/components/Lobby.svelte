@@ -5,6 +5,7 @@
 	import {
 		getLobbyRoster,
 		initializeFirebaseProfile,
+		lobbyGameCodeExists,
 		linkCurrentUserWithGoogle,
 		subscribeGame,
 		subscribeLobby,
@@ -139,9 +140,25 @@
 		mode = 'LOBBY';
 	}
 
+	function randomGameCode() {
+		const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		const bytes = new Uint8Array(5);
+		crypto.getRandomValues(bytes);
+		return [...bytes].map((byte) => alphabet[byte % alphabet.length]).join('');
+	}
+
+	async function createUniqueGameCode() {
+		for (let attempt = 0; attempt < 20; attempt += 1) {
+			const code = randomGameCode();
+			if (!(await lobbyGameCodeExists(code))) return code;
+		}
+		throw new Error('Could not create a unique game code. Please try again.');
+	}
+
 	async function confirmHostGame() {
 		const urlParams = new URLSearchParams(window.location.search);
-		currentGameId = urlParams.get('hostGameId') || crypto.randomUUID();
+		const requestedGameId = urlParams.get('hostGameId');
+		currentGameId = requestedGameId ? requestedGameId.trim().toUpperCase() : await createUniqueGameCode();
 		store.dispatch(setIsHost(true));
 		store.dispatch(setGameId(currentGameId));
 		await updateUserPresence(currentGameId);
@@ -158,19 +175,24 @@
 
 	async function joinGame(hostId: string) {
 		if (!hostId) return;
-		targetHostId = hostId;
-		currentGameId = hostId;
+		const gameId = hostId.trim().toUpperCase();
+		targetHostId = gameId;
+		currentGameId = gameId;
 		mode = 'JOINING';
 		store.dispatch(setIsHost(false));
-		store.dispatch(setGameId(hostId));
-		await updateUserPresence(hostId);
-		await writeLobbyEvent('lobby/joinGame', { gameId: hostId, uid: myId });
-		await subscribeGame(hostId, store.dispatch);
-		connections = getLobbyRoster(hostId).filter((id) => id !== myId);
+		store.dispatch(setGameId(gameId));
+		await updateUserPresence(gameId);
+		await writeLobbyEvent('lobby/joinGame', { gameId, uid: myId });
+		await subscribeGame(gameId, store.dispatch);
+		connections = getLobbyRoster(gameId).filter((id) => id !== myId);
 	}
 
 	async function joinGameFromLink() {
 		await joinGame(targetHostId);
+	}
+
+	function normalizeTargetHostId() {
+		targetHostId = targetHostId.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
 	}
 
 	function copyToClipboard(text: string) {
@@ -294,7 +316,15 @@
 				<div class="join-private">
 					<h4>Join Private Game</h4>
 					<div class="id-input">
-						<input type="text" bind:value={targetHostId} placeholder="Enter Game ID" />
+						<input
+							type="text"
+							bind:value={targetHostId}
+							oninput={normalizeTargetHostId}
+							placeholder="ABCDE"
+							maxlength="5"
+							autocapitalize="characters"
+							spellcheck="false"
+						/>
 						<button class="groovy-button" onclick={() => joinGame(targetHostId)}>Connect</button>
 					</div>
 				</div>
