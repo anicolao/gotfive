@@ -18,17 +18,17 @@ test.describe('Firebase Lobby Event Replay', () => {
 		await p1.goto(`/?myId=p1-event&lobbyId=${lobbyId}`);
 		await p1.getByLabel('Your Name:').fill('Player 1');
 		await p1.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p1.getByText('LOBBY_CLIENT')).toBeVisible();
+		await expect(p1.getByRole('button', { name: 'Host New Game' })).toBeVisible();
 
 		await p2.goto(`/?myId=p2-event&lobbyId=${lobbyId}`);
 		await p2.getByLabel('Your Name:').fill('Player 2');
 		await p2.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible();
+		await expect(p2.getByRole('button', { name: 'Host New Game' })).toBeVisible();
 
 		await p3.goto(`/?myId=p3-event&lobbyId=${lobbyId}`);
 		await p3.getByLabel('Your Name:').fill('Player 3');
 		await p3.getByRole('button', { name: 'Join Lobby' }).click();
-		await expect(p3.getByText('LOBBY_CLIENT')).toBeVisible();
+		await expect(p3.getByRole('button', { name: 'Host New Game' })).toBeVisible();
 
 		await expect(p2.locator('.players-list').getByText('Player 1')).toBeVisible();
 		await expect(p2.locator('.players-list').getByText('Player 3')).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Firebase Lobby Event Replay', () => {
 		await tester.step('initial-state', {
 			description: 'Three players are projected from lobby events',
 			verifications: [
-				{ spec: 'P2 is connected to Firebase lobby', check: async () => await expect(p2.getByText('LOBBY_CLIENT')).toBeVisible() },
+				{ spec: 'P2 is in the lobby', check: async () => await expect(p2.getByRole('button', { name: 'Host New Game' })).toBeVisible() },
 				{ spec: 'P1 is visible in list', check: async () => await expect(p2.locator('.players-list').getByText('Player 1')).toBeVisible() },
 				{ spec: 'P3 is visible in list', check: async () => await expect(p2.locator('.players-list').getByText('Player 3')).toBeVisible() }
 			],
