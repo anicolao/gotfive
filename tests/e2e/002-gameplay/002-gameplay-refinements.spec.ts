@@ -22,8 +22,9 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
     });
   });
 
-  // Start Game
-  await page.getByRole('button', { name: 'START GAME' }).click();
+	  // Start Game
+	  await page.getByRole('button', { name: 'START GAME' }).click();
+	  await expect(page.locator('.stand-container').filter({ hasText: 'You' }).locator('.tile')).toHaveCount(5);
 
   // --- Deduction Board Tests ---
 

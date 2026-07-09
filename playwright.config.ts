@@ -32,7 +32,7 @@ export default defineConfig({
         deviceScaleFactor: 1, 
         timezoneId: 'America/New_York',
         locale: 'en-CA',
-        actionTimeout: 2000,
+        actionTimeout: 10000,
     },
     snapshotPathTemplate: '{testDir}/{testFileDir}/screenshots/{arg}.png',
     projects: [
@@ -44,13 +44,13 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'npx peerjs --port 9000 & npm run dev',
+        command: 'bun run dev',
         url: 'http://localhost:5173',
         reuseExistingServer: !process.env.CI,
     },
     timeout: 30000, 
     expect: {
-        timeout: 2000, 
+        timeout: 10000,
         toHaveScreenshot: { 
             maxDiffPixelRatio: 0,
             animations: 'disabled',

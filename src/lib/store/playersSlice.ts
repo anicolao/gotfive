@@ -29,6 +29,9 @@ export const playersSlice = createSlice({
 	name: 'players',
 	initialState,
 	reducers: {
+		syncPlayers: (state, action: PayloadAction<PlayersState>) => {
+			return { ...action.payload };
+		},
 		addPlayer: (state, action: PayloadAction<{ id: string; name: string }>) => {
 			state.players[action.payload.id] = {
 				id: action.payload.id,
@@ -110,5 +113,5 @@ export const playersSlice = createSlice({
 	}
 });
 
-export const { addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer, guess, resetPlayers } = playersSlice.actions;
+export const { syncPlayers, addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer, guess, resetPlayers } = playersSlice.actions;
 export default playersSlice.reducer;

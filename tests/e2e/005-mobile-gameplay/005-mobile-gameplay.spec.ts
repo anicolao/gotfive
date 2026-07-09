@@ -263,7 +263,7 @@ test.describe('Mobile Gameplay', () => {
     tester.setMetadata('Tablet Portrait', 'Verify layout on tablet portrait.');
 
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto(`/?seed=123&myId=tablet-portrait-test-user&lobbyId=lobby-005-tablet`);
+    await page.goto(`/?seed=123&myId=tablet-portrait-test-user&lobbyId=lobby-005-tablet&hostGameId=game-005-tablet`);
 
     await page.getByLabel('Your Name:').fill('TabletUser');
     await page.getByRole('button', { name: 'Join Lobby' }).click();

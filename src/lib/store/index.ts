@@ -3,7 +3,6 @@ import gameReducer from './gameSlice';
 import playersReducer from './playersSlice';
 import uiReducer from './uiSlice';
 import lobbyReducer from './lobbySlice';
-import { networkMiddleware } from '../network';
 
 export const store = configureStore({
         reducer: {
@@ -12,8 +11,7 @@ export const store = configureStore({
                 ui: uiReducer,
                 lobby: lobbyReducer
         },
-        middleware: (getDefaultMiddleware) => 
-                getDefaultMiddleware().concat(networkMiddleware)
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware()
 });
 
 if (typeof window !== 'undefined' && import.meta.env.DEV) {

@@ -17,7 +17,7 @@ test.describe('Multiplayer Turn-Taking', () => {
 		const lobbyId = `lobby-004-1-${suffix}`;
 
 		// 1. Setup Lobby
-		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}`);
+		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}&hostGameId=game-004-turn-taking`);
 		await hostPage.getByLabel('Your Name:').fill('Host');
 		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
 		await hostPage.getByRole('button', { name: 'Host New Game' }).click();
@@ -25,11 +25,9 @@ test.describe('Multiplayer Turn-Taking', () => {
 		
 		const gameId = (await hostPage.locator('code').innerText()).trim();
 		
-		await clientPage.goto(`/?seed=123&myId=${clientId}&lobbyId=${lobbyId}`);
+		await clientPage.goto(`/?seed=123&myId=${clientId}&lobbyId=${lobbyId}&gameId=${gameId}`);
 		await clientPage.getByLabel('Your Name:').fill('Client');
 		await clientPage.getByRole('button', { name: 'Join Lobby' }).click();
-		await clientPage.getByPlaceholder('Enter Game ID').fill(gameId);
-		await clientPage.getByRole('button', { name: 'Connect' }).click();
 
 		// Wait for connection - Host should see "Connected Players (2)"
 		await expect(hostPage.getByText('Connected Players (2)')).toBeVisible();

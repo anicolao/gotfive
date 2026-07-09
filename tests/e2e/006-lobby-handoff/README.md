@@ -1,24 +1,15 @@
-# Lobby Leader Handoff
+# Firebase Lobby Event Replay
 
-Testing that leadership is handed off correctly based on seniority.
+Testing that clients replay lobby events into the same projected state.
 
-## Three players in lobby, P1 is leader
+## Three players are projected from lobby events
 
-![Three players in lobby, P1 is leader](./screenshots/000-initial-state.png)
+![Three players are projected from lobby events](./screenshots/000-initial-state.png)
 
 **Verifications:**
-- [x] P2 is client
+- [x] P2 is connected to Firebase lobby
 - [x] P1 is visible in list
-
----
-
-## P2 becomes leader after P1 leaves
-
-![P2 becomes leader after P1 leaves](./screenshots/001-p2-becomes-leader.png)
-
-**Verifications:**
-- [x] P2 is now leader
-- [x] P3 is still visible
+- [x] P3 is visible in list
 
 ---
 
