@@ -7,6 +7,7 @@
 		initializeFirebaseProfile,
 		lobbyGameCodeExists,
 		linkCurrentUserWithGoogle,
+		observeGame,
 		subscribeGame,
 		subscribeLobby,
 		unsubscribeLobby,
@@ -51,7 +52,7 @@
 			myId = Math.random().toString(36).substring(7);
 		}
 
-		const gameId = urlParams.get('gameId');
+		const gameId = urlParams.get('gameId')?.trim().toUpperCase();
 		if (gameId) {
 			targetHostId = gameId;
 		}
@@ -77,6 +78,9 @@
 				console.error("Failed to parse profile", e);
 			}
 		} else if (gameId) {
+			observeGame(gameId, store.dispatch).catch((error) => {
+				authError = error instanceof Error ? error.message : String(error);
+			});
 			mode = 'ONBOARDING';
 		}
 	});
@@ -94,7 +98,7 @@
 			const urlParams = new URLSearchParams(window.location.search);
 			const gameId = urlParams.get('gameId');
 			if (gameId) {
-				targetHostId = gameId;
+				targetHostId = gameId.trim().toUpperCase();
 				mode = 'JOINING_FROM_LINK';
 				await joinGameFromLink();
 			}
