@@ -24,7 +24,7 @@ test.describe('Multiplayer Lobby', () => {
 		const tester = new TestStepHelper(page, testInfo);
 		tester.setMetadata('Hosting Lobby', 'Testing the hosting flow.');
 
-		await page.goto(`/?seed=123&myId=multiplayer-hosting-test-user&lobbyId=lobby-003-2&hostGameId=game-003-hosting`);
+		await page.goto(`/?seed=123&myId=multiplayer-hosting-test-user&lobbyId=lobby-003-2&hostGameId=HOSTA`);
 		
 		await page.getByLabel('Your Name:').fill('Tester');
 		await page.getByRole('button', { name: 'Join Lobby' }).click();
@@ -57,7 +57,7 @@ test.describe('Multiplayer Lobby', () => {
 		const lobbyId = `lobby-003-3-${suffix}`;
 
 		// 1. Setup Host
-		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}&hostGameId=game-003-public`);
+		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}&hostGameId=PUBLC`);
 		await hostPage.getByLabel('Your Name:').fill('Host');
 		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
 		

@@ -17,7 +17,7 @@ test.describe('Multiplayer Turn-Taking', () => {
 		const lobbyId = `lobby-004-1-${suffix}`;
 
 		// 1. Setup Lobby
-		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}&hostGameId=game-004-turn-taking`);
+		await hostPage.goto(`/?seed=123&myId=${hostId}&lobbyId=${lobbyId}&hostGameId=TURNZ`);
 		await hostPage.getByLabel('Your Name:').fill('Host');
 		await hostPage.getByRole('button', { name: 'Join Lobby' }).click();
 		await hostPage.getByRole('button', { name: 'Host New Game' }).click();

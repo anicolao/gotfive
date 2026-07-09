@@ -183,6 +183,7 @@ export class TestStepHelper {
             }
         }
 
+        await this.page.mouse.move(0, 0);
         await waitForAnimations(this.page);
         
         // 4. Check for clipping and overlap
