@@ -498,8 +498,13 @@
                 position: absolute;
                 bottom: 5px;
                 right: 10px;
-                font-size: 0.7rem;
-                opacity: 0.5;
-                font-family: monospace;
+                width: 90px;
+                color: rgba(240, 240, 240, 0.5);
+                font-family: 'Inter', system-ui, sans-serif;
+                font-size: 11px;
+                font-variant-numeric: tabular-nums;
+                line-height: 11px;
+                text-align: right;
+                letter-spacing: 0;
         }
 </style>
