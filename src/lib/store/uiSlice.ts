@@ -42,6 +42,10 @@ export const uiSlice = createSlice({
 		clearStrokes: (state) => {
 			state.strokes = [];
 		},
+		clearDeductionBoard: (state) => {
+			state.deductionBoard = {};
+			state.strokes = [];
+		},
 		setOverlay: (state, action: PayloadAction<'RULES' | 'GUESS' | 'NONE'>) => {
 			state.overlay = action.payload;
 		},
@@ -57,5 +61,5 @@ export const uiSlice = createSlice({
 	}
 });
 
-export const { setMyId, setIsHost, setGameId, markDeduction, addStroke, clearStrokes, setOverlay, selectTile, resetUI } = uiSlice.actions;
+export const { setMyId, setIsHost, setGameId, markDeduction, addStroke, clearStrokes, clearDeductionBoard, setOverlay, selectTile, resetUI } = uiSlice.actions;
 export default uiSlice.reducer;

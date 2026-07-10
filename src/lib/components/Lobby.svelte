@@ -16,6 +16,7 @@
 		writeLobbyEvent
 	} from '../firebase/events';
 	import { onMount, onDestroy } from 'svelte';
+	import { replaceState } from '$app/navigation';
 
 	let myName = $state('');
 	let myAvatar = $state('default');
@@ -159,10 +160,17 @@
 		throw new Error('Could not create a unique game code. Please try again.');
 	}
 
+	function putGameCodeInUrl(gameId: string) {
+		const url = new URL(window.location.href);
+		url.searchParams.set('gameId', gameId);
+		replaceState(url, {});
+	}
+
 	async function confirmHostGame() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const requestedGameId = urlParams.get('hostGameId');
 		currentGameId = requestedGameId ? requestedGameId.trim().toUpperCase() : await createUniqueGameCode();
+		putGameCodeInUrl(currentGameId);
 		store.dispatch(setIsHost(true));
 		store.dispatch(setGameId(currentGameId));
 		await updateUserPresence(currentGameId);
@@ -182,6 +190,7 @@
 		const gameId = hostId.trim().toUpperCase();
 		targetHostId = gameId;
 		currentGameId = gameId;
+		putGameCodeInUrl(gameId);
 		mode = 'JOINING';
 		store.dispatch(setIsHost(false));
 		store.dispatch(setGameId(gameId));

@@ -30,6 +30,7 @@ test.describe('Multiplayer Lobby', () => {
 		await page.getByRole('button', { name: 'Join Lobby' }).click();
 		await page.getByRole('button', { name: 'Host New Game' }).click();
 		await page.getByRole('button', { name: 'Start Hosting' }).click();
+		await expect(page).toHaveURL(/gameId=HOSTA/);
 		
 		await tester.step('hosting-flow', {
 			description: 'Hosting instructions are visible',
@@ -70,6 +71,7 @@ test.describe('Multiplayer Lobby', () => {
 		await hostPage.getByRole('button', { name: 'Start Hosting' }).click();
 		
 		await expect(hostPage.getByText('Your Game ID')).toBeVisible();
+		await expect(hostPage).toHaveURL(/gameId=PUBLC/);
 
 		// 2. Setup Client
 		await clientPage.goto(`/?seed=123&myId=${clientId}&lobbyId=${lobbyId}`);
@@ -98,6 +100,9 @@ test.describe('Multiplayer Lobby', () => {
 		await gameCard.getByRole('button', { name: 'Join' }).click();
 
 		// 5. Client verifies connection
+		await expect(clientPage.getByText('Connected to Host!')).toBeVisible();
+		await expect(clientPage).toHaveURL(/gameId=PUBLC/);
+		await clientPage.reload();
 		await expect(clientPage.getByText('Connected to Host!')).toBeVisible();
 		await expect(hostPage.getByText('Client')).toBeVisible();
 

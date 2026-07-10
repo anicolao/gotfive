@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { store } from '$lib/store';
-	import { markDeduction, addStroke, clearStrokes as clearStrokesAction } from '$lib/store/uiSlice';
+	import { markDeduction, addStroke, clearDeductionBoard } from '$lib/store/uiSlice';
 	import { getTileData } from '$lib/game/tiles';
 	import { writeGameEvents } from '$lib/firebase/events';
 	import { onMount } from 'svelte';
 
-	let { deductions = {} } = $props();
+	let { deductions = {}, canSubmitGuess = false } = $props();
 
 	const COLORS = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
 	const TILE_IDS_BY_COLOR = COLORS.map((_, i) => {
@@ -26,10 +26,26 @@
 	let gameState = $state(store.getState().game);
 	let playersState = $state(store.getState().players);
 	let uiState = $state(store.getState().ui);
-	let visibleTiles = $state(new Set<number>());
+	let visibleTiles = $derived.by(() => {
+		const visible = new Set<number>();
+		if (gameState?.publicPool) {
+			gameState.publicPool.forEach((id: number) => visible.add(id));
+		}
+		if (playersState?.players && uiState?.myId) {
+			Object.values(playersState.players).forEach((p: any) => {
+				if (p.id !== uiState.myId) {
+					p.hand.forEach((id: number) => visible.add(id));
+				}
+				if (p.clues) {
+					p.clues.forEach((clue: any) => visible.add(clue.tileId));
+				}
+			});
+		}
+		return visible;
+	});
 
 	let guessInputs = $state<string[]>(['', '', '', '', '']);
-	let canGuess = $derived(guessInputs.every(v => {
+	let canGuess = $derived(canSubmitGuess && guessInputs.every(v => {
 		const num = parseInt(v);
 		return !isNaN(num) && num > 0 && num <= 60;
 	}));
@@ -49,7 +65,6 @@
 			gameState = state.game;
 			playersState = state.players;
 			uiState = state.ui;
-			updateVisibleTiles();
 			
 			// Defensive check for canvas and ctx to prevent "Cannot read properties of null" errors
 			// especially during mount/unmount transitions.
@@ -68,24 +83,6 @@
 			ctx = null as any;
 		};
 	});
-
-	function updateVisibleTiles() {
-		const visible = new Set<number>();
-		if (gameState?.publicPool) {
-			gameState.publicPool.forEach((id: number) => visible.add(id));
-		}
-		if (playersState?.players && uiState?.myId) {
-			Object.values(playersState.players).forEach((p: any) => {
-				if (p.id !== uiState.myId) {
-					p.hand.forEach((id: number) => visible.add(id));
-				}
-				if (p.clues) {
-					p.clues.forEach((clue: any) => visible.add(clue.tileId));
-				}
-			});
-		}
-		visibleTiles = visible;
-	}
 
 	function resizeCanvas() {
 		if (!canvas) return;
@@ -221,6 +218,20 @@
 	});
 
 	let lastOkTileIds = $state<(number|null)[]>([null, null, null, null, null]);
+	let currentGameStartKey = $state<string | null>(null);
+	$effect(() => {
+		const nextGameStartKey = gameState?.status === 'PLAYING'
+			? `${gameState.seed}:${gameState.turnOrder.join('|')}:${gameState.publicPool.join('|')}`
+			: null;
+		if (nextGameStartKey && nextGameStartKey !== currentGameStartKey) {
+			guessInputs = ['', '', '', '', ''];
+			lastOkTileIds = [null, null, null, null, null];
+			currentGameStartKey = nextGameStartKey;
+		} else if (!nextGameStartKey) {
+			currentGameStartKey = null;
+		}
+	});
+
 	$effect(() => {
 		// Sync Guess Inputs with OK marks based on player's actual hand
 		const myId = uiState?.myId;
@@ -249,11 +260,12 @@
 		}
 	});
 
-	function clearDrawing() {
-		store.dispatch(clearStrokesAction());
+	function clearBoard() {
+		store.dispatch(clearDeductionBoard());
 	}
 
 	async function submitGuess() {
+		if (!canGuess) return;
 		if (!uiState?.myId || !uiState.gameId) return;
 		const playerId = uiState.myId;
 		const state = store.getState();
@@ -271,7 +283,10 @@
 
 		if (!isCorrect) {
 			events.push({ type: 'players/eliminatePlayer', payload: playerId });
-			events.push({ type: 'game/nextTurn', payload: undefined });
+			const currentPlayerId = state.game.turnOrder[state.game.currentPlayerIndex];
+			if (playerId === currentPlayerId) {
+				events.push({ type: 'game/nextTurn', payload: undefined });
+			}
 			// Check if only one player remains
 			const activePlayers = Object.values(state.players.players).filter(p => p.id !== playerId && !p.eliminated);
 			if (activePlayers.length === 1) {
@@ -287,7 +302,7 @@
 <div class="deduction-board">
 	<div class="header">
 		<h2>Top Secret Log</h2>
-		<button onclick={clearDrawing}>Clear Notes</button>
+		<button onclick={clearBoard}>Clear</button>
 	</div>
 
 	<div class="guess-area">
@@ -355,6 +370,7 @@
                 margin: 0 auto;
                 max-width: 100%;
                 box-sizing: border-box;
+                flex-shrink: 0;
         }
 
         .header {
@@ -388,12 +404,14 @@
 
         .guess-inputs {
                 display: flex;
-                gap: 4px;
+                gap: 6px;
         }
 
         .guess-inputs input {
-                width: var(--mini-tile-size);
-                height: var(--mini-tile-size);
+                width: calc(var(--mini-tile-size) * 1.45);
+                height: calc(var(--mini-tile-size) * 1.25);
+                min-width: 28px;
+                min-height: 24px;
                 text-align: center;
                 border: 1px solid var(--color-neon-yellow);
                 border-radius: 4px;
@@ -401,7 +419,9 @@
                 font-weight: bold;
                 background: rgba(0, 0, 0, 0.8);
                 color: var(--color-neon-yellow);
-                font-size: var(--font-size-small);
+                font-size: max(12px, var(--font-size-small));
+                line-height: 1;
+                box-sizing: border-box;
         }
 
         .got-five-btn {
@@ -537,5 +557,88 @@
                 pointer-events: auto;
                 cursor: crosshair;
                 z-index: 3;
+        }
+
+        @media (orientation: portrait) {
+                .deduction-board {
+                        width: 100%;
+                        margin: 0;
+                        padding: 4px;
+                        border-radius: 8px;
+                }
+
+                .header {
+                        gap: 8px;
+                }
+
+                .header button {
+                        min-height: 28px;
+                        white-space: nowrap;
+                }
+
+                .guess-inputs {
+                        width: 100%;
+                        justify-content: center;
+                }
+
+                .guess-inputs input {
+                        width: 42px;
+                        height: 34px;
+                        min-width: 42px;
+                        min-height: 34px;
+                        font-size: 16px;
+                }
+
+                .grid-container {
+                        width: 100%;
+                        box-sizing: border-box;
+                        overflow: visible;
+                        padding: 4px;
+                }
+
+                .grid {
+                        width: 100%;
+                        gap: 4px;
+                }
+
+                .row {
+                        display: grid;
+                        grid-template-columns: repeat(12, minmax(0, 1fr));
+                        gap: 4px;
+                        width: 100%;
+                }
+
+                .cell {
+                        width: auto;
+                        height: auto;
+                        aspect-ratio: 1;
+                }
+        }
+
+        @media (orientation: portrait) and (max-height: 760px) {
+                .deduction-board {
+                        width: min(100%, 330px);
+                        margin: 0 auto;
+                }
+
+                .guess-area {
+                        padding: 2px;
+                        margin-bottom: 2px;
+                }
+
+                .guess-inputs input {
+                        width: 34px;
+                        height: 30px;
+                        min-width: 34px;
+                        min-height: 30px;
+                }
+
+                .got-five-btn {
+                        padding: 4px 12px;
+                }
+
+                .row {
+                        gap: 3px;
+                }
         }
 </style>

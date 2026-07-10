@@ -45,6 +45,8 @@ export const playersSlice = createSlice({
 		setHand: (state, action: PayloadAction<{ id: string; hand: number[] }>) => {
 			if (state.players[action.payload.id]) {
 				state.players[action.payload.id].hand = action.payload.hand.sort((a, b) => a - b);
+				state.players[action.payload.id].clues = [];
+				state.players[action.payload.id].eliminated = false;
 			}
 		},
 		addClue: (state, action: PayloadAction<{ id: string; clue: ClueRecord }>) => {

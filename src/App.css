@@ -95,3 +95,18 @@
 .toggle-sidebar-btn {
 	display: none !important;
 }
+
+@media (orientation: portrait) {
+	:root {
+		--tile-size: clamp(48px, calc((100vw - 54px) / 6), 62px);
+		--mini-tile-size: clamp(24px, calc((100vw - 72px) / 12), 36px);
+		--gap-base: 4px;
+	}
+}
+
+@media (orientation: portrait) and (max-height: 760px) {
+	:root {
+		--tile-size: 40px;
+		--mini-tile-size: 22px;
+	}
+}

@@ -33,13 +33,14 @@
 		if (uiState.myId && !playerIds.includes(uiState.myId)) {
 			playerIds.unshift(uiState.myId);
 		}
+		const turnOrder = shuffle([...playerIds], rng);
 		const events: Array<{ type: string; payload: any }> = [];
 
 		// Create deck 1-60 and shuffle
 		let deck = createDeck();
 		deck = shuffle(deck, rng);
 
-		playerIds.forEach(pid => {
+		turnOrder.forEach(pid => {
 			events.push({
 				type: 'players/addPlayer',
 				payload: { id: pid, name: playersState.players[pid]?.name || getUserDisplay(pid).name }
@@ -47,7 +48,7 @@
 		});
 
 		// Deal 5 tiles to each player (1 of each color)
-		playerIds.forEach(pid => {
+		turnOrder.forEach(pid => {
 			const hand: number[] = [];
 			for (let colorIdx = 0; colorIdx < 5; colorIdx++) {
 				const tileIdx = deck.findIndex(id => (id - 1) % 5 === colorIdx);
@@ -67,7 +68,7 @@
 			}
 		}
 
-		events.push({ type: 'game/start', payload: { deck, turnOrder: playerIds, initialPublic, seed } });
+		events.push({ type: 'game/start', payload: { deck, turnOrder, initialPublic, seed } });
 		await writeGameEvents(uiState.gameId, events);
 		await writeLobbyEvent('lobby/startGame', { gameId: uiState.gameId });
 	}
@@ -86,6 +87,13 @@
 
 	let currentPlayerId = $derived(gameState?.turnOrder[gameState?.currentPlayerIndex]);
 	let isMyTurn = $derived(currentPlayerId === uiState?.myId);
+	let canDrawThisTurn = $derived(isMyTurn && gameState?.status === 'PLAYING' && !gameState?.hasDrawnThisTurn);
+	let canUseDrawnTile = $derived(isMyTurn && gameState?.status === 'PLAYING' && !!gameState?.hasDrawnThisTurn);
+	let canSubmitGuess = $derived(
+		gameState?.status === 'PLAYING' &&
+		!!uiState?.myId &&
+		!playersState?.players[uiState.myId]?.eliminated
+	);
 	let isHost = $derived(uiState?.isHost);
 
 	// Sort other players for display around the table
@@ -95,7 +103,7 @@
 	let rightPlayerId = $derived(otherPlayerIds[2] || null);
 
 	function handleSelectTile(id: number) {
-		if (!isMyTurn) return;
+		if (!canUseDrawnTile) return;
 		if (uiState.selectedTileId === id) {
 			store.dispatch(selectTile(null));
 		} else {
@@ -104,21 +112,21 @@
 	}
 
 	function handleAskSort(targetId: string) {
-		if (!isMyTurn || uiState.selectedTileId === null || !uiState.gameId) return;
+		if (!canUseDrawnTile || uiState.selectedTileId === null || !uiState.gameId) return;
 		writeGameEvent(uiState.gameId, 'players/clue_sort', { targetId, tileId: uiState.selectedTileId });
 		store.dispatch(selectTile(null));
 		writeGameEvent(uiState.gameId, 'game/nextTurn', undefined);
 	}
 
 	function handleAskCompare(targetId: string, slot: number) {
-		if (!isMyTurn || uiState.selectedTileId === null || !uiState.gameId) return;
+		if (!canUseDrawnTile || uiState.selectedTileId === null || !uiState.gameId) return;
 		writeGameEvent(uiState.gameId, 'players/clue_compare', { targetId, tileId: uiState.selectedTileId, targetSlot: slot });
 		store.dispatch(selectTile(null));
 		writeGameEvent(uiState.gameId, 'game/nextTurn', undefined);
 	}
 
 	function handleReveal(color: any) {
-		if (!isMyTurn || !uiState.gameId) return;
+		if (!canDrawThisTurn || !uiState.gameId) return;
 		writeGameEvent(uiState.gameId, 'game/reveal', color);
 	}
 
@@ -137,18 +145,6 @@
 		newSet.add(id);
 		acknowledgedEliminations = newSet;
 	}
-
-	$effect(() => {
-		if (gameState?.status === 'PLAYING' && currentPlayerId && playersState?.players[currentPlayerId]?.eliminated) {
-			// If it's my turn but I'm eliminated, pass it
-			// Or if I'm the host, I'm responsible for advancing the turn if the current player is eliminated
-			if (currentPlayerId === uiState?.myId || isHost) {
-				if (uiState?.gameId) {
-					writeGameEvent(uiState.gameId, 'game/nextTurn', undefined);
-				}
-			}
-		}
-	});
 
 	const version = import.meta.env.VITE_APP_VERSION || 'dev';
 	const gitHash = import.meta.env.VITE_GIT_HASH || 'local';
@@ -200,7 +196,7 @@
 									hand={playersState.players[id].hand}
 									clues={playersState.players[id].clues}
 									isCurrentTurn={currentPlayerId === id}
-									canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
+									canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
 									onSelectTarget={handleAskSort}
 									onSelectSlot={handleAskCompare}
 								/>
@@ -213,6 +209,8 @@
 							<Table
 								publicPool={gameState.publicPool}
 								decks={gameState.decks}
+								canReveal={canDrawThisTurn}
+								canSelectTile={canUseDrawnTile}
 								onReveal={handleReveal}
 								selectedTileId={uiState?.selectedTileId}
 								onSelectTile={handleSelectTile}
@@ -230,7 +228,7 @@
 								clues={playersState.players[uiState.myId].clues}
 								isLocalPlayer={true}
 								isCurrentTurn={currentPlayerId === uiState.myId}
-								canBeTarget={isMyTurn && uiState?.selectedTileId !== null}
+								canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
 								onSelectTarget={handleAskSort}
 								onSelectSlot={handleAskCompare}
 							/>
@@ -241,7 +239,7 @@
 				</div>
 
 				<div class="deduction-area">
-					<DeductionBoard deductions={uiState?.deductionBoard} />
+					<DeductionBoard deductions={uiState?.deductionBoard} {canSubmitGuess} />
 				</div>
 				{/if}
 				</main>
@@ -268,6 +266,8 @@
                 gap: var(--gap-base);
                 overflow: visible;
                 box-sizing: border-box;
+                min-width: 0;
+                min-height: 0;
         }
 
         .main-play-area {
@@ -276,6 +276,7 @@
                 flex-direction: column;
                 gap: var(--gap-base);
                 overflow: visible;
+                min-width: 0;
         }
 
         .deduction-area {
@@ -285,6 +286,8 @@
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
+                min-height: 0;
+                -webkit-overflow-scrolling: touch;
         }
 
         @media (min-width: 1200px) {
@@ -334,14 +337,22 @@
                 main {
                         flex-direction: column;
                         gap: 8px;
-                        padding: 8px;
+                        padding: 6px;
                         justify-content: flex-start;
                         overflow-y: auto;
+                        width: 100%;
+                        scroll-padding-bottom: 40vh;
+                        -webkit-overflow-scrolling: touch;
+                }
+
+                main::after {
+                        content: '';
+                        flex: 0 0 40vh;
                 }
 
                 .main-play-area {
-                        flex: 1;
-                        min-height: 0;
+                        flex: 0 0 auto;
+                        width: 100%;
                         display: flex;
                         flex-direction: column;
                         gap: 8px;
@@ -370,15 +381,17 @@
                         display: flex;
                         align-items: center;
                         justify-content: center;
+                        width: 100%;
                 }
 
                 .public-area {
                         min-height: 0;
-                        flex: 1;
+                        flex: 0 0 auto;
                         overflow: visible;
                         display: flex;
                         align-items: center;
                         justify-content: center;
+                        width: 100%;
                 }
 
                 .player-area {
@@ -388,10 +401,11 @@
                         display: flex;
                         align-items: center;
                         justify-content: center;
+                        width: 100%;
                 }
 
                 .deduction-area {
-                        flex: 1;
+                        flex: 0 0 auto;
                         width: 100%;
                         min-height: 150px;
                         max-height: none;
@@ -426,6 +440,13 @@
                         flex: 0 0 auto;
                         border-left: 1px solid var(--color-glass-border);
                         padding-left: 6px;
+                        box-sizing: border-box;
+                        height: calc(100vh - 8px);
+                        height: calc(100dvh - 8px);
+                        max-height: calc(100vh - 8px);
+                        max-height: calc(100dvh - 8px);
+                        overflow-y: auto;
+                        padding-bottom: 32px;
                 }
 
                 .opponents-area {

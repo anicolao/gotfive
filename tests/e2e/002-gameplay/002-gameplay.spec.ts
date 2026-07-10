@@ -1,7 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
 
+async function writeRemoteGameEvent(page: Page, type: string, payload?: unknown) {
+  await page.evaluate(async (args: { type: string; payload?: unknown }) => {
+    const { writeGameEvent } = await (0, eval)('import("/src/lib/firebase/events.ts")');
+    const gameId = (window as any).store.getState().ui.gameId;
+    await writeGameEvent(gameId, args.type, args.payload);
+  }, { type, payload });
+}
+
 test('User plays the game', async ({ page }, testInfo) => {
+  test.setTimeout(60000);
   // 1. Initialize with a fixed seed for reproducibility
   const tester = new TestStepHelper(page, testInfo);
   tester.setMetadata('Gameplay', 'As a user, I want to play through a game with deterministic results.');
@@ -25,6 +34,7 @@ test('User plays the game', async ({ page }, testInfo) => {
 
   // Start Game
   await page.getByRole('button', { name: 'START GAME' }).click();
+  await expect(page.locator('.deduction-board .got-five-btn')).toBeDisabled();
   
   await tester.step('initial-state', {
     description: 'Game initializes with correct number of tiles',
@@ -57,6 +67,7 @@ test('User plays the game', async ({ page }, testInfo) => {
 
   // 3. Reveal a tile from the red deck
   await page.locator('.deck-btn.red').click();
+  await expect(page.locator('.deck-btn.red')).toBeDisabled();
 
   await tester.step('reveal-tile', {
     description: 'Revealing a tile updates the public pool and deck count',
@@ -118,12 +129,15 @@ test('User plays the game', async ({ page }, testInfo) => {
   });
 
   // Advance turn back to 'You' to allow another action
-  await page.evaluate(() => {
-    (window as any).store.dispatch({ type: 'game/nextTurn' });
-  });
+  await expect(aliceStand).toHaveClass(/current-turn/);
+  await writeRemoteGameEvent(page, 'game/nextTurn');
+  await expect(page.locator('.stand-container.current-turn').filter({ hasText: 'You' })).toBeVisible();
+  await page.locator('.deck-btn.blue').click();
+  await expect(page.locator('.pool-tiles .tile-btn')).toHaveCount(6);
 
   // 5. Ask for a compare clue
   const secondPublicTile = page.locator('.pool-tiles .tile-btn').nth(1);
+  await expect(secondPublicTile).toBeEnabled();
   const secondPublicTileId = await secondPublicTile.locator('.number').innerText();
   await secondPublicTile.click();
   
@@ -147,7 +161,7 @@ test('User plays the game', async ({ page }, testInfo) => {
         spec: 'The consumed tile is removed from the public pool',
         check: async () => {
           await expect(page.locator(`.pool-tiles .tile-btn:has-text("${secondPublicTileId}")`)).toHaveCount(0);
-          await expect(page.locator('.pool-tiles .tile-btn')).toHaveCount(4);
+          await expect(page.locator('.pool-tiles .tile-btn')).toHaveCount(5);
         }
       }
     ]
@@ -199,6 +213,12 @@ test('User plays the game', async ({ page }, testInfo) => {
   // 6. Guessing flow
   const deductionBoard = page.locator('.deduction-board');
   const guessInputs = deductionBoard.locator('.guess-inputs input');
+  await expect(aliceStand).toHaveClass(/current-turn/);
+  await writeRemoteGameEvent(page, 'game/nextTurn');
+  await expect(page.locator('.stand-container.current-turn').filter({ hasText: 'You' })).toBeVisible();
+  await page.locator('.deck-btn.green').click();
+  await expect(page.locator('.deck-btn.green')).toBeDisabled();
+  await expect(boardCell.locator('.strike')).toBeVisible();
   
   // Fill some guesses
   await guessInputs.nth(0).fill('1');
@@ -206,6 +226,7 @@ test('User plays the game', async ({ page }, testInfo) => {
   await guessInputs.nth(2).fill('3');
   await guessInputs.nth(3).fill('4');
   await guessInputs.nth(4).fill('5');
+  await expect(deductionBoard.locator('.got-five-btn')).toBeEnabled();
   
   await deductionBoard.locator('.got-five-btn').click();
   
