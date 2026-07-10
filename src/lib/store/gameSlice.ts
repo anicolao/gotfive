@@ -10,6 +10,7 @@ export interface GameState {
 	winnerId: string | null;
 	seed: number;
 	eliminated: string[];
+	hasDrawnThisTurn: boolean;
 }
 
 const initialState: GameState = {
@@ -26,7 +27,8 @@ const initialState: GameState = {
 	currentPlayerIndex: 0,
 	winnerId: null,
 	seed: 0,
-	eliminated: []
+	eliminated: [],
+	hasDrawnThisTurn: false
 };
 
 export const gameSlice = createSlice({
@@ -44,6 +46,7 @@ export const gameSlice = createSlice({
 			state.winnerId = null;
 			state.seed = action.payload.seed;
 			state.eliminated = [];
+			state.hasDrawnThisTurn = false;
 
 			// Partition deck into 5 decks by color
 			const COLORS: TileColor[] = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
@@ -67,6 +70,7 @@ export const gameSlice = createSlice({
 				const tileId = deck.shift();
 				if (tileId !== undefined) {
 					state.publicPool.push(tileId);
+					state.hasDrawnThisTurn = true;
 				}
 			}
 		},
@@ -81,6 +85,7 @@ export const gameSlice = createSlice({
 				if (nextIndex === startIndex) break; // Avoid infinite loop if everyone is eliminated
 			}
 			state.currentPlayerIndex = nextIndex;
+			state.hasDrawnThisTurn = false;
 		},
 		setWinner: (state, action: PayloadAction<string>) => {
 			state.winnerId = action.payload;

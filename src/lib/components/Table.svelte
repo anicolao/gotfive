@@ -11,6 +11,8 @@
 		Green: [],
 		Purple: []
 	};
+	export let canReveal = false;
+	export let canSelectTile = false;
 	export let onReveal: (color: TileColor) => void;
 	export let onSelectTile: (id: number) => void;
 
@@ -20,7 +22,7 @@
 <div class="table">
 	<div class="decks-area">
 		{#each COLORS as color}
-			<button class="deck-btn {color.toLowerCase()}" on:click={() => onReveal(color)} disabled={decks[color].length === 0}>
+			<button class="deck-btn {color.toLowerCase()}" on:click={() => onReveal(color)} disabled={!canReveal || decks[color].length === 0}>
 				{#if decks[color].length > 0}
 					<Tile faceDown={true} {color} />
 					<div class="deck-count">{decks[color].length}</div>
@@ -38,6 +40,7 @@
 					class="tile-btn"
 					class:selected={id === selectedTileId}
 					on:click={() => onSelectTile(id)}
+					disabled={!canSelectTile}
 				>
 					<Tile {id} />
 				</button>
@@ -122,8 +125,12 @@
                 transition: transform 0.2s;
         }
 
-        .tile-btn:hover {
+        .tile-btn:hover:not(:disabled) {
                 transform: scale(1.05);
+        }
+
+        .tile-btn:disabled {
+                cursor: default;
         }
 
         .tile-btn.selected {

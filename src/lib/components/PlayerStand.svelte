@@ -25,11 +25,38 @@
 	function getCompareCluesForSlot(slot: number) {
 		return compareClues.filter((c: ClueRecord) => c.targetSlot === slot);
 	}
+
+	let pendingSlot = $state<number | null>(null);
+
+	function chooseSort(e?: MouseEvent) {
+		e?.stopPropagation();
+		pendingSlot = null;
+		if (canBeTarget) onSelectTarget(id);
+	}
+
+	function chooseMatch(slot: number | null = pendingSlot, e?: MouseEvent) {
+		e?.stopPropagation();
+		if (slot === null) return;
+		pendingSlot = null;
+		if (canBeTarget) onSelectSlot(id, slot);
+	}
+
+	function chooseTileAction(e: MouseEvent, slot: number) {
+		e.stopPropagation();
+		if (!canBeTarget) return;
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const tappedLowerThird = e.clientY >= rect.top + rect.height * (2 / 3);
+		if (tappedLowerThird) {
+			pendingSlot = slot;
+		} else {
+			chooseMatch(slot);
+		}
+	}
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} onclick={() => canBeTarget && onSelectTarget(id)}>
+<div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} onclick={chooseSort}>
 	<div class="name-tag">{name} {isCurrentTurn ? '★' : ''}</div>
 	<div class="stand">
 		<div class="tiles-area">
@@ -43,7 +70,7 @@
 						</div>
 					{/if}
 				</div>
-				<div class="slot" onclick={(e) => { e.stopPropagation(); canBeTarget && onSelectSlot(id, i); }}>
+				<div class="slot" onclick={(e) => chooseTileAction(e, i)}>
 					{#if hand[i]}
 						<Tile id={hand[i]} faceDown={isLocalPlayer} />
 					{:else}
@@ -68,8 +95,17 @@
 				{/if}
 			</div>
 		</div>
-		<div class="base"></div>
+		<button class="base" type="button" aria-label="Sort {name}" onclick={chooseSort}></button>
 	</div>
+	{#if pendingSlot !== null}
+		<div class="action-modal" role="dialog" aria-modal="true" aria-label="Choose clue action" tabindex="-1" onclick={(e) => e.stopPropagation()}>
+			<div class="action-panel">
+				<button type="button" class="action-button" onclick={(e) => chooseMatch(pendingSlot, e)}>Match</button>
+				<button type="button" class="action-button" onclick={chooseSort}>Sort</button>
+				<button type="button" class="action-button secondary" onclick={(e) => { e.stopPropagation(); pendingSlot = null; }}>Cancel</button>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -212,13 +248,107 @@
         }
 
         .base {
-                height: 10px;
+                display: block;
+                height: 16px;
                 background: rgba(0, 0, 0, 0.7);
                 border-left: 1px solid var(--color-glass-border);
                 border-right: 1px solid var(--color-glass-border);
                 border-bottom: 1px solid var(--color-glass-border);
+                border-top: none;
                 width: 100%;
                 border-radius: 0 0 12px 12px;
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+                cursor: inherit;
+                padding: 0;
+        }
+
+        .can-target .base {
+                border-color: var(--color-neon-yellow);
+        }
+
+        .action-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 100;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0, 0, 0, 0.55);
+        }
+
+        .action-panel {
+                display: flex;
+                gap: 12px;
+                padding: 14px;
+                background: var(--color-bg-panel);
+                border: 1px solid var(--color-glass-border);
+                border-radius: 8px;
+                box-shadow: var(--color-glass-shadow);
+                backdrop-filter: blur(12px);
+        }
+
+        .action-button {
+                min-width: 92px;
+                min-height: 44px;
+                background: rgba(0, 0, 0, 0.7);
+                color: var(--color-neon-yellow);
+                border: 1px solid var(--color-neon-yellow);
+                border-radius: 6px;
+                font: inherit;
+                font-weight: 700;
+                text-transform: uppercase;
+                cursor: pointer;
+        }
+
+        .action-button.secondary {
+                color: var(--color-text-main);
+                border-color: var(--color-text-muted);
+        }
+
+        @media (orientation: portrait) {
+                .stand-container {
+                        width: 100%;
+                        max-width: 380px;
+                }
+
+                .stand {
+                        width: 100%;
+                }
+
+                .tiles-area {
+                        width: 100%;
+                        box-sizing: border-box;
+                        grid-template-columns:
+                                repeat(5, minmax(6px, 0.15fr) minmax(0, 1fr))
+                                minmax(6px, 0.15fr);
+                        gap: 3px;
+                        padding: 4px;
+                }
+
+                .slot {
+                        width: 100%;
+                        height: auto;
+                        aspect-ratio: 1;
+                }
+
+                .slot :global(.tile) {
+                        width: 100%;
+                        height: 100%;
+                }
+
+                .notch {
+                        width: 100%;
+                        height: auto;
+                        aspect-ratio: 1;
+                }
+
+                .base {
+                        height: 18px;
+                }
+
+                .action-panel {
+                        flex-direction: column;
+                        width: min(280px, calc(100vw - 32px));
+                }
         }
 </style>

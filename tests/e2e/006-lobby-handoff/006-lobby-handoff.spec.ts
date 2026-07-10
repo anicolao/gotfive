@@ -32,6 +32,11 @@ test.describe('Firebase Lobby Event Replay', () => {
 
 		await expect(p2.locator('.players-list').getByText('Player 1')).toBeVisible();
 		await expect(p2.locator('.players-list').getByText('Player 3')).toBeVisible();
+		await expect(p2.locator('.players-list li')).toHaveText([
+			'Player 2 (You)',
+			'Player 3',
+			'Player 1'
+		]);
 
 		await tester.step('initial-state', {
 			description: 'Three players are projected from lobby events',
@@ -74,11 +79,13 @@ test.describe('Firebase Lobby Event Replay', () => {
 
 		const gameCard = lateJoiner.locator('.game-card').filter({ hasText: 'Replay Visible Game' });
 		await expect(gameCard).toBeVisible();
+		await expect(lateJoiner.locator('.players-list').getByText('Late Joiner')).toBeVisible();
 
 		await tester.step('late-joiner-sees-game', {
 			description: 'Late joiner sees existing public game',
 			verifications: [
-				{ spec: 'Game card is visible after replay', check: async () => await expect(gameCard).toBeVisible() }
+				{ spec: 'Game card is visible after replay', check: async () => await expect(gameCard).toBeVisible() },
+				{ spec: 'Late joiner is visible in the lobby roster', check: async () => await expect(lateJoiner.locator('.players-list').getByText('Late Joiner')).toBeVisible() }
 			],
 			networkStatus: 'skip'
 		});

@@ -1,16 +1,32 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
 
 interface Store {
   dispatch: (action: { type: string; payload?: unknown }) => void;
   getState: () => {
-    game: { status: string };
+    game: { status: string; turnOrder: string[] };
     players: { players: Record<string, unknown> };
+    ui: { gameId: string; deductionBoard: Record<number, '?' | 'X' | 'OK'>; strokes: number[][][] };
   };
 }
 
 interface WindowWithStore extends Window {
   store: Store;
+}
+
+async function writeRemoteGameEvent(page: Page, type: string, payload?: unknown) {
+  await page.evaluate(async (args: { type: string; payload?: unknown }) => {
+    const { writeGameEvent } = await (0, eval)('import("/src/lib/firebase/events.ts")');
+    const gameId = (window as unknown as WindowWithStore).store.getState().ui.gameId;
+    await writeGameEvent(gameId, args.type, args.payload);
+  }, { type, payload });
+}
+
+async function scrollStatusBannerIntoView(page: Page) {
+  await page.waitForSelector('.status-banner', { state: 'visible' });
+  await page.evaluate(() => {
+    document.querySelector('.status-banner')?.scrollIntoView({ block: 'center' });
+  });
 }
 
 test.describe('Mobile Gameplay', () => {
@@ -94,11 +110,18 @@ test.describe('Mobile Gameplay', () => {
     });
 
     // 4. Guessing flow
+    await expect(p2Stand).toHaveClass(/current-turn/);
+    await writeRemoteGameEvent(page, 'game/nextTurn');
+    await expect(page.locator('.stand-container.current-turn').filter({ hasText: 'MobileUser' })).toBeVisible();
+    await page.locator('.deck-btn.blue').click();
+    await expect(page.locator('.deck-btn.blue')).toBeDisabled();
     const guessInputs = page.locator('.deduction-board .guess-inputs input');
     for (let i = 0; i < 5; i++) {
       await guessInputs.nth(i).fill(`${i + 1}`);
     }
+    await expect(page.locator('.deduction-board .got-five-btn')).toBeEnabled();
     await page.locator('.deduction-board .got-five-btn').click();
+    await scrollStatusBannerIntoView(page);
 
     await tester.step('mobile-portrait-guess', {
       description: 'Submit a guess in portrait mode',
@@ -237,11 +260,18 @@ test.describe('Mobile Gameplay', () => {
     });
 
     // 3. Guessing flow
+    await expect(p2Stand).toHaveClass(/current-turn/);
+    await writeRemoteGameEvent(page, 'game/nextTurn');
+    await expect(page.locator('.stand-container.current-turn').filter({ hasText: 'LandscapeUser' })).toBeVisible();
+    await page.locator('.deck-btn.blue').click();
+    await expect(page.locator('.deck-btn.blue')).toBeDisabled();
     const guessInputs = page.locator('.deduction-board .guess-inputs input');
     for (let i = 0; i < 5; i++) {
       await guessInputs.nth(i).fill(`${i + 1}`);
     }
+    await expect(page.locator('.deduction-board .got-five-btn')).toBeEnabled();
     await page.locator('.deduction-board .got-five-btn').click();
+    await scrollStatusBannerIntoView(page);
 
     await tester.step('mobile-landscape-guess', {
       description: 'Submit a guess in landscape mode',
@@ -278,6 +308,9 @@ test.describe('Mobile Gameplay', () => {
     });
 
     await page.getByRole('button', { name: 'START GAME' }).click();
+    await expect.poll(async () => {
+      return page.evaluate(() => (window as unknown as WindowWithStore).store.getState().game.turnOrder);
+    }).toEqual(['p2', 'p3', 'tablet-portrait-test-user', 'p4']);
 
     await tester.step('tablet-portrait-layout', {
       description: 'Check for clipping and overlap in tablet portrait',
@@ -298,5 +331,143 @@ test.describe('Mobile Gameplay', () => {
     });
 
     tester.generateDocs();
+  });
+
+  test('Four-player phone portrait layout uses the available width', async ({ page }) => {
+    await page.setViewportSize({ width: 400, height: 876 });
+    await page.goto(`/?seed=123&myId=phone-four-player-test-user&lobbyId=lobby-005-phone-four&hostGameId=PHONE`);
+
+    await page.getByLabel('Your Name:').fill('PhoneUser');
+    await page.getByRole('button', { name: 'Join Lobby' }).click();
+    await page.getByRole('button', { name: 'Host New Game' }).click();
+    await page.getByRole('button', { name: 'Start Hosting' }).click();
+
+    await page.evaluate(() => {
+      const store = (window as unknown as WindowWithStore).store;
+      store.dispatch({ type: 'players/addPlayer', payload: { id: 'p2', name: 'Player 2' } });
+      store.dispatch({ type: 'players/addPlayer', payload: { id: 'p3', name: 'Player 3' } });
+      store.dispatch({ type: 'players/addPlayer', payload: { id: 'p4', name: 'Player 4' } });
+    });
+
+    await page.getByRole('button', { name: 'START GAME' }).click();
+    await expect(page.locator('.stand-container')).toHaveCount(4);
+
+    const layout = await page.evaluate(() => {
+      const rectFor = (selector: string) => {
+        const rect = document.querySelector(selector)!.getBoundingClientRect();
+        return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+      };
+      const standRects = Array.from(document.querySelectorAll('.stand-container')).map((el) => {
+        const rect = el.getBoundingClientRect();
+        return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+      });
+      const overlapPairs: number[][] = [];
+      for (let i = 0; i < standRects.length; i++) {
+        for (let j = i + 1; j < standRects.length; j++) {
+          const a = standRects[i];
+          const b = standRects[j];
+          const overlaps = a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+          if (overlaps) overlapPairs.push([i, j]);
+        }
+      }
+      return {
+        board: rectFor('.deduction-board'),
+        localStand: rectFor('.player-area .stand-container'),
+        overlapPairs
+      };
+    });
+
+    expect(layout.board.width).toBeGreaterThanOrEqual(360);
+    expect(layout.localStand.width).toBeGreaterThanOrEqual(330);
+    expect(layout.overlapPairs).toEqual([]);
+
+    const scrollRunway = await page.evaluate(() => {
+      const main = document.querySelector('main')!;
+      const grid = document.querySelector('.grid-container')!;
+      main.scrollTop = main.scrollHeight;
+      const gridRect = grid.getBoundingClientRect();
+      return {
+        canScroll: main.scrollHeight > main.clientHeight,
+        bottomRunway: window.innerHeight - gridRect.bottom
+      };
+    });
+
+    expect(scrollRunway.canScroll).toBe(true);
+    expect(scrollRunway.bottomRunway).toBeGreaterThanOrEqual(120);
+  });
+
+  test('Landscape deduction side allows overflow scrolling', async ({ page }) => {
+    await page.setViewportSize({ width: 667, height: 450 });
+    await page.goto(`/?seed=123&myId=landscape-scroll-test-user&lobbyId=lobby-005-landscape-scroll&hostGameId=SCROL`);
+
+    await page.getByLabel('Your Name:').fill('ScrollUser');
+    await page.getByRole('button', { name: 'Join Lobby' }).click();
+    await page.getByRole('button', { name: 'Host New Game' }).click();
+    await page.getByRole('button', { name: 'Start Hosting' }).click();
+    await page.getByRole('button', { name: 'START GAME' }).click();
+    await expect(page.locator('.deduction-area')).toBeVisible();
+
+    const scrolled = await page.evaluate(() => {
+      const area = document.querySelector('.deduction-area')!;
+      const spacer = document.createElement('div');
+      spacer.style.flex = '0 0 300px';
+      spacer.setAttribute('data-test-scroll-spacer', 'true');
+      area.appendChild(spacer);
+      const before = {
+        overflowY: getComputedStyle(area).overflowY,
+        canScroll: area.scrollHeight > area.clientHeight
+      };
+      area.scrollTop = area.scrollHeight;
+      return {
+        ...before,
+        scrollTop: area.scrollTop
+      };
+    });
+
+    expect(scrolled.overflowY).toBe('auto');
+    expect(scrolled.canScroll).toBe(true);
+    expect(scrolled.scrollTop).toBeGreaterThan(0);
+  });
+
+  test('Clear button resets deduction markings and notes', async ({ page }) => {
+    await page.setViewportSize({ width: 400, height: 876 });
+    await page.goto(`/?seed=123&myId=phone-clear-test-user&lobbyId=lobby-005-clear&hostGameId=CLEAR`);
+
+    await page.getByLabel('Your Name:').fill('ClearUser');
+    await page.getByRole('button', { name: 'Join Lobby' }).click();
+    await page.getByRole('button', { name: 'Host New Game' }).click();
+    await page.getByRole('button', { name: 'Start Hosting' }).click();
+    await page.getByRole('button', { name: 'START GAME' }).click();
+
+    await page.evaluate(() => {
+      const store = (window as unknown as WindowWithStore).store;
+      store.dispatch({ type: 'ui/markDeduction', payload: { id: 1, mark: 'X' } });
+      store.dispatch({ type: 'ui/markDeduction', payload: { id: 2, mark: 'OK' } });
+      store.dispatch({ type: 'ui/addStroke', payload: [[1, 1], [20, 20]] });
+    });
+    await expect.poll(async () => {
+      return page.evaluate(() => {
+        const state = (window as unknown as WindowWithStore).store.getState().ui;
+        return {
+          marks: Object.keys(state.deductionBoard).length,
+          strokes: state.strokes.length
+        };
+      });
+    }).toEqual({ marks: 2, strokes: 1 });
+
+    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+
+    const cleared = await page.evaluate(() => {
+      const state = (window as unknown as WindowWithStore).store.getState().ui;
+      return {
+        marks: Object.keys(state.deductionBoard).length,
+        strokes: state.strokes.length,
+        dimmedTiles: document.querySelectorAll('.deduction-board .cell.dimmed').length
+      };
+    });
+
+    expect(cleared.marks).toBe(0);
+    expect(cleared.strokes).toBe(0);
+    expect(cleared.dimmedTiles).toBeGreaterThan(0);
   });
 });

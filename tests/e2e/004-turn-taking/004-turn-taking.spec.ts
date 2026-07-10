@@ -61,6 +61,9 @@ test.describe('Multiplayer Turn-Taking', () => {
 		const currentPlayerPage = hostIsCurrent ? hostPage : clientPage;
 		const otherPlayerPage = hostIsCurrent ? clientPage : hostPage;
 		const otherPlayerName = hostIsCurrent ? 'Client' : 'Host';
+		await expect(currentPlayerPage.locator('.deck-btn.red')).toBeEnabled();
+		await expect(otherPlayerPage.locator('.deck-btn.red')).toBeDisabled();
+		await expect(currentPlayerPage.locator('.deduction-board .got-five-btn')).toBeDisabled();
 
 		await tester.step('game-started', {
 			description: 'Game started and current turn is indicated',
@@ -69,10 +72,21 @@ test.describe('Multiplayer Turn-Taking', () => {
 			]
 		});
 
+		const otherInputs = await otherPlayerPage.locator('.guess-inputs input').all();
+		for (const input of otherInputs) {
+			await input.fill('1');
+		}
+		await expect(otherPlayerPage.locator('.deduction-board .got-five-btn')).toBeEnabled();
+		for (const input of otherInputs) {
+			await input.fill('');
+		}
+
 		// Now eliminate the current player
 		console.log('Eliminating current player...');
 
 		// Fill in some wrong guess
+		await currentPlayerPage.locator('.deck-btn.red').click();
+		await expect(currentPlayerPage.locator('.deck-btn.red')).toBeDisabled();
 		const inputs = await currentPlayerPage.locator('.guess-inputs input').all();
 		for (const input of inputs) {
 			await input.fill('1');
@@ -93,6 +107,31 @@ test.describe('Multiplayer Turn-Taking', () => {
 				{ spec: 'Winner is announced', check: async () => await expect(hostPage.locator('.status-banner').getByText('Winner: ')).toBeVisible() }
 			]
 		});
+
+		await clientPage.evaluate(() => {
+			const store = (window as any).store;
+			store.dispatch({ type: 'ui/markDeduction', payload: { id: 1, mark: 'X' } });
+			store.dispatch({ type: 'ui/markDeduction', payload: { id: 6, mark: 'OK' } });
+			store.dispatch({ type: 'ui/addStroke', payload: [[1, 1], [12, 12]] });
+		});
+		const clientGuessInputs = clientPage.locator('.deduction-board .guess-inputs input');
+		for (let i = 0; i < 5; i++) {
+			await clientGuessInputs.nth(i).fill(`${i + 1}`);
+		}
+		await expect(clientPage.locator('.deduction-board .strike')).toHaveCount(1);
+		await expect(clientPage.locator('.deduction-board .check')).toHaveCount(1);
+		await expect(clientGuessInputs.nth(0)).toHaveValue('1');
+
+		await hostPage.locator('.status-banner button:has-text("Play Again")').click();
+		await expect(hostPage.locator('.status-banner.finished')).not.toBeVisible();
+		await expect(clientPage.locator('.status-banner.finished')).not.toBeVisible();
+		await expect(clientPage.locator('.stand-container').filter({ hasText: 'Client' }).locator('.tile')).toHaveCount(5);
+
+		await expect(clientPage.locator('.deduction-board .strike')).toHaveCount(0);
+		await expect(clientPage.locator('.deduction-board .check')).toHaveCount(0);
+		for (let i = 0; i < 5; i++) {
+			await expect(clientGuessInputs.nth(i)).toHaveValue('');
+		}
 
 		tester.generateDocs();
 		

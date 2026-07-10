@@ -75,6 +75,7 @@ let usersUnsubscribe: Unsubscribe | null = null;
 let gameUnsubscribe: Unsubscribe | null = null;
 let currentLobbyId = 'default';
 let eventDocumentCounter = 0;
+let currentGameStartEventId: string | null = null;
 
 type EventWithId = FirebaseEvent & { id: string };
 
@@ -482,6 +483,7 @@ export function getUserDisplay(uid: string) {
 
 export async function subscribeGame(gameId: string, dispatch: AppDispatch) {
 	gameUnsubscribe?.();
+	currentGameStartEventId = null;
 	dispatch(resetPlayers());
 	dispatch(resetGame());
 	dispatch(resetUI());
@@ -500,11 +502,26 @@ export async function subscribeGame(gameId: string, dispatch: AppDispatch) {
 		(snapshot) => {
 			const events = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event).sort(compareEvents);
 			if (events.length === 0) return;
+			let latestStartEvent: EventWithId | null = null;
+			for (let i = events.length - 1; i >= 0; i -= 1) {
+				if (events[i].type === 'game/start') {
+					latestStartEvent = events[i];
+					break;
+				}
+			}
+			const nextGameStartEventId = latestStartEvent?.id || null;
+			const shouldResetLocalUI = !!currentGameStartEventId
+				&& !!nextGameStartEventId
+				&& currentGameStartEventId !== nextGameStartEventId;
 			dispatch(resetPlayers());
 			dispatch(resetGame());
 			for (const event of events) {
 				dispatch({ type: event.type, payload: event.payload, meta: { remote: true } });
 			}
+			if (shouldResetLocalUI) {
+				dispatch(resetUI());
+			}
+			currentGameStartEventId = nextGameStartEventId;
 			const last = events.at(-1);
 			import('$lib/store').then(({ store }) => {
 				const state = store.getState();

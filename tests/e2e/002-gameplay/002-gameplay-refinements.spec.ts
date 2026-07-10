@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
 
 test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) => {
+  test.setTimeout(60000);
   const tester = new TestStepHelper(page, testInfo);
   tester.setMetadata('Refinements', 'Verify Deduction Board auto-fill, sync, and Play Again button behavior.');
 
@@ -25,6 +26,30 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
 	  // Start Game
 	  await page.getByRole('button', { name: 'START GAME' }).click();
 	  await expect(page.locator('.stand-container').filter({ hasText: 'You' }).locator('.tile')).toHaveCount(5);
+	  await expect(page.locator('.deduction-board .cell.dimmed')).toHaveCount(10);
+
+  async function visibleTileIdsForCurrentStart() {
+    return page.evaluate(() => {
+      const state = (window as any).store.getState();
+      const myId = state.ui.myId;
+      const visibleIds = new Set<number>(state.game.publicPool);
+      Object.values(state.players.players).forEach((player: any) => {
+        if (player.id !== myId) {
+          player.hand.forEach((id: number) => visibleIds.add(id));
+        }
+      });
+      return [...visibleIds].sort((a, b) => a - b);
+    });
+  }
+
+  async function expectVisibleTilesDimmed(ids: number[]) {
+    for (const id of ids) {
+      await expect(page.locator(`.deduction-board .cell[data-id="${id}"]`)).toHaveClass(/dimmed/);
+    }
+  }
+
+  const initialVisibleIds = await visibleTileIdsForCurrentStart();
+  await expectVisibleTilesDimmed(initialVisibleIds);
 
   // --- Deduction Board Tests ---
 
@@ -164,7 +189,18 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
 
   // --- Play Again Button Tests ---
 
-  // 5. Force a win to show Play Again button
+  // 5. Record a clue, then force a win to show Play Again button
+  await page.evaluate(() => {
+    const state = (window as any).store.getState();
+    const clueTileId = state.game.publicPool[0];
+    (window as any).store.dispatch({
+      type: 'players/clue_sort',
+      payload: { targetId: 'alice-id', tileId: clueTileId }
+    });
+  });
+  const aliceStand = page.locator('.stand-container').filter({ hasText: 'Alice' });
+  await expect(aliceStand.locator('.notch.active')).toHaveCount(1);
+
   await page.evaluate(() => {
     const state = (window as any).store.getState();
     const myId = state.ui.myId;
@@ -191,6 +227,22 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
         check: async () => {
           await expect(page.locator('.deduction-board .check')).toHaveCount(0);
           await expect(page.locator('.deduction-board .strike')).toHaveCount(0);
+        }
+      },
+      {
+        spec: 'Old clue markers are cleared',
+        check: async () => {
+          await expect(aliceStand.locator('.notch.active')).toHaveCount(0);
+          await expect(aliceStand.locator('.compare-clue')).toHaveCount(0);
+        }
+      },
+      {
+        spec: 'New start visible tiles are dimmed immediately',
+        check: async () => {
+          await expect(aliceStand.locator('.tile')).toHaveCount(5);
+          const visibleIds = await visibleTileIdsForCurrentStart();
+          await expect(page.locator('.deduction-board .cell.dimmed')).toHaveCount(visibleIds.length);
+          await expectVisibleTilesDimmed(visibleIds);
         }
       },
       {
