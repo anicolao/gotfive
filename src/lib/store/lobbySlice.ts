@@ -16,6 +16,7 @@ export interface GameInfo {
   visibility: 'public' | 'hidden';
   playerCount: number;
   maxPlayers: number;
+  createdAtMillis?: number;
 }
 
 export interface LobbyState {

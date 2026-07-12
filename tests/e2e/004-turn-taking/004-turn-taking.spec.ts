@@ -100,6 +100,7 @@ test.describe('Multiplayer Turn-Taking', () => {
 		// The other player should also see they won
 		await expect(otherPlayerPage.locator('.status-banner')).toBeVisible();
 		await expect(otherPlayerPage.locator('.status-banner').getByText('Winner: ' + otherPlayerName + '!')).toBeVisible();
+		await expect(clientPage.locator('.status-banner button:has-text("Back to Lobby")')).toBeVisible();
 
 		await tester.step('game-over-multiplayer', {
 			description: 'Game over state shown for both players',
@@ -132,6 +133,10 @@ test.describe('Multiplayer Turn-Taking', () => {
 		for (let i = 0; i < 5; i++) {
 			await expect(clientGuessInputs.nth(i)).toHaveValue('');
 		}
+
+		await clientPage.locator('.lobby-link-button').click();
+		await expect(clientPage).not.toHaveURL(/gameId=/);
+		await expect(clientPage.getByRole('button', { name: 'Host New Game' })).toBeVisible();
 
 		tester.generateDocs();
 		
