@@ -32,6 +32,7 @@ import type { AppDispatch, RootState } from '$lib/store';
 
 export const LOBBY_REDUCER_VERSION = 1;
 export const GAME_REDUCER_VERSION = 1;
+const STALE_PUBLIC_GAME_AGE_MILLIS = 2 * 60 * 60 * 1000;
 
 export interface EventCursor {
 	createdAtMillis: number;
@@ -314,6 +315,7 @@ function projectLobby(events: EventWithId[]) {
 	const games = new Map<string, GameInfo & { status?: string; roster: Set<string> }>();
 	const players = new Map<string, PlayerProfile>();
 	const closedGames = new Set<string>();
+	const now = Date.now();
 
 	for (const event of [...events].sort(compareEvents)) {
 		const payload = event.payload || {};
@@ -345,6 +347,7 @@ function projectLobby(events: EventWithId[]) {
 					visibility: payload.visibility,
 					playerCount: 1,
 					maxPlayers: payload.maxPlayers,
+					createdAtMillis: event.createdAt.toMillis(),
 					status: 'open',
 					roster: new Set([event.actorUid])
 				});
@@ -385,6 +388,9 @@ function projectLobby(events: EventWithId[]) {
 
 	const publicGames: Record<string, GameInfo> = {};
 	for (const [gameId, game] of games) {
+		if (game.status === 'open' && game.createdAtMillis && now - game.createdAtMillis > STALE_PUBLIC_GAME_AGE_MILLIS) {
+			game.status = 'stale';
+		}
 		if (game.status === 'open') {
 			publicGames[gameId] = {
 				hostId: gameId,
@@ -392,7 +398,8 @@ function projectLobby(events: EventWithId[]) {
 				name: game.name,
 				visibility: game.visibility,
 				playerCount: game.playerCount,
-				maxPlayers: game.maxPlayers
+				maxPlayers: game.maxPlayers,
+				createdAtMillis: game.createdAtMillis
 			};
 		}
 	}

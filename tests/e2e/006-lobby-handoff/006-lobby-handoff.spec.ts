@@ -94,6 +94,41 @@ test.describe('Firebase Lobby Event Replay', () => {
 		await context2.close();
 	});
 
+	test('should hide public games advertised more than two hours ago', async ({ browser }) => {
+		const lobbyId = `event-replay-stale-games`;
+		const hostContext = await browser.newContext();
+		const observerContext = await browser.newContext();
+		const host = await hostContext.newPage();
+		const observer = await observerContext.newPage();
+
+		await host.goto(`/?myId=stale-host&lobbyId=${lobbyId}&hostGameId=STALE`);
+		await host.getByLabel('Your Name:').fill('Stale Host');
+		await host.getByRole('button', { name: 'Join Lobby' }).click();
+		await host.getByRole('button', { name: 'Host New Game' }).click();
+		await host.getByLabel('Game Name:').fill('Aging Public Game');
+		await host.getByRole('button', { name: 'Start Hosting' }).click();
+		await expect(host.getByText('Your Game ID')).toBeVisible();
+
+		await observer.goto(`/?myId=stale-observer&lobbyId=${lobbyId}`);
+		await observer.getByLabel('Your Name:').fill('Stale Observer');
+		await observer.getByRole('button', { name: 'Join Lobby' }).click();
+
+		const gameCard = observer.locator('.game-card').filter({ hasText: 'Aging Public Game' });
+		await expect(gameCard).toBeVisible();
+
+		await observer.evaluate(async () => {
+			const originalNow = Date.now;
+			Date.now = () => originalNow() + (2 * 60 * 60 * 1000) + 1000;
+			const { writeLobbyEvent } = await (0, eval)('import("/src/lib/firebase/events.ts")');
+			await writeLobbyEvent('lobby/join', { uid: 'stale-observer' });
+		});
+
+		await expect(gameCard).toHaveCount(0);
+
+		await hostContext.close();
+		await observerContext.close();
+	});
+
 	test('should keep hosting players visible in the lobby projection', async ({ browser }, testInfo) => {
 		const lobbyId = `event-replay-playing-visible`;
 		const context1 = await browser.newContext();

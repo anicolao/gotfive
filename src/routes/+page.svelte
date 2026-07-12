@@ -1,13 +1,24 @@
 <script lang="ts">
 	import { store } from '$lib/store';
-	import { selectTile, resetUI } from '$lib/store/uiSlice';
+	import { resetGame } from '$lib/store/gameSlice';
+	import { resetPlayers } from '$lib/store/playersSlice';
+	import { selectTile, resetUI, setGameId, setIsHost } from '$lib/store/uiSlice';
 	import { createRNG } from '$lib/game/rng';
 	import { createDeck, shuffle } from '$lib/game/deck';
-	import { getLobbyRoster, getUserDisplay, writeGameEvent, writeGameEvents, writeLobbyEvent } from '$lib/firebase/events';
+	import {
+		getLobbyRoster,
+		getUserDisplay,
+		unsubscribeGame,
+		updateUserPresence,
+		writeGameEvent,
+		writeGameEvents,
+		writeLobbyEvent
+	} from '$lib/firebase/events';
 	import Table from '$lib/components/Table.svelte';
 	import PlayerStand from '$lib/components/PlayerStand.svelte';
 	import DeductionBoard from '$lib/components/DeductionBoard.svelte';
 	import Lobby from '$lib/components/Lobby.svelte';
+	import { replaceState } from '$app/navigation';
 	import '../App.css';
 
 	let gameState = $state(store.getState().game);
@@ -75,6 +86,25 @@
 		store.dispatch(resetUI());
 		acknowledgedEliminations = new Set();
 		await handleStartGame();
+	}
+
+	async function handleBackToLobby() {
+		const gameId = uiState.gameId;
+		if (gameId) {
+			await writeLobbyEvent('lobby/leaveGame', { gameId, uid: uiState.myId });
+		}
+		unsubscribeGame();
+		await updateUserPresence(null);
+		const url = new URL(window.location.href);
+		url.searchParams.delete('gameId');
+		url.searchParams.delete('hostGameId');
+		replaceState(url, {});
+		store.dispatch(resetPlayers());
+		store.dispatch(resetGame());
+		store.dispatch(resetUI());
+		store.dispatch(setGameId(null));
+		store.dispatch(setIsHost(false));
+		acknowledgedEliminations = new Set();
 	}
 
 	let currentPlayerId = $derived(gameState?.turnOrder[gameState?.currentPlayerIndex]);
@@ -163,13 +193,16 @@
 						<div class="status-banner finished glass-panel">
 							<h2>GAME OVER</h2>
 							<p class="winner-msg">Winner: {playersState?.players[gameState.winnerId!]?.name}!</p>
-							<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
+							<div class="status-actions">
+								<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
+								<button class="groovy-button alt" onclick={handleBackToLobby}>Back to Lobby</button>
+							</div>
 						</div>
 					{:else if (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
 						<div class="status-banner eliminated glass-panel">
 							<h2>ELIMINATED</h2>
 							<p>Better luck next time!</p>
-							<button class="groovy-button" onclick={handleResetGame}>Back to Lobby</button>
+							<button class="groovy-button" onclick={handleBackToLobby}>Back to Lobby</button>
 						</div>
 					{:else if newlyEliminatedPlayer}
 						<div class="status-banner newly-eliminated glass-panel">
@@ -178,7 +211,6 @@
 							<button class="groovy-button" onclick={() => acknowledgeElimination(newlyEliminatedPlayer.id)}>Continue</button>
 						</div>
 					{/if}
-
 					<div class="opponents-area">
 						{#each otherPlayerIds as id}
 							{#if playersState?.players[id]}
@@ -211,7 +243,11 @@
 					</div>
 
 					<div class="player-area">
-						<div class="controls-left"></div>
+						<div class="controls-left">
+							{#if gameState?.status === 'PLAYING'}
+								<button class="lobby-link-button" aria-label="Back to Lobby" onclick={handleBackToLobby}>Lobby</button>
+							{/if}
+						</div>
 						{#if uiState?.myId && playersState?.players[uiState.myId]}
 							<PlayerStand
 								id={uiState.myId}
@@ -269,6 +305,7 @@
                 gap: var(--gap-base);
                 overflow: visible;
                 min-width: 0;
+                position: relative;
         }
 
         .deduction-area {
@@ -391,9 +428,18 @@
                         min-height: 0;
                         flex: 0 1 auto;
                         display: flex;
+                        flex-wrap: wrap;
                         align-items: center;
                         justify-content: center;
                         width: 100%;
+                }
+
+                .controls-left, .controls-right {
+                        position: static;
+                        flex: 0 0 100%;
+                        display: flex;
+                        justify-content: center;
+                        order: 2;
                 }
 
                 .deduction-area {
@@ -448,6 +494,15 @@
                 .player-area {
                         padding-bottom: 2px;
                         min-height: 60px;
+                        flex-wrap: wrap;
+                }
+
+                .controls-left, .controls-right {
+                        position: static;
+                        flex: 0 0 100%;
+                        display: flex;
+                        justify-content: flex-start;
+                        order: 2;
                 }
 
                 .public-area {
@@ -497,6 +552,36 @@
                 font-size: 1.2rem;
                 color: var(--color-neon-magenta);
                 text-shadow: 0 0 10px rgba(255, 0, 212, 0.5);
+        }
+
+        .status-actions {
+                display: flex;
+                justify-content: center;
+                gap: 12px;
+                flex-wrap: wrap;
+        }
+
+        .groovy-button.alt {
+                background: rgba(0, 229, 255, 0.08);
+                border-color: var(--color-neon-cyan);
+        }
+
+        .lobby-link-button {
+                border: 1px solid var(--color-neon-cyan);
+                background: rgba(0, 0, 0, 0.35);
+                color: var(--color-text-main);
+                border-radius: 6px;
+                padding: 4px 8px;
+                min-width: 58px;
+                min-height: 28px;
+                font: inherit;
+                font-size: 0.75rem;
+                cursor: pointer;
+        }
+
+        .lobby-link-button:hover {
+                border-color: var(--color-neon-yellow);
+                color: var(--color-neon-yellow);
         }
 
         .winner-msg {
