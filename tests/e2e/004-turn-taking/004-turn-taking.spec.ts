@@ -122,7 +122,7 @@ test.describe('Multiplayer Turn-Taking', () => {
 		await expect(clientPage.locator('.deduction-board .check')).toHaveCount(1);
 		await expect(clientGuessInputs.nth(0)).toHaveValue('1');
 
-		await hostPage.locator('.status-banner button:has-text("Play Again")').click();
+		await clientPage.locator('.status-banner button:has-text("Play Again")').click();
 		await expect(hostPage.locator('.status-banner.finished')).not.toBeVisible();
 		await expect(clientPage.locator('.status-banner.finished')).not.toBeVisible();
 		await expect(clientPage.locator('.stand-container').filter({ hasText: 'Client' }).locator('.tile')).toHaveCount(5);

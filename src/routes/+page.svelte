@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { store } from '$lib/store';
-	import { resetGame } from '$lib/store/gameSlice';
-	import { resetPlayers } from '$lib/store/playersSlice';
 	import { selectTile, resetUI } from '$lib/store/uiSlice';
 	import { createRNG } from '$lib/game/rng';
 	import { createDeck, shuffle } from '$lib/game/deck';
@@ -73,16 +71,10 @@
 		await writeLobbyEvent('lobby/startGame', { gameId: uiState.gameId });
 	}
 
-	function handleResetGame() {
-		if (isHost) {
-			store.dispatch(resetPlayers());
-			store.dispatch(resetUI());
-			acknowledgedEliminations = new Set();
-			handleStartGame();
-		} else {
-			store.dispatch(resetUI());
-			acknowledgedEliminations = new Set();
-		}
+	async function handleResetGame() {
+		store.dispatch(resetUI());
+		acknowledgedEliminations = new Set();
+		await handleStartGame();
 	}
 
 	let currentPlayerId = $derived(gameState?.turnOrder[gameState?.currentPlayerIndex]);
