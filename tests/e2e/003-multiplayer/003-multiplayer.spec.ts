@@ -105,6 +105,7 @@ test.describe('Multiplayer Lobby', () => {
 		await clientPage.reload();
 		await expect(clientPage.getByText('Connected to Host!')).toBeVisible();
 		await expect(hostPage.getByText('Client')).toBeVisible();
+		await expect(hostPage.locator('.status li').filter({ hasText: clientId })).toHaveCount(0);
 
 		await tester.step('client-connected', {
 			description: 'Client successfully connected to the host',
