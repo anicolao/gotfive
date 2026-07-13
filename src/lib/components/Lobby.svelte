@@ -4,6 +4,7 @@
 	import { setGameId, setIsHost, setMyId } from '../store/uiSlice';
 	import {
 		getLobbyRoster,
+		getUserDisplay,
 		initializeFirebaseProfile,
 		lobbyGameCodeExists,
 		linkCurrentUserWithGoogle,
@@ -234,6 +235,11 @@
 		return myId ? [myId, ...connections] : connections;
 	}
 
+	function getDisplayName(id: string) {
+		if (id === myId) return myName;
+		return getUserDisplay(id).name;
+	}
+
 	async function signInWithGoogle() {
 		await linkCurrentUserWithGoogle();
 	}
@@ -380,7 +386,7 @@
 			<ul>
 				<li>{myName} (You - Host)</li>
 				{#each getCurrentRoster().filter(id => id !== myId) as id}
-					<li>{id}</li>
+					<li>{getDisplayName(id)}</li>
 				{/each}
 			</ul>
 		</div>
