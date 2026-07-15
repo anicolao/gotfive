@@ -187,6 +187,26 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
     ]
   });
 
+  const canvasBox = await canvas.boundingBox();
+  if (canvasBox) {
+    await page.mouse.move(canvasBox.x + 12, canvasBox.y + 12);
+    await page.mouse.down();
+    await page.mouse.move(canvasBox.x + 40, canvasBox.y + 40);
+    await page.mouse.up();
+  }
+  await expect.poll(async () => page.evaluate(() => (window as any).store.getState().ui.strokes.length)).toBeGreaterThan(0);
+  await guessInputs.nth(4).fill('42');
+  await expect(guessInputs.nth(4)).toHaveValue('42');
+
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await expect(page.locator('.deduction-board')).toBeVisible();
+  await expect(page.locator(`.deduction-board .cell[data-id="${tile2}"] .check`)).toBeVisible();
+  await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .check`)).toBeHidden();
+  await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .strike`)).toBeHidden();
+  await expect(guessInputs.nth(4)).toHaveValue('42');
+  await expect.poll(async () => page.evaluate(() => (window as any).store.getState().ui.strokes.length)).toBeGreaterThan(0);
+
   // --- Play Again Button Tests ---
 
   // 5. Record a clue, then force a win to show Play Again button
