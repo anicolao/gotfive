@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { store } from '$lib/store';
-	import { markDeduction, addStroke, clearDeductionBoard } from '$lib/store/uiSlice';
+	import { clearDeductionBoard, markDeductions, setGuessInput as setGuessInputAction } from '$lib/store/uiSlice';
 	import { getTileData } from '$lib/game/tiles';
-	import { writeGameEvents } from '$lib/firebase/events';
+	import { writeGameEvent, writeGameEvents } from '$lib/firebase/events';
 	import { onMount } from 'svelte';
 
 	let { deductions = {}, canSubmitGuess = false } = $props();
@@ -43,9 +43,38 @@
 		}
 		return visible;
 	});
-
-	let guessInputs = $state<string[]>(['', '', '', '', '']);
-	let canGuess = $derived(canSubmitGuess && guessInputs.every(v => {
+	let displayDeductions = $derived.by(() => {
+		const marks: Record<number, '?' | 'X' | 'OK'> = { ...deductions };
+		TILE_IDS_BY_COLOR.forEach((row) => {
+			const possibleTiles = row.filter(id => {
+				const mark = marks[id] || '?';
+				return mark !== 'X' && !visibleTiles.has(id);
+			});
+			if (possibleTiles.length === 1 && marks[possibleTiles[0]] !== 'X') {
+				marks[possibleTiles[0]] = 'OK';
+			}
+		});
+		return marks;
+	});
+	let effectiveGuessInputs = $derived.by(() => {
+		const values = [...(uiState?.guessInputs || ['', '', '', '', ''])];
+		while (values.length < 5) values.push('');
+		const myId = uiState?.myId;
+		const myHand = myId ? playersState?.players[myId]?.hand : null;
+		if (myHand && myHand.length === 5) {
+			myHand.forEach((tileId: number, i: number) => {
+				if (values[i]) return;
+				const tileData = getTileData(tileId);
+				if (!tileData) return;
+				const colorIdx = COLORS.indexOf(tileData.color);
+				if (colorIdx === -1) return;
+				const okTile = TILE_IDS_BY_COLOR[colorIdx].find(id => displayDeductions[id] === 'OK');
+				if (okTile) values[i] = okTile.toString();
+			});
+		}
+		return values.slice(0, 5);
+	});
+	let canGuess = $derived(canSubmitGuess && effectiveGuessInputs.every(v => {
 		const num = parseInt(v);
 		return !isNaN(num) && num > 0 && num <= 60;
 	}));
@@ -153,12 +182,19 @@
 		}
 	}
 
+	async function writeOwnGameEvent(type: string, payload: any) {
+		if (!uiState?.gameId || !uiState?.myId) return;
+		await writeGameEvent(uiState.gameId, type, { ...payload, playerId: uiState.myId });
+	}
+
 	function handleMouseUp(e: MouseEvent | TouchEvent) {
 		if (!drawing) return;
 		drawing = false;
 
 		if (moved && currentStroke.length > 1) {
-			store.dispatch(addStroke(currentStroke));
+			writeOwnGameEvent('ui/addStroke', {
+				points: currentStroke.map(([x, y]) => ({ x, y }))
+			});
 		} else if (!moved) {
 			// Small click, toggle deduction
 			canvas.style.pointerEvents = 'none';
@@ -182,8 +218,10 @@
 	}
 
 	function toggleDeduction(id: number) {
-		const current = deductions[id] || '?';
+		if (!uiState?.myId) return;
+		const current = displayDeductions[id] || '?';
 		let next: '?' | 'X' | 'OK';
+		const marks: Record<number, '?' | 'X' | 'OK'> = {};
 		if (current === '?') next = 'X';
 		else if (current === 'X') {
 			next = 'OK';
@@ -191,77 +229,42 @@
 			const colorIndex = (id - 1) % 5;
 			const rowIds = TILE_IDS_BY_COLOR[colorIndex];
 			rowIds.forEach(rowId => {
-				if (rowId !== id && deductions[rowId] === 'OK') {
-					store.dispatch(markDeduction({ id: rowId, mark: '?' }));
+				if (rowId !== id && displayDeductions[rowId] === 'OK') {
+					marks[rowId] = '?';
 				}
 			});
 		}
 		else next = '?';
-		store.dispatch(markDeduction({ id, mark: next }));
+		marks[id] = next;
+		store.dispatch(markDeductions({ marks, playerId: uiState.myId }));
+		writeOwnGameEvent('ui/markDeductions', { marks });
 	}
 
-	$effect(() => {
-		// Auto-fill based on remaining tiles
-		TILE_IDS_BY_COLOR.forEach((row, colorIdx) => {
-			const possibleTiles = row.filter(id => {
-				const mark = deductions[id] || '?';
-				return mark !== 'X' && !visibleTiles.has(id);
-			});
-
-			if (possibleTiles.length === 1) {
-				const onlyPossibleId = possibleTiles[0];
-				if (deductions[onlyPossibleId] !== 'OK') {
-					store.dispatch(markDeduction({ id: onlyPossibleId, mark: 'OK' }));
-				}
-			}
-		});
-	});
-
-	let lastOkTileIds = $state<(number|null)[]>([null, null, null, null, null]);
 	let currentGameStartKey = $state<string | null>(null);
 	$effect(() => {
 		const nextGameStartKey = gameState?.status === 'PLAYING'
 			? `${gameState.seed}:${gameState.turnOrder.join('|')}:${gameState.publicPool.join('|')}`
 			: null;
 		if (nextGameStartKey && nextGameStartKey !== currentGameStartKey) {
-			guessInputs = ['', '', '', '', ''];
-			lastOkTileIds = [null, null, null, null, null];
 			currentGameStartKey = nextGameStartKey;
 		} else if (!nextGameStartKey) {
 			currentGameStartKey = null;
 		}
 	});
 
-	$effect(() => {
-		// Sync Guess Inputs with OK marks based on player's actual hand
-		const myId = uiState?.myId;
-		const myHand = myId ? playersState?.players[myId]?.hand : null;
-
-		if (myHand && myHand.length === 5) {
-			myHand.forEach((tileId: number, i: number) => {
-				const tileData = getTileData(tileId);
-				if (!tileData) return;
-				const colorIdx = COLORS.indexOf(tileData.color);
-				if (colorIdx === -1) return;
-				
-				const row = TILE_IDS_BY_COLOR[colorIdx];
-				const okTile = row.find(id => deductions[id] === 'OK');
-				if (okTile) {
-					guessInputs[i] = okTile.toString();
-					lastOkTileIds[i] = okTile;
-				} else if (lastOkTileIds[i] !== null) {
-					// If no tile is marked OK, and current guessInput was previously auto-filled, clear it
-					if (guessInputs[i] === lastOkTileIds[i]?.toString()) {
-						guessInputs[i] = '';
-					}
-					lastOkTileIds[i] = null;
-				}
-			});
-		}
-	});
-
 	function clearBoard() {
-		store.dispatch(clearDeductionBoard());
+		if (uiState?.myId) {
+			store.dispatch(clearDeductionBoard({ playerId: uiState.myId }));
+		}
+		writeOwnGameEvent('ui/clearDeductionBoard', {});
+	}
+
+	function setGuessInput(index: number, value: string) {
+		const playerId = store.getState().ui.myId;
+		if (playerId) {
+			store.dispatch(setGuessInputAction({ index, value, playerId }));
+		}
+		writeOwnGameEvent('ui/setGuessInput', { index, value });
 	}
 
 	async function submitGuess() {
@@ -269,7 +272,7 @@
 		if (!uiState?.myId || !uiState.gameId) return;
 		const playerId = uiState.myId;
 		const state = store.getState();
-		const guessedHand = guessInputs.map(v => parseInt(v));
+		const guessedHand = effectiveGuessInputs.map(v => parseInt(v));
 		const player = state.players.players[playerId];
 		if (!player) return;
 
@@ -307,8 +310,15 @@
 
 	<div class="guess-area">
 		<div class="guess-inputs">
-			{#each guessInputs as val, i}
-				<input type="number" min="1" max="60" bind:value={guessInputs[i]} placeholder="?" />
+			{#each effectiveGuessInputs as val, i}
+				<input
+					type="number"
+					min="1"
+					max="60"
+					value={val}
+					oninput={(e) => setGuessInput(i, e.currentTarget.value)}
+					placeholder="?"
+				/>
 			{/each}
 		</div>
 		<button class="groovy-button got-five-btn" disabled={!canGuess} onclick={submitGuess}>
@@ -321,7 +331,7 @@
 				<div class="row">
 					{#each row as id}
 						<button
-							class="cell {deductions[id] || 'unknown'} {visibleTiles.has(id) ? 'dimmed' : ''}"
+							class="cell {displayDeductions[id] || 'unknown'} {visibleTiles.has(id) ? 'dimmed' : ''}"
 							data-id={id}
 							onclick={(e) => e.preventDefault()}
 						>
@@ -332,9 +342,9 @@
 										<div class="dot"></div>
 									{/each}
 								</div>
-								{#if deductions[id] === 'X'}
+								{#if displayDeductions[id] === 'X'}
 									<div class="strike"></div>
-								{:else if deductions[id] === 'OK'}
+								{:else if displayDeductions[id] === 'OK'}
 									<div class="check"></div>
 								{/if}
 							</div>
