@@ -1,7 +1,4 @@
-<script lang="ts">
-	import { T, useThrelte } from '@threlte/core';
-	import { onMount } from 'svelte';
-	import { CanvasTexture, LinearMipmapLinearFilter } from 'three';
+<script module lang="ts">
 	import interBlack from '@fontsource/inter/files/inter-latin-900-normal.woff2?url';
 
 	let fontPromise: Promise<FontFace> | undefined;
@@ -14,6 +11,12 @@
 		}
 		return fontPromise;
 	}
+</script>
+
+<script lang="ts">
+	import { T, useThrelte } from '@threlte/core';
+	import { onMount } from 'svelte';
+	import { CanvasTexture, LinearMipmapLinearFilter } from 'three';
 
 	let { value }: { value: number } = $props();
 
@@ -61,13 +64,16 @@
 </script>
 
 {#if texture}
-	<T.Mesh position={[0, 0.065, 0.232]}>
+	<T.Mesh position={[0, 0.065, 0.25]} renderOrder={2}>
 		<T.PlaneGeometry args={[0.89, 0.89]} />
 		<T.MeshBasicMaterial
 			map={texture}
 			transparent={true}
 			alphaTest={0.08}
 			depthWrite={false}
+			polygonOffset={true}
+			polygonOffsetFactor={-1}
+			polygonOffsetUnits={-1}
 			toneMapped={false}
 		/>
 	</T.Mesh>

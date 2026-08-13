@@ -24,6 +24,8 @@
 	let viewportWidth = $derived(Math.max(1, $size.width));
 	let viewportHeight = $derived(Math.max(1, $size.height));
 	let cameraDistance = $derived(viewportHeight / (2 * Math.tan((cameraFov * Math.PI) / 360)));
+	let cameraNear = $derived(cameraDistance * 0.05);
+	let cameraFar = $derived(cameraDistance * 3);
 
 	function metrics(field: MeasuredTileField) {
 		const tileSpacingX = field.rack ? 1.28 : 1.22;
@@ -47,8 +49,8 @@
 <T.PerspectiveCamera
 	makeDefault
 	fov={cameraFov}
-	near={1}
-	far={cameraDistance + 4000}
+	near={cameraNear}
+	far={cameraFar}
 	position={[0, 0, cameraDistance]}
 />
 
