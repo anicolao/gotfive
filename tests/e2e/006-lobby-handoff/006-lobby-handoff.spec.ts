@@ -1,5 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
+
+async function resetPageScroll(page: Page) {
+	expect(await page.evaluate(() => {
+		window.scrollTo(0, 0);
+		return window.scrollY;
+	})).toBe(0);
+}
 
 test.describe('Firebase Lobby Event Replay', () => {
 	test('should project multiple lobby players from the shared event stream', async ({ browser }, testInfo) => {
@@ -37,6 +44,7 @@ test.describe('Firebase Lobby Event Replay', () => {
 			'Player 3',
 			'Player 1'
 		]);
+		await resetPageScroll(p2);
 
 		await tester.step('initial-state', {
 			description: 'Three players are projected from lobby events',
@@ -80,6 +88,7 @@ test.describe('Firebase Lobby Event Replay', () => {
 		const gameCard = lateJoiner.locator('.game-card').filter({ hasText: 'Replay Visible Game' });
 		await expect(gameCard).toBeVisible();
 		await expect(lateJoiner.locator('.players-list').getByText('Late Joiner')).toBeVisible();
+		await resetPageScroll(lateJoiner);
 
 		await tester.step('late-joiner-sees-game', {
 			description: 'Late joiner sees existing public game',
@@ -152,10 +161,7 @@ test.describe('Firebase Lobby Event Replay', () => {
 		await observer.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(observer.locator('.players-list').getByText('Playing Host')).toBeVisible();
 		await expect(observer.locator('.players-list').getByText('playing')).toBeVisible();
-		expect(await observer.evaluate(() => {
-			window.scrollTo(0, 0);
-			return window.scrollY;
-		})).toBe(0);
+		await resetPageScroll(observer);
 
 		await tester.step('playing-player-visible', {
 			description: 'Hosting player remains visible in lobby',
