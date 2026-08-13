@@ -29,6 +29,7 @@ To ensure tests are stable and repeatable:
 - **Unique lobbyId**: Always use a unique `lobbyId` in the URL for each test (e.g., `&lobbyId=lobby-001`) to prevent PeerJS ID collisions and "extra player" bugs.
 - **Fixed IDs**: Always use a fixed `myId` for each test context to ensure PeerJS IDs are predictable and screenshots remain consistent.
 - **Fixed Seeds**: Always use a fixed `seed` parameter for the RNG to ensure game state is identical every run.
+- **Isolate live motion**: Keep visual tests in the reduced-motion `chromium` project. Tests that deliberately enable animation must run afterward in a dependent project so they receive a fresh browser and cannot alter screenshot rendering state.
 
 ## 4. Viewport Integrity
 

@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const motionContinuityTest = /a physical tile flies continuously from deck to pool to clue/;
+
 export default defineConfig({
     testDir: './tests/e2e',
     fullyParallel: false,
@@ -38,6 +40,15 @@ export default defineConfig({
     projects: [
         {
             name: 'chromium',
+            grepInvert: motionContinuityTest,
+            use: {
+                browserName: 'chromium',
+            },
+        },
+        {
+            name: 'chromium-motion',
+            dependencies: ['chromium'],
+            grep: motionContinuityTest,
             use: {
                 browserName: 'chromium',
             },
