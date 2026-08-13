@@ -26,6 +26,7 @@ async function scrollStatusBannerIntoView(page: Page) {
   await page.waitForSelector('.status-banner', { state: 'visible' });
   await page.evaluate(() => {
     document.querySelector('.status-banner')?.scrollIntoView({ block: 'center' });
+    document.querySelector('.deduction-area')?.scrollTo({ top: 0 });
   });
 }
 

@@ -116,6 +116,11 @@
 		!!uiState?.myId &&
 		!playersState?.players[uiState.myId]?.eliminated
 	);
+	let correctlyDeducedTileIds = $derived(
+		Object.entries(uiState?.deductionBoard || {})
+			.filter(([, mark]) => mark === 'OK')
+			.map(([id]) => Number(id))
+	);
 	let isHost = $derived(uiState?.isHost);
 
 	// Sort other players for display around the table
@@ -219,6 +224,7 @@
 									name={playersState.players[id].name}
 									hand={playersState.players[id].hand}
 									clues={playersState.players[id].clues}
+									revealHand={gameState?.status === 'FINISHED'}
 									isCurrentTurn={currentPlayerId === id}
 									canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
 									onSelectTarget={handleAskSort}
@@ -255,6 +261,8 @@
 								hand={playersState.players[uiState.myId].hand}
 								clues={playersState.players[uiState.myId].clues}
 								isLocalPlayer={true}
+								revealHand={gameState?.status === 'FINISHED'}
+								{correctlyDeducedTileIds}
 								isCurrentTurn={currentPlayerId === uiState.myId}
 								canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
 								onSelectTarget={handleAskSort}

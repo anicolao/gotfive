@@ -8,6 +8,8 @@
 		name, 
 		hand = [], 
 		isLocalPlayer = false, 
+		revealHand = false,
+		correctlyDeducedTileIds = [] as number[],
 		isCurrentTurn = false, 
 		clues = [] as ClueRecord[], 
 		canBeTarget = false, 
@@ -72,7 +74,11 @@
 				</div>
 				<div class="slot" onclick={(e) => chooseTileAction(e, i)}>
 					{#if hand[i]}
-						<Tile id={hand[i]} faceDown={isLocalPlayer} />
+						<Tile
+							id={hand[i]}
+							faceDown={isLocalPlayer && !revealHand}
+							correctlyDeduced={revealHand && correctlyDeducedTileIds.includes(hand[i])}
+						/>
 					{:else}
 						<div class="empty-slot"></div>
 					{/if}

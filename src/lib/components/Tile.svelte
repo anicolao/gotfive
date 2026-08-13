@@ -4,6 +4,7 @@
 	export let id: number | null = null;
 	export let faceDown: boolean = false;
 	export let color: TileColor | null = null;
+	export let correctlyDeduced: boolean = false;
 
 	$: data = id !== null ? getTileData(id) : null;
 	$: tileColor = data ? data.color : color;
@@ -17,7 +18,12 @@
 	};
 </script>
 
-<div class="tile" class:face-down={faceDown} style="--tile-color: {tileColor ? COLOR_MAP[tileColor] : '#795548'}">
+<div
+	class="tile"
+	class:face-down={faceDown}
+	data-tile-id={id}
+	style="--tile-color: {tileColor ? COLOR_MAP[tileColor] : '#795548'}"
+>
 	{#if !faceDown && data}
 		<div class="front-content">
 			<div class="number">{data.id}</div>
@@ -73,6 +79,9 @@
 			{/if}
 		</div>
 	{/if}
+	{#if !faceDown && correctlyDeduced}
+		<div class="correct-deduction" aria-label="Correctly deduced">✓</div>
+	{/if}
 </div>
 
 <style>
@@ -107,6 +116,25 @@
 	}
 	.face-down {
 		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.correct-deduction {
+		position: absolute;
+		top: calc(var(--tile-size) * -0.12);
+		right: calc(var(--tile-size) * -0.12);
+		width: calc(var(--tile-size) * 0.36);
+		height: calc(var(--tile-size) * 0.36);
+		display: grid;
+		place-items: center;
+		border: 2px solid white;
+		border-radius: 50%;
+		background: var(--color-neon-cyan);
+		color: #001417;
+		font-size: calc(var(--tile-size) * 0.25);
+		font-weight: 900;
+		line-height: 1;
+		box-shadow: 0 0 10px var(--color-neon-cyan), 0 2px 4px rgba(0, 0, 0, 0.65);
+		z-index: 4;
 	}
 
 
