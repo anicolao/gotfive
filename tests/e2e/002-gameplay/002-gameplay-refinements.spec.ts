@@ -219,7 +219,7 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
     });
   });
   const aliceStand = page.locator('.stand-container').filter({ hasText: 'Alice' });
-  await expect(aliceStand.locator('.notch.active')).toHaveCount(1);
+  await expect(aliceStand.locator('.sort-clues')).toHaveCount(1);
 
   await page.evaluate(() => {
     const state = (window as any).store.getState();
@@ -252,7 +252,7 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
       {
         spec: 'Old clue markers are cleared',
         check: async () => {
-          await expect(aliceStand.locator('.notch.active')).toHaveCount(0);
+          await expect(aliceStand.locator('.sort-clues')).toHaveCount(0);
           await expect(aliceStand.locator('.compare-clue')).toHaveCount(0);
         }
       },

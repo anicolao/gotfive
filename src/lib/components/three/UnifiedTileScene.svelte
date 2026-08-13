@@ -53,7 +53,7 @@
 	};
 
 	function metrics(field: MeasuredTileField): FieldMetrics {
-		const tileSpacingX = field.rack ? 1.28 : 1.22;
+		const tileSpacingX = field.rack ? 1.52 : 1.22;
 		const tileSpacingY = 1.24;
 		const effectiveColumns = Math.max(1, Math.min(field.columns, field.tiles.length || field.columns));
 		const rows = Math.max(1, Math.ceil(field.tiles.length / effectiveColumns));

@@ -20,7 +20,7 @@
 		scale?: number;
 	} = $props();
 
-	let tileSpacingX = $derived(rack ? 1.28 : 1.22);
+	let tileSpacingX = $derived(rack ? 1.52 : 1.22);
 	let tileSpacingY = $derived(1.24);
 	let effectiveColumns = $derived(Math.max(1, Math.min(columns, tiles.length || columns)));
 	let rows = $derived(Math.max(1, Math.ceil(tiles.length / effectiveColumns)));
@@ -66,6 +66,7 @@
 				faceDown={tile.faceDown ?? false}
 				selected={tile.selected ?? false}
 				correct={tile.correct ?? false}
+				pileCount={tile.pileCount}
 				position={tilePosition(index)}
 				motionKey={tile.motionKey ?? tile.key}
 			/>

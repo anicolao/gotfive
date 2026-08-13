@@ -188,6 +188,7 @@
 		faceDown={tile.faceDown ?? false}
 		selected={tile.selected ?? false}
 		correct={tile.correct ?? false}
+		pileCount={tile.pileCount}
 		motionKey={tile.motionKey ?? tile.key}
 		{revealFromFaceDown}
 	/>

@@ -385,10 +385,17 @@
                 bottom: 10px;
         }
 
-        .controls-left {
+		.controls-left {
 				left: 10px;
 				display: flex;
+				align-items: stretch;
 				gap: 6px;
+		}
+
+		@media (orientation: landscape) and (min-height: 501px) {
+				.controls-left {
+						flex-direction: column;
+				}
 		}
 
         @media (orientation: portrait) {

@@ -55,10 +55,10 @@ test('User plays the game', async ({ page }, testInfo) => {
       {
         spec: 'Each of the 5 colored decks has 9 tiles remaining',
         check: async () => {
-          const deckCounts = page.locator('.deck-count');
+          const deckCounts = page.locator('.deck-btn');
           await expect(deckCounts).toHaveCount(5);
           for (let i = 0; i < 5; i++) {
-            await expect(deckCounts.nth(i)).toHaveText('9');
+            await expect(deckCounts.nth(i)).toHaveAttribute('data-pile-count', '9');
           }
         }
       }
@@ -81,7 +81,7 @@ test('User plays the game', async ({ page }, testInfo) => {
       {
         spec: 'Red deck has 8 tiles remaining',
         check: async () => {
-          await expect(page.locator('.deck-btn.red .deck-count')).toHaveText('8');
+          await expect(page.locator('.deck-btn.red')).toHaveAttribute('data-pile-count', '8');
         }
       },
       {
@@ -108,15 +108,15 @@ test('User plays the game', async ({ page }, testInfo) => {
     description: 'Asking for a clue records it on the stand and consumes the tile',
     verifications: [
       {
-        spec: 'Alice stand has one active sorting notch',
+        spec: 'Alice stand has one occupied sorting lane',
         check: async () => {
-          await expect(aliceStand.locator('.notch.active')).toHaveCount(1);
+          await expect(aliceStand.locator('.sort-clues')).toHaveCount(1);
         }
       },
       {
-        spec: 'The active notch contains a MiniTile representation of the consumed tile',
+        spec: 'The sorting lane contains the consumed tile',
         check: async () => {
-          const notch = aliceStand.locator('.notch.active');
+          const notch = aliceStand.locator('.notch:has(.sort-clues)');
           await expect(notch.locator('.mini-tile')).toBeVisible();
           await expect(notch.locator('.mini-tile .number')).toHaveText(firstPublicTileId);
         }
@@ -131,7 +131,7 @@ test('User plays the game', async ({ page }, testInfo) => {
       {
         spec: 'Public tile is deselected after action',
         check: async () => {
-          await expect(page.locator('.tile-btn.selected')).toHaveCount(0);
+          await expect(page.locator('.tile-btn[aria-pressed="true"]')).toHaveCount(0);
         }
       },
       {

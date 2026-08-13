@@ -80,9 +80,9 @@
 		<TileField3D tiles={sceneTiles} columns={5} rack={true} label={`${name}'s 3D rack`} />
 		<div class="tiles-area">
 			{#each Array(5) as _, i}
-				<div class="notch n{i}" class:active={getSortClueTiles(i).length > 0}>
+				<div class="notch n{i}">
 					{#if getSortClueTiles(i).length > 0}
-						<div class="clue-stack">
+						<div class="clue-stack sort-clues">
 							{#each sortClues.filter((clue: ClueRecord) => clue.result === i) as clue}
 								<div class="clue-tile-3d">
 									<TileField3D
@@ -125,9 +125,9 @@
 					</div>
 				</div>
 			{/each}
-			<div class="notch n5" class:active={getSortClueTiles(5).length > 0}>
+			<div class="notch n5">
 				{#if getSortClueTiles(5).length > 0}
-					<div class="clue-stack">
+					<div class="clue-stack sort-clues">
 						{#each sortClues.filter((clue: ClueRecord) => clue.result === 5) as clue}
 							<div class="clue-tile-3d">
 								<TileField3D
@@ -218,9 +218,10 @@
 				isolation: isolate;
         }
 
-        .tiles-area {
-                display: grid;
-                grid-template-columns: repeat(5, auto var(--tile-size)) auto;
+		.tiles-area {
+				--sort-lane-size: max(var(--mini-tile-size), calc(var(--tile-size) * 0.42));
+				display: grid;
+				grid-template-columns: repeat(5, var(--sort-lane-size) var(--tile-size)) var(--sort-lane-size);
                 align-items: center;
 				background: transparent;
 				border: 1px solid transparent;
@@ -249,28 +250,18 @@
                 border-radius: 8px;
         }
 
-        .notch {
-                width: calc(var(--tile-size) * 0.15);
-                height: calc(var(--tile-size) * 0.15);
-                background: rgba(0, 0, 0, 0.5);
-                border: 1px solid var(--color-text-muted);
-                border-radius: 50%;
-                position: relative;
-                display: flex;
-                justify-content: center;
-                align-self: flex-end;
-                margin-bottom: calc(var(--tile-size) * 0.1);
-        }
-
-        .notch.active {
-                background: var(--color-neon-yellow);
-                box-shadow: 0 0 8px var(--color-neon-yellow);
-                border-color: var(--color-neon-yellow);
-        }
+		.notch {
+				width: var(--sort-lane-size);
+				height: var(--tile-size);
+				position: relative;
+				display: flex;
+				justify-content: center;
+				align-self: flex-end;
+		}
 
         .clue-stack {
                 position: absolute;
-                bottom: calc(var(--tile-size) * 0.15);
+				bottom: 0;
                 display: flex;
                 flex-direction: column-reverse;
                 align-items: center;
@@ -375,9 +366,9 @@
                 .tiles-area {
                         width: 100%;
                         box-sizing: border-box;
-                        grid-template-columns:
-                                repeat(5, minmax(6px, 0.15fr) minmax(0, 1fr))
-                                minmax(6px, 0.15fr);
+				grid-template-columns:
+						repeat(5, minmax(20px, 0.52fr) minmax(0, 1fr))
+						minmax(20px, 0.52fr);
                         gap: 3px;
                         padding: 4px;
                 }

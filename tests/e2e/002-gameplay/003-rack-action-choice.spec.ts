@@ -44,7 +44,7 @@ test('lower tile tap asks whether to match or sort', async ({ page }) => {
 	await dialog.getByRole('button', { name: 'Match' }).click();
 
 	await expect(aliceFirstSlot.locator('.compare-indicators .compare-clue')).toBeVisible();
-	await expect(aliceStand.locator('.notch.active')).toHaveCount(0);
+	await expect(aliceStand.locator('.sort-clues')).toHaveCount(0);
 });
 
 test('rack base remains a direct sort target', async ({ page }) => {
@@ -54,7 +54,7 @@ test('rack base remains a direct sort target', async ({ page }) => {
 	const aliceStand = page.locator('.stand-container').filter({ hasText: 'Alice' });
 	await aliceStand.getByRole('button', { name: 'Sort Alice' }).click();
 
-	await expect(aliceStand.locator('.notch.active')).toHaveCount(1);
+	await expect(aliceStand.locator('.sort-clues')).toHaveCount(1);
 	await expect(aliceStand.locator('.compare-indicators .compare-clue')).toHaveCount(0);
 });
 
