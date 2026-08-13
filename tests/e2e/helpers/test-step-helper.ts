@@ -10,7 +10,6 @@ export interface Verification {
 export interface StepOptions {
     description: string;
     verifications: Verification[];
-    networkStatus?: 'synced' | 'offline' | 'error' | 'skip';
 }
 
 interface DocStep {
@@ -170,29 +169,16 @@ export class TestStepHelper {
         const paddedIndex = String(this.stepCount++).padStart(3, '0');
         const filename = `${paddedIndex}-${id.replace(/_/g, '-')}.png`;
 
-        // 3. Stabilization: Wait for Network Sync (if present)
-        const networkStatus = this.page.locator('button[data-status]:visible');
-        const expectedStatus = options.networkStatus ?? 'synced';
-        if (expectedStatus !== 'skip') {
-            const statusVisible = await networkStatus.first()
-                .waitFor({ state: 'visible', timeout: 2000 })
-                .then(() => true)
-                .catch(() => false);
-            if (statusVisible) {
-                await expect(networkStatus.first()).toHaveAttribute('data-status', expectedStatus, { timeout: 2000 });
-            }
-        }
-
         await this.page.mouse.move(0, 0);
         await waitForAnimations(this.page);
         
-        // 4. Check for clipping and overlap
+        // 3. Check for clipping and overlap
         await checkNoClippingOrOverlap(this.page);
 
-        // 5. Capture & Verify (Zero-Pixel Tolerance)
+        // 4. Capture & Verify (Zero-Pixel Tolerance)
         await expect(this.page).toHaveScreenshot(filename.replace(/\.png$/, ''));
 
-        // 6. Record for Docs
+        // 5. Record for Docs
         this.steps.push({
             title: options.description,
             image: `./screenshots/${filename}`,

@@ -62,8 +62,7 @@ test.describe('Room roster isolation', () => {
 						expect(playerNames).toEqual(['Host']);
 					}
 				}
-			],
-			networkStatus: 'skip'
+			]
 		});
 
 		tester.generateDocs();

@@ -52,8 +52,7 @@ test.describe('Firebase Lobby Event Replay', () => {
 				{ spec: 'P2 is in the lobby', check: async () => await expect(p2.getByRole('button', { name: 'Host New Game' })).toBeVisible() },
 				{ spec: 'P1 is visible in list', check: async () => await expect(p2.locator('.players-list').getByText('Player 1')).toBeVisible() },
 				{ spec: 'P3 is visible in list', check: async () => await expect(p2.locator('.players-list').getByText('Player 3')).toBeVisible() }
-			],
-			networkStatus: 'skip'
+			]
 		});
 
 		tester.generateDocs();
@@ -95,8 +94,7 @@ test.describe('Firebase Lobby Event Replay', () => {
 			verifications: [
 				{ spec: 'Game card is visible after replay', check: async () => await expect(gameCard).toBeVisible() },
 				{ spec: 'Late joiner is visible in the lobby roster', check: async () => await expect(lateJoiner.locator('.players-list').getByText('Late Joiner')).toBeVisible() }
-			],
-			networkStatus: 'skip'
+			]
 		});
 
 		await context1.close();
@@ -167,8 +165,7 @@ test.describe('Firebase Lobby Event Replay', () => {
 			description: 'Hosting player remains visible in lobby',
 			verifications: [
 				{ spec: 'Playing host visible in observer lobby', check: async () => await expect(observer.locator('.players-list').getByText('Playing Host')).toBeVisible() }
-			],
-			networkStatus: 'skip'
+			]
 		});
 
 		await context1.close();
