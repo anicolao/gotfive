@@ -17,6 +17,7 @@ export type TileFieldRegistration = {
 	tiles: SceneTile[];
 	columns: number;
 	rack: boolean;
+	background: boolean;
 	label: string;
 };
 

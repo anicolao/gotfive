@@ -57,3 +57,31 @@ test('rack base remains a direct sort target', async ({ page }) => {
 	await expect(aliceStand.locator('.notch.active')).toHaveCount(1);
 	await expect(aliceStand.locator('.compare-indicators .compare-clue')).toHaveCount(0);
 });
+
+test('a physical tile flies continuously from deck to pool to clue', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await startTwoPlayerGame(page, 'FLIES');
+
+	const scene = page.locator('.unified-tile-scene');
+	await expect(scene).toHaveAttribute('data-moving-tile-count', '0');
+
+	await page.locator('.deck-btn.red').click();
+	await expect(scene).toHaveAttribute(
+		'data-last-tile-motion',
+		/tile-\d+:Red draw deck>3D public tile pool/
+	);
+	await expect(scene).toHaveAttribute('data-moving-tile-count', /^[1-9]\d*$/);
+	await expect(scene).toHaveAttribute('data-moving-tile-count', '0');
+
+	const drawnTile = page.locator('.pool-tiles .tile-btn').last();
+	await drawnTile.click();
+	const aliceStand = page.locator('.stand-container').filter({ hasText: 'Alice' });
+	await aliceStand.getByRole('button', { name: 'Sort Alice' }).click();
+
+	await expect(scene).toHaveAttribute(
+		'data-last-tile-motion',
+		/tile-\d+:3D public tile pool>Alice's sort clue/
+	);
+	await expect(scene).toHaveAttribute('data-moving-tile-count', /^[1-9]\d*$/);
+	await expect(scene).toHaveAttribute('data-moving-tile-count', '0');
+});

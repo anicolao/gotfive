@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getTileData, type TileColor } from '../game/tiles';
 
-	let { id, size = 'medium' } = $props();
+	let { id, size = 'medium', semanticOnly = false } = $props();
 
 	let data = $derived(getTileData(id));
 
@@ -16,6 +16,7 @@
 
 <div 
 	class="mini-tile {size}" 
+	class:semantic-only={semanticOnly}
 	style="--tile-color: {COLOR_MAP[data.color]}"
 	title="Tile {id} ({data.color}, {data.dots} dots)"
 >
@@ -51,6 +52,10 @@
         .small {
                 --mini-tile-size: clamp(16px, 3vw, 24px);
         }
+
+		.semantic-only {
+			opacity: 0;
+		}
         .number {
                 font-weight: bold;
                 line-height: 1;

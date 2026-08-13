@@ -18,15 +18,19 @@
 	export let onSelectTile: (id: number) => void;
 
 	const COLORS: TileColor[] = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
-	$: deckSceneTiles = COLORS.map((color) => ({
-		key: `deck-${color}`,
-		color,
-		faceDown: true,
-		motionKey: `${color}:${decks[color].length}`
-	}));
+	$: deckSceneTiles = COLORS.map((color) => {
+		const topTileId = decks[color][0] ?? null;
+		return {
+			key: topTileId === null ? `deck-${color}` : `tile-${topTileId}`,
+			id: topTileId,
+			color,
+			faceDown: true,
+			motionKey: `${color}:${topTileId ?? 'empty'}:${decks[color].length}`
+		};
+	});
 	$: poolColumns = Math.max(1, Math.min(publicPool.length, 10));
 	$: poolSceneTiles = publicPool.map((id, index) => ({
-		key: `pool-${id}`,
+		key: `tile-${id}`,
 		id,
 		selected: id === selectedTileId,
 		motionKey: `${id}:${id === selectedTileId}:${index}`

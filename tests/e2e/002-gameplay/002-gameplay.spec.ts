@@ -83,6 +83,15 @@ test('User plays the game', async ({ page }, testInfo) => {
         check: async () => {
           await expect(page.locator('.deck-btn.red .deck-count')).toHaveText('8');
         }
+      },
+      {
+        spec: 'The revealed physical tile moves continuously from its deck into the public line',
+        check: async () => {
+          await expect(page.locator('.unified-tile-scene')).toHaveAttribute(
+            'data-last-tile-motion',
+            /tile-\d+:Red draw deck>3D public tile pool/
+          );
+        }
       }
     ]
   });
@@ -124,6 +133,15 @@ test('User plays the game', async ({ page }, testInfo) => {
         check: async () => {
           await expect(page.locator('.tile-btn.selected')).toHaveCount(0);
         }
+      },
+      {
+        spec: 'The consumed physical tile flies and shrinks from the public line into its sort clue',
+        check: async () => {
+          await expect(page.locator('.unified-tile-scene')).toHaveAttribute(
+            'data-last-tile-motion',
+            /tile-\d+:3D public tile pool>Alice's sort clue/
+          );
+        }
       }
     ]
   });
@@ -162,6 +180,15 @@ test('User plays the game', async ({ page }, testInfo) => {
         check: async () => {
           await expect(page.locator(`.pool-tiles .tile-btn:has-text("${secondPublicTileId}")`)).toHaveCount(0);
           await expect(page.locator('.pool-tiles .tile-btn')).toHaveCount(5);
+        }
+      },
+      {
+        spec: 'The consumed physical tile flies and shrinks from the public line into its compare clue',
+        check: async () => {
+          await expect(page.locator('.unified-tile-scene')).toHaveAttribute(
+            'data-last-tile-motion',
+            /tile-\d+:3D public tile pool>Alice's compare clue/
+          );
         }
       }
     ]

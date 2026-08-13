@@ -20,6 +20,7 @@ As a user, I want to play through a game with deterministic results.
 **Verifications:**
 - [x] Public pool now has 6 tiles
 - [x] Red deck has 8 tiles remaining
+- [x] The revealed physical tile moves continuously from its deck into the public line
 
 ---
 
@@ -32,6 +33,7 @@ As a user, I want to play through a game with deterministic results.
 - [x] The active notch contains a MiniTile representation of the consumed tile
 - [x] The consumed tile is removed from the public pool
 - [x] Public tile is deselected after action
+- [x] The consumed physical tile flies and shrinks from the public line into its sort clue
 
 ---
 
@@ -42,6 +44,7 @@ As a user, I want to play through a game with deterministic results.
 **Verifications:**
 - [x] Alice stand has a compare clue above the first slot
 - [x] The consumed tile is removed from the public pool
+- [x] The consumed physical tile flies and shrinks from the public line into its compare clue
 
 ---
 
