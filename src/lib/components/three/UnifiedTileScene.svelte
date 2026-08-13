@@ -11,6 +11,7 @@
 		y: number;
 		width: number;
 		height: number;
+		anchorRects?: Array<{ x: number; y: number; width: number; height: number }>;
 	};
 
 	let {
@@ -59,7 +60,7 @@
 		const rows = Math.max(1, Math.ceil(field.tiles.length / effectiveColumns));
 		const worldWidth = (effectiveColumns - 1) * tileSpacingX + 1.18;
 		const worldHeight = (rows - 1) * tileSpacingY + (field.rack ? 1.24 : 1.18);
-		const padding = field.rack ? 0.98 : 0.94;
+		const padding = field.anchors ? (field.rack ? 0.98 : 0.94) : (field.fit ?? (field.rack ? 0.98 : 0.94));
 		return {
 			position: [
 				field.x + field.width / 2 - viewportWidth / 2,
@@ -75,6 +76,14 @@
 	}
 
 	function placedPosition(field: MeasuredTileField, fieldMetrics: FieldMetrics, index: number): [number, number, number] {
+		const anchor = field.anchorRects?.[index];
+		if (anchor) {
+			return [
+				anchor.x + anchor.width / 2 - viewportWidth / 2,
+				viewportHeight / 2 - anchor.y - anchor.height / 2,
+				0.18 * placedScale(field, fieldMetrics, index)
+			];
+		}
 		const row = Math.floor(index / fieldMetrics.effectiveColumns);
 		const itemsInRow = Math.min(
 			fieldMetrics.effectiveColumns,
@@ -86,6 +95,12 @@
 			fieldMetrics.position[1] + ((fieldMetrics.rows - 1) / 2 - row) * fieldMetrics.tileSpacingY * fieldMetrics.scale + (field.rack ? 0.025 * fieldMetrics.scale : 0),
 			0.18 * fieldMetrics.scale
 		];
+	}
+
+	function placedScale(field: MeasuredTileField, fieldMetrics: FieldMetrics, index: number) {
+		const anchor = field.anchorRects?.[index];
+		if (!anchor) return fieldMetrics.scale;
+		return Math.max(0.01, Math.min(anchor.width / 1.18, anchor.height / 1.18) * (field.fit ?? 0.94));
 	}
 
 	let fieldLayouts = $derived(fields.map((field) => ({ field, metrics: metrics(field) })));
@@ -101,7 +116,7 @@
 				const placement = {
 					tile,
 					position: placedPosition(layout.field, layout.metrics, index),
-					scale: layout.metrics.scale,
+					scale: placedScale(layout.field, layout.metrics, index),
 					destination: deckColor ? `${deckColor} draw deck` : layout.field.label
 				};
 				placements.push(placement);

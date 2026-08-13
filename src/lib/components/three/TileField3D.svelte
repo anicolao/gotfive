@@ -7,12 +7,16 @@
 		columns = 5,
 		rack = false,
 		background = true,
+		fit,
+		anchors,
 		label = '3D tile display'
 	}: {
 		tiles?: SceneTile[];
 		columns?: number;
 		rack?: boolean;
 		background?: boolean;
+		fit?: number;
+		anchors?: HTMLElement[];
 		label?: string;
 	} = $props();
 
@@ -20,12 +24,12 @@
 	let registration: ReturnType<typeof registerTileField> | undefined;
 
 	onMount(() => {
-		registration = registerTileField({ element, tiles, columns, rack, background, label });
+		registration = registerTileField({ element, tiles, columns, rack, background, fit, anchors, label });
 		return () => registration?.unregister();
 	});
 
 	$effect(() => {
-		registration?.update({ tiles, columns, rack, background, label });
+		registration?.update({ tiles, columns, rack, background, fit, anchors, label });
 	});
 </script>
 
