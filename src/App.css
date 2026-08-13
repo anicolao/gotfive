@@ -10,6 +10,11 @@
 	--color-neon-cyan: #00e5ff;
 	--color-neon-yellow: #ffea00;
 	--color-neon-magenta: #ff00d4;
+	--color-candy-red: #ff496c;
+	--color-candy-blue: #35bfff;
+	--color-candy-yellow: #ffe052;
+	--color-candy-green: #50e39a;
+	--color-candy-purple: #c779ff;
 	
 	/* Text */
 	--color-text-main: #f0f0f0;
@@ -33,9 +38,15 @@
 	--font-size-large: clamp(0.8rem, 1.8vw, 1.6rem);
 	--font-size-medium: clamp(0.6rem, 1.2vw, 1rem);
 	--font-size-small: clamp(0.5rem, 1vw, 0.75rem);
-	}body {
+	}
+
+body {
 	background-color: var(--color-bg-base);
-	background-image: radial-gradient(circle at center, var(--color-bg-light) 0%, var(--color-bg-base) 100%);
+	background-image:
+		linear-gradient(rgba(0, 229, 255, 0.025) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(0, 229, 255, 0.025) 1px, transparent 1px),
+		radial-gradient(circle at center, var(--color-bg-light) 0%, var(--color-bg-base) 100%);
+	background-size: 32px 32px, 32px 32px, 100% 100%;
 	color: var(--color-text-main);
 	font-family: 'Inter', system-ui, sans-serif;
 	margin: 0;

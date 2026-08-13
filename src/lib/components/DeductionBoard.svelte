@@ -424,7 +424,7 @@
                 min-height: 24px;
                 text-align: center;
                 border: 1px solid var(--color-neon-yellow);
-                border-radius: 4px;
+                border-radius: 34%;
                 font-family: 'Courier New', Courier, monospace;
                 font-weight: bold;
                 background: rgba(0, 0, 0, 0.8);
@@ -487,18 +487,21 @@
                 font-weight: bold;
                 color: white;
                 position: relative;
-                box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+                box-shadow:
+                        inset 0 2px 2px rgba(255,255,255,0.38),
+                        inset 0 -2px 3px rgba(0,0,0,0.22),
+                        0 3px 5px rgba(0,0,0,0.5);
                 transition: transform 0.1s;
                 padding: 0;
                 box-sizing: border-box;
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.72);
         }
 
-        .red { background-color: #D84315; }
-        .blue { background-color: #1565C0; }
-        .yellow { background-color: #F9A825; }
-        .green { background-color: #2E7D32; }
-        .purple { background-color: #6A1B9A; }
+        .red { background-color: var(--color-candy-red); }
+        .blue { background-color: var(--color-candy-blue); }
+        .yellow { background-color: var(--color-candy-yellow); }
+        .green { background-color: var(--color-candy-green); }
+        .purple { background-color: var(--color-candy-purple); }
 
         .num {
                 z-index: 1;

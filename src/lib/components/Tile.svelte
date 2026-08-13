@@ -5,6 +5,7 @@
 	export let faceDown: boolean = false;
 	export let color: TileColor | null = null;
 	export let correctlyDeduced: boolean = false;
+	export let semanticOnly: boolean = false;
 
 	$: data = id !== null ? getTileData(id) : null;
 	$: tileColor = data ? data.color : color;
@@ -21,6 +22,7 @@
 <div
 	class="tile"
 	class:face-down={faceDown}
+	class:semantic-only={semanticOnly}
 	data-tile-id={id}
 	style="--tile-color: {tileColor ? COLOR_MAP[tileColor] : '#795548'}"
 >
@@ -101,6 +103,10 @@
 	        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.2);
 	        user-select: none;
 	        color: white;
+	}
+
+	.semantic-only {
+		opacity: 0;
 	}
 
 	.front-content, .back-content {

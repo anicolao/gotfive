@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Tile from './Tile.svelte';
+	import TileField3D from './three/TileField3D.svelte';
 	import type { TileColor } from '../game/tiles';
 
 	export let publicPool: number[] = [];
@@ -17,34 +18,56 @@
 	export let onSelectTile: (id: number) => void;
 
 	const COLORS: TileColor[] = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
+	$: deckSceneTiles = COLORS.map((color) => ({
+		key: `deck-${color}`,
+		color,
+		faceDown: true,
+		motionKey: `${color}:${decks[color].length}`
+	}));
+	$: poolColumns = Math.max(1, Math.min(publicPool.length, 10));
+	$: poolSceneTiles = publicPool.map((id, index) => ({
+		key: `pool-${id}`,
+		id,
+		selected: id === selectedTileId,
+		motionKey: `${id}:${id === selectedTileId}:${index}`
+	}));
 </script>
 
 <div class="table">
-	<div class="decks-area">
-		{#each COLORS as color}
-			<button class="deck-btn {color.toLowerCase()}" on:click={() => onReveal(color)} disabled={!canReveal || decks[color].length === 0}>
-				{#if decks[color].length > 0}
-					<Tile faceDown={true} {color} />
-					<div class="deck-count">{decks[color].length}</div>
-				{:else}
-					<div class="empty-deck">0</div>
-				{/if}
-			</button>
-		{/each}
+	<div class="decks-stage">
+		<TileField3D tiles={deckSceneTiles} columns={5} label="Five 3D draw decks" />
+		<div class="decks-area">
+			{#each COLORS as color}
+				<button class="deck-btn {color.toLowerCase()}" on:click={() => onReveal(color)} disabled={!canReveal || decks[color].length === 0}>
+					{#if decks[color].length > 0}
+						<Tile faceDown={true} {color} semanticOnly={true} />
+						<div class="deck-count">{decks[color].length}</div>
+					{:else}
+						<div class="empty-deck">0</div>
+					{/if}
+				</button>
+			{/each}
+		</div>
 	</div>
 
 	<div class="pool-area">
-		<div class="pool-tiles">
-			{#each publicPool as id}
-				<button
-					class="tile-btn"
-					class:selected={id === selectedTileId}
-					on:click={() => onSelectTile(id)}
-					disabled={!canSelectTile}
-				>
-					<Tile {id} />
-				</button>
-			{/each}
+		<div
+			class="pool-stage"
+			style={`--pool-columns: ${poolColumns}; --pool-rows: ${Math.max(1, Math.ceil(publicPool.length / poolColumns))}`}
+		>
+			<TileField3D tiles={poolSceneTiles} columns={poolColumns} label="3D public tile pool" />
+			<div class="pool-tiles">
+				{#each publicPool as id}
+					<button
+						class="tile-btn"
+						class:selected={id === selectedTileId}
+						on:click={() => onSelectTile(id)}
+						disabled={!canSelectTile}
+					>
+						<Tile {id} semanticOnly={true} />
+					</button>
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>
@@ -63,10 +86,16 @@
         .decks-area {
                 display: flex;
                 gap: var(--gap-base);
-                margin-bottom: var(--gap-base);
                 flex-wrap: wrap;
                 justify-content: center;
+				position: relative;
+				z-index: 2;
         }
+
+		.decks-stage {
+				position: relative;
+				margin-bottom: var(--gap-base);
+		}
 
         .deck-btn {
                 background: none;
@@ -107,7 +136,18 @@
         .pool-area {
                 text-align: center;
                 width: 100%;
+				display: flex;
+				justify-content: center;
         }
+
+		.pool-stage {
+				position: relative;
+				width: min(
+					100%,
+					calc(var(--pool-columns) * var(--tile-size) + (var(--pool-columns) - 1) * var(--gap-base))
+				);
+				min-height: calc(var(--pool-rows) * var(--tile-size) + (var(--pool-rows) - 1) * var(--gap-base));
+		}
 
         .pool-tiles {
                 display: flex;
@@ -115,6 +155,8 @@
                 gap: var(--gap-base);
                 justify-content: center;
                 min-height: var(--tile-size);
+				position: relative;
+				z-index: 2;
         }
 
         .tile-btn {

@@ -6,7 +6,11 @@
 A game of numbers.
 
 ## Product Behavior
-- To be defined.
+
+- Players reveal public tiles and spend them to ask sorting or matching questions about hidden racks.
+- The game surface and racks are rendered with Threlte as glossy, rounded 3D lozenges. Drawing, selecting, matching, sorting, and revealing tiles drive 3D lift, spin, and flip motion.
+- Semantic HTML controls sit above the WebGL presentation so keyboard, screen-reader, and automated-test interactions retain normal browser behavior.
+- Reduced-motion preferences skip transitional movement and render every piece directly in its settled state.
 
 ## Development Commands
 - `bun install`: Install dependencies.
