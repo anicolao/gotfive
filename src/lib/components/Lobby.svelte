@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { store } from '../store';
 	import { setProfile, type PlayerProfile } from '../store/lobbySlice';
+	import { clearPlayers } from '../store/playersSlice';
 	import { setGameId, setIsHost, setMyId } from '../store/uiSlice';
 	import {
 		getLobbyRoster,
@@ -168,6 +169,7 @@
 	}
 
 	async function confirmHostGame() {
+		store.dispatch(clearPlayers());
 		const urlParams = new URLSearchParams(window.location.search);
 		const requestedGameId = urlParams.get('hostGameId');
 		currentGameId = requestedGameId ? requestedGameId.trim().toUpperCase() : await createUniqueGameCode();
@@ -188,6 +190,7 @@
 
 	async function joinGame(hostId: string) {
 		if (!hostId) return;
+		store.dispatch(clearPlayers());
 		const gameId = hostId.trim().toUpperCase();
 		targetHostId = gameId;
 		currentGameId = gameId;

@@ -26,7 +26,7 @@ import {
 import { getFirebase } from './config';
 import { setLobbyState, setMyStatus, setProfile, type GameInfo, type PlayerProfile } from '$lib/store/lobbySlice';
 import { sync as syncGame, resetGame } from '$lib/store/gameSlice';
-import { syncPlayers, resetPlayers } from '$lib/store/playersSlice';
+import { syncPlayers, resetPlayers, clearPlayers } from '$lib/store/playersSlice';
 import { resetUI, setGameId, setIsHost, setMyId } from '$lib/store/uiSlice';
 import type { AppDispatch, RootState } from '$lib/store';
 
@@ -547,6 +547,7 @@ export async function subscribeGame(gameId: string, dispatch: AppDispatch) {
 
 export async function observeGame(gameId: string, dispatch: AppDispatch) {
 	const user = await ensureAuth();
+	dispatch(clearPlayers());
 	dispatch(setMyId(user.uid));
 	dispatch(setIsHost(false));
 	await subscribeGame(gameId, dispatch);
