@@ -10,6 +10,24 @@
 	let element: HTMLDivElement;
 	let layoutRevision = $state(0);
 	let dpr = $state(1);
+	let movingTileKeys = $state.raw(new Set<string>());
+	let movingTileCount = $state(0);
+	let lastTileMotion = $state('');
+
+	function handleMotionStart(key: string, from: string, to: string) {
+		const next = new Set(movingTileKeys);
+		next.add(key);
+		movingTileKeys = next;
+		movingTileCount = next.size;
+		lastTileMotion = `${key}:${from}>${to}`;
+	}
+
+	function handleMotionEnd(key: string) {
+		const next = new Set(movingTileKeys);
+		next.delete(key);
+		movingTileKeys = next;
+		movingTileCount = next.size;
+	}
 
 	function createRenderer(canvas: HTMLCanvasElement) {
 		const renderer = new WebGLRenderer({
@@ -71,10 +89,17 @@
 	class="unified-tile-scene"
 	class:inspect={inspect3D}
 	data-field-count={measuredFields.length}
+	data-moving-tile-count={movingTileCount}
+	data-last-tile-motion={lastTileMotion}
 	aria-hidden="true"
 >
 	<Canvas {createRenderer} {dpr} shadows={false} renderMode="on-demand">
-		<UnifiedTileScene fields={measuredFields} {inspect3D} />
+		<UnifiedTileScene
+			fields={measuredFields}
+			{inspect3D}
+			onMotionStart={handleMotionStart}
+			onMotionEnd={handleMotionEnd}
+		/>
 	</Canvas>
 </div>
 

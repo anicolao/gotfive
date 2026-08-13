@@ -14,6 +14,7 @@
 		faceDown = false,
 		selected = false,
 		correct = false,
+		revealFromFaceDown = false,
 		position = [0, 0, 0] as Position,
 		scale = 1,
 		motionKey = ''
@@ -23,6 +24,7 @@
 		faceDown?: boolean;
 		selected?: boolean;
 		correct?: boolean;
+		revealFromFaceDown?: boolean;
 		position?: Position;
 		scale?: number;
 		motionKey?: string | number;
@@ -66,9 +68,13 @@
 
 		if (!initialized) {
 			group.position.set(0, reducedMotion ? (selected ? 0.18 : 0) : -0.9, 0);
-			group.rotation.set(targetRotationX, targetRotationY, targetRotationZ);
+			group.rotation.set(
+				targetRotationX,
+				!reducedMotion && revealFromFaceDown && !faceDown ? Math.PI : targetRotationY,
+				targetRotationZ
+			);
 			if (!reducedMotion) {
-				spinVelocity = 9;
+				spinVelocity = revealFromFaceDown ? 0 : 9;
 				bounce = 0.32;
 			}
 			initialized = true;
@@ -93,9 +99,9 @@
 			return;
 		}
 
-		const ease = 1 - Math.exp(-delta * 11);
+		const ease = 1 - Math.exp(-delta * 13);
 		bounce = Math.max(0, bounce - delta * 1.8);
-		spinVelocity *= Math.exp(-delta * 5.5);
+		spinVelocity *= Math.exp(-delta * 8.5);
 		group.position.x = approach(group.position.x, 0, ease);
 		group.position.y = approach(group.position.y, (selected ? 0.18 : 0) + Math.sin(bounce * Math.PI * 4) * bounce, ease);
 		group.position.z = approach(group.position.z, 0, ease);

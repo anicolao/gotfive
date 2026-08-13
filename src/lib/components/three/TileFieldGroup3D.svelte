@@ -8,12 +8,14 @@
 		tiles = [] as SceneTile[],
 		columns = 5,
 		rack = false,
+		showTiles = true,
 		position = [0, 0, 0] as [number, number, number],
 		scale = 1
 	}: {
 		tiles?: SceneTile[];
 		columns?: number;
 		rack?: boolean;
+		showTiles?: boolean;
 		position?: [number, number, number];
 		scale?: number;
 	} = $props();
@@ -56,15 +58,17 @@
 		</T.Mesh>
 	{/if}
 
-	{#each tiles as tile, index (tile.key)}
-		<LozengeTile3D
-			id={tile.id ?? null}
-			color={tile.color ?? null}
-			faceDown={tile.faceDown ?? false}
-			selected={tile.selected ?? false}
-			correct={tile.correct ?? false}
-			position={tilePosition(index)}
-			motionKey={tile.motionKey ?? tile.key}
-		/>
-	{/each}
+	{#if showTiles}
+		{#each tiles as tile, index (tile.key)}
+			<LozengeTile3D
+				id={tile.id ?? null}
+				color={tile.color ?? null}
+				faceDown={tile.faceDown ?? false}
+				selected={tile.selected ?? false}
+				correct={tile.correct ?? false}
+				position={tilePosition(index)}
+				motionKey={tile.motionKey ?? tile.key}
+			/>
+		{/each}
+	{/if}
 </T.Group>

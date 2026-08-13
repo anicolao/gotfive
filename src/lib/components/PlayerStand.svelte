@@ -21,7 +21,7 @@
 	let sortClues = $derived(clues.filter((c: ClueRecord) => c.type === 'SORT'));
 	let compareClues = $derived(clues.filter((c: ClueRecord) => c.type === 'COMPARE'));
 	let sceneTiles = $derived(hand.map((tileId: number, index: number) => ({
-		key: `${id}-${tileId}`,
+		key: `tile-${tileId}`,
 		id: tileId,
 		faceDown: isLocalPlayer && !revealHand,
 		correct: revealHand && correctlyDeducedTileIds.includes(tileId),
@@ -34,6 +34,14 @@
 
 	function getCompareCluesForSlot(slot: number) {
 		return compareClues.filter((c: ClueRecord) => c.targetSlot === slot);
+	}
+
+	function clueSceneTiles(clue: ClueRecord) {
+		return [{
+			key: `tile-${clue.tileId}`,
+			id: clue.tileId,
+			motionKey: `${id}:${clue.type}:${clue.targetSlot ?? clue.result}:${clue.tileId}`
+		}];
 	}
 
 	let pendingSlot = $state<number | null>(null);
@@ -75,8 +83,16 @@
 				<div class="notch n{i}" class:active={getSortClueTiles(i).length > 0}>
 					{#if getSortClueTiles(i).length > 0}
 						<div class="clue-stack">
-							{#each getSortClueTiles(i) as tileId}
-								<MiniTile id={tileId} size="small" />
+							{#each sortClues.filter((clue: ClueRecord) => clue.result === i) as clue}
+								<div class="clue-tile-3d">
+									<TileField3D
+										tiles={clueSceneTiles(clue)}
+										columns={1}
+										background={false}
+										label={`${name}'s sort clue`}
+									/>
+									<MiniTile id={clue.tileId} size="small" semanticOnly={true} />
+								</div>
 							{/each}
 						</div>
 					{/if}
@@ -95,7 +111,15 @@
 					<div class="compare-indicators">
 						{#each getCompareCluesForSlot(i) as clue}
 							<div class="compare-clue" class:no-match={!clue.result}>
-								<MiniTile id={clue.tileId} size="small" />
+								<div class="clue-tile-3d">
+									<TileField3D
+										tiles={clueSceneTiles(clue)}
+										columns={1}
+										background={false}
+										label={`${name}'s compare clue`}
+									/>
+									<MiniTile id={clue.tileId} size="small" semanticOnly={true} />
+								</div>
 							</div>
 						{/each}
 					</div>
@@ -104,8 +128,16 @@
 			<div class="notch n5" class:active={getSortClueTiles(5).length > 0}>
 				{#if getSortClueTiles(5).length > 0}
 					<div class="clue-stack">
-						{#each getSortClueTiles(5) as tileId}
-							<MiniTile id={tileId} size="small" />
+						{#each sortClues.filter((clue: ClueRecord) => clue.result === 5) as clue}
+							<div class="clue-tile-3d">
+								<TileField3D
+									tiles={clueSceneTiles(clue)}
+									columns={1}
+									background={false}
+									label={`${name}'s sort clue`}
+								/>
+								<MiniTile id={clue.tileId} size="small" semanticOnly={true} />
+							</div>
 						{/each}
 					</div>
 				{/if}
@@ -245,6 +277,11 @@
                 gap: 2px;
                 z-index: 10;
         }
+
+		.clue-tile-3d {
+			position: relative;
+			flex: 0 0 auto;
+		}
 
         .compare-indicators {
                 position: absolute;
