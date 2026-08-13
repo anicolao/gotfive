@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Tile from './Tile.svelte';
 	import MiniTile from './MiniTile.svelte';
+	import TileField3D from './three/TileField3D.svelte';
 	import type { ClueRecord } from '../store/playersSlice';
 
 	let { 
@@ -19,6 +20,13 @@
 
 	let sortClues = $derived(clues.filter((c: ClueRecord) => c.type === 'SORT'));
 	let compareClues = $derived(clues.filter((c: ClueRecord) => c.type === 'COMPARE'));
+	let sceneTiles = $derived(hand.map((tileId: number, index: number) => ({
+		key: `${id}-${tileId}`,
+		id: tileId,
+		faceDown: isLocalPlayer && !revealHand,
+		correct: revealHand && correctlyDeducedTileIds.includes(tileId),
+		motionKey: `${clues.length}:${revealHand}:${index}`
+	})));
 
 	function getSortClueTiles(notch: number) {
 		return sortClues.filter((c: ClueRecord) => c.result === notch).map((c: ClueRecord) => c.tileId);
@@ -61,6 +69,7 @@
 <div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} onclick={chooseSort}>
 	<div class="name-tag">{name} {isCurrentTurn ? '★' : ''}</div>
 	<div class="stand">
+		<TileField3D tiles={sceneTiles} columns={5} rack={true} label={`${name}'s 3D rack`} />
 		<div class="tiles-area">
 			{#each Array(5) as _, i}
 				<div class="notch n{i}" class:active={getSortClueTiles(i).length > 0}>
@@ -78,6 +87,7 @@
 							id={hand[i]}
 							faceDown={isLocalPlayer && !revealHand}
 							correctlyDeduced={revealHand && correctlyDeducedTileIds.includes(hand[i])}
+							semanticOnly={true}
 						/>
 					{:else}
 						<div class="empty-slot"></div>
@@ -173,18 +183,20 @@
                 position: relative;
                 padding-bottom: 2px;
                 max-width: 100%;
+				isolation: isolate;
         }
 
         .tiles-area {
                 display: grid;
                 grid-template-columns: repeat(5, auto var(--tile-size)) auto;
                 align-items: center;
-                background: rgba(31, 40, 51, 0.8);
-                backdrop-filter: blur(10px);
-                border: 1px solid var(--color-glass-border);
+				background: transparent;
+				border: 1px solid transparent;
                 padding: calc(var(--gap-base) * 1.5) var(--gap-base) var(--gap-base) var(--gap-base);
                 border-radius: 12px 12px 0 0;
                 gap: var(--gap-base);
+				position: relative;
+				z-index: 2;
         }
 
         .slot {
@@ -256,16 +268,18 @@
         .base {
                 display: block;
                 height: 16px;
-                background: rgba(0, 0, 0, 0.7);
-                border-left: 1px solid var(--color-glass-border);
-                border-right: 1px solid var(--color-glass-border);
-                border-bottom: 1px solid var(--color-glass-border);
+				background: transparent;
+				border-left: 1px solid transparent;
+				border-right: 1px solid transparent;
+				border-bottom: 1px solid transparent;
                 border-top: none;
                 width: 100%;
                 border-radius: 0 0 12px 12px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+				box-shadow: none;
                 cursor: inherit;
                 padding: 0;
+				position: relative;
+				z-index: 3;
         }
 
         .can-target .base {

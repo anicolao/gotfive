@@ -6,11 +6,11 @@
 	let data = $derived(getTileData(id));
 
 	const COLOR_MAP: Record<TileColor, string> = {
-		Red: '#D84315',
-		Blue: '#1565C0',
-		Yellow: '#F9A825',
-		Green: '#2E7D32',
-		Purple: '#6A1B9A'
+		Red: '#ff496c',
+		Blue: '#35bfff',
+		Yellow: '#ffe052',
+		Green: '#50e39a',
+		Purple: '#c779ff'
 	};
 </script>
 
@@ -30,14 +30,17 @@
 <style>
         .mini-tile {
                 background-color: var(--tile-color);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                border-radius: calc(var(--mini-tile-size) * 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.72);
+                border-radius: calc(var(--mini-tile-size) * 0.34);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 color: white;
-                box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+                box-shadow:
+                        inset 0 2px 2px rgba(255, 255, 255, 0.38),
+                        inset 0 -2px 3px rgba(0, 0, 0, 0.22),
+                        0 3px 5px rgba(0, 0, 0, 0.5);
                 user-select: none;
                 width: var(--mini-tile-size);
                 height: var(--mini-tile-size);
@@ -51,7 +54,7 @@
         .number {
                 font-weight: bold;
                 line-height: 1;
-                text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.62);
                 font-size: calc(var(--mini-tile-size) * 0.5);
         }
 
