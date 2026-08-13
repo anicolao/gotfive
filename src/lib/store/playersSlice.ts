@@ -111,9 +111,12 @@ export const playersSlice = createSlice({
 				player.clues = [];
 				player.eliminated = false;
 			});
+		},
+		clearPlayers: (state) => {
+			state.players = {};
 		}
 	}
 });
 
-export const { syncPlayers, addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer, guess, resetPlayers } = playersSlice.actions;
+export const { syncPlayers, addPlayer, setHand, addClue, clue_sort, clue_compare, eliminatePlayer, guess, resetPlayers, clearPlayers } = playersSlice.actions;
 export default playersSlice.reducer;

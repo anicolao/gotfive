@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { store } from '$lib/store';
 	import { resetGame } from '$lib/store/gameSlice';
-	import { resetPlayers } from '$lib/store/playersSlice';
+	import { clearPlayers } from '$lib/store/playersSlice';
 	import { selectTile, resetUI, setGameId, setIsHost } from '$lib/store/uiSlice';
 	import { createRNG } from '$lib/game/rng';
 	import { createDeck, shuffle } from '$lib/game/deck';
@@ -99,7 +99,7 @@
 		url.searchParams.delete('gameId');
 		url.searchParams.delete('hostGameId');
 		replaceState(url, {});
-		store.dispatch(resetPlayers());
+		store.dispatch(clearPlayers());
 		store.dispatch(resetGame());
 		store.dispatch(resetUI());
 		store.dispatch(setGameId(null));
