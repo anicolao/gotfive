@@ -46,7 +46,11 @@
 	});
 
 	$effect(() => {
-		const observed = [element, ...$tileSceneFields.map((field) => field.element)].filter(Boolean);
+		const observed = [
+			element,
+			...$tileSceneFields.map((field) => field.element),
+			...$tileSceneFields.flatMap((field) => field.anchors ?? [])
+		].filter(Boolean);
 		if (observed.length === 0) return;
 
 		const refresh = () => layoutRevision += 1;
@@ -73,12 +77,22 @@
 			.filter((field) => field.element.isConnected)
 			.map((field) => {
 				const rect = field.element.getBoundingClientRect();
+				const anchorRects = field.anchors?.map((anchor) => {
+					const anchorRect = anchor.getBoundingClientRect();
+					return {
+						x: anchorRect.left - rootRect.left,
+						y: anchorRect.top - rootRect.top,
+						width: anchorRect.width,
+						height: anchorRect.height
+					};
+				});
 				return {
 					...field,
 					x: rect.left - rootRect.left,
 					y: rect.top - rootRect.top,
 					width: rect.width,
-					height: rect.height
+					height: rect.height,
+					anchorRects
 				};
 			});
 	});

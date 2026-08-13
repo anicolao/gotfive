@@ -38,13 +38,17 @@
 
 			context.font = '900 142px GotFivePileCount';
 			context.textAlign = 'center';
-			context.textBaseline = 'middle';
+			context.textBaseline = 'alphabetic';
 			context.lineJoin = 'round';
 			context.lineWidth = 24;
 			context.strokeStyle = '#050505';
 			context.fillStyle = '#ffffff';
-			context.strokeText(value.toString(), 128, 124, 210);
-			context.fillText(value.toString(), 128, 124, 210);
+			const label = value.toString();
+			const metrics = context.measureText(label);
+			const x = 128 + (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
+			const y = 128 + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
+			context.strokeText(label, x, y, 210);
+			context.fillText(label, x, y, 210);
 
 			texture = new CanvasTexture(canvas);
 			texture.minFilter = LinearMipmapLinearFilter;

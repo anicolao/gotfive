@@ -19,6 +19,8 @@ export type TileFieldRegistration = {
 	columns: number;
 	rack: boolean;
 	background: boolean;
+	fit?: number;
+	anchors?: HTMLElement[];
 	label: string;
 };
 

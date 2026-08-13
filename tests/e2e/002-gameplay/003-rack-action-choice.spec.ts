@@ -56,6 +56,32 @@ test('rack base remains a direct sort target', async ({ page }) => {
 
 	await expect(aliceStand.locator('.sort-clues')).toHaveCount(1);
 	await expect(aliceStand.locator('.compare-indicators .compare-clue')).toHaveCount(0);
+
+	const lanes = aliceStand.locator('.notch');
+	const slots = aliceStand.locator('.slot');
+	const occupiedLane = aliceStand.locator('.notch:has(.sort-clues)');
+	const clueAnchor = occupiedLane.locator('.clue-tile-3d');
+	const [firstLaneBox, firstSlotBox, lastLaneBox, lastSlotBox, occupiedLaneBox, clueAnchorBox] = await Promise.all([
+		lanes.first().boundingBox(),
+		slots.first().boundingBox(),
+		lanes.last().boundingBox(),
+		slots.last().boundingBox(),
+		occupiedLane.boundingBox(),
+		clueAnchor.boundingBox()
+	]);
+	if (!firstLaneBox || !firstSlotBox || !lastLaneBox || !lastSlotBox || !occupiedLaneBox || !clueAnchorBox) {
+		throw new Error('rack sorting geometry is unavailable');
+	}
+
+	expect(firstLaneBox.x + firstLaneBox.width).toBeLessThanOrEqual(firstSlotBox.x);
+	expect(lastLaneBox.x).toBeGreaterThanOrEqual(lastSlotBox.x + lastSlotBox.width);
+	expect(occupiedLaneBox.width).toBeGreaterThanOrEqual(clueAnchorBox.width);
+	expect(
+		Math.abs(
+			occupiedLaneBox.x + occupiedLaneBox.width / 2 -
+			(clueAnchorBox.x + clueAnchorBox.width / 2)
+		)
+	).toBeLessThanOrEqual(0.5);
 });
 
 test('a physical tile flies continuously from deck to pool to clue', async ({ page }) => {

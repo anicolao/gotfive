@@ -27,6 +27,7 @@
 		correct: revealHand && correctlyDeducedTileIds.includes(tileId),
 		motionKey: `${clues.length}:${revealHand}:${index}`
 	})));
+	let slotElements = $state<HTMLDivElement[]>([]);
 
 	function getSortClueTiles(notch: number) {
 		return sortClues.filter((c: ClueRecord) => c.result === notch).map((c: ClueRecord) => c.tileId);
@@ -77,7 +78,14 @@
 <div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} onclick={chooseSort}>
 	<div class="name-tag">{name} {isCurrentTurn ? '★' : ''}</div>
 	<div class="stand">
-		<TileField3D tiles={sceneTiles} columns={5} rack={true} label={`${name}'s 3D rack`} />
+		<TileField3D
+			tiles={sceneTiles}
+			columns={5}
+			rack={true}
+			fit={1.08}
+			anchors={slotElements}
+			label={`${name}'s 3D rack`}
+		/>
 		<div class="tiles-area">
 			{#each Array(5) as _, i}
 				<div class="notch n{i}">
@@ -97,7 +105,7 @@
 						</div>
 					{/if}
 				</div>
-				<div class="slot" onclick={(e) => chooseTileAction(e, i)}>
+				<div class="slot" bind:this={slotElements[i]} onclick={(e) => chooseTileAction(e, i)}>
 					{#if hand[i]}
 						<Tile
 							id={hand[i]}
