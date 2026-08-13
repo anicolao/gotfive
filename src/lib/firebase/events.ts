@@ -7,6 +7,7 @@ import {
 	serverTimestamp,
 	setDoc,
 	doc,
+	writeBatch,
 	type Firestore,
 	type QueryDocumentSnapshot,
 	type Timestamp,
@@ -280,9 +281,25 @@ export async function writeGameEvent(gameId: string, type: string, payload: any)
 }
 
 export async function writeGameEvents(gameId: string, events: Array<{ type: string; payload: any }>) {
-	for (let i = 0; i < events.length; i += 1) {
-		await writeGameEvent(gameId, events[i].type, events[i].payload);
+	if (events.length === 0) return;
+
+	const user = await ensureAuth();
+	const db = getFirebase().db;
+	const target = collection(db, 'games', gameId, 'actions');
+	const batch = writeBatch(db);
+
+	for (const event of events) {
+		batch.set(doc(target, nextEventDocumentId(target)), {
+			type: event.type,
+			payload: event.payload ?? null,
+			actorUid: user.uid,
+			createdAt: serverTimestamp(),
+			schemaVersion: EVENT_SCHEMA_VERSION,
+			reducerVersion: GAME_REDUCER_VERSION
+		});
 	}
+
+	await batch.commit();
 }
 
 export async function lobbyGameCodeExists(gameId: string) {
