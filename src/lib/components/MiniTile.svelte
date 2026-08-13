@@ -6,11 +6,11 @@
 	let data = $derived(getTileData(id));
 
 	const COLOR_MAP: Record<TileColor, string> = {
-		Red: '#ff496c',
-		Blue: '#35bfff',
-		Yellow: '#ffe052',
-		Green: '#50e39a',
-		Purple: '#c779ff'
+		Red: '#ff003d',
+		Blue: '#008cff',
+		Yellow: '#ffc400',
+		Green: '#00c968',
+		Purple: '#8b16ff'
 	};
 </script>
 
@@ -54,7 +54,9 @@
         .number {
                 font-weight: bold;
                 line-height: 1;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.62);
+				-webkit-text-stroke: max(1px, calc(var(--mini-tile-size) * 0.055)) #050505;
+				paint-order: stroke fill;
+				text-shadow: 0 1px 1px rgba(0, 0, 0, 0.72);
                 font-size: calc(var(--mini-tile-size) * 0.5);
         }
 

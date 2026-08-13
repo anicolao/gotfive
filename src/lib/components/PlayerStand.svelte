@@ -11,6 +11,7 @@
 		isLocalPlayer = false, 
 		revealHand = false,
 		correctlyDeducedTileIds = [] as number[],
+		inspect3D = false,
 		isCurrentTurn = false, 
 		clues = [] as ClueRecord[], 
 		canBeTarget = false, 
@@ -69,7 +70,7 @@
 <div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} onclick={chooseSort}>
 	<div class="name-tag">{name} {isCurrentTurn ? '★' : ''}</div>
 	<div class="stand">
-		<TileField3D tiles={sceneTiles} columns={5} rack={true} label={`${name}'s 3D rack`} />
+		<TileField3D tiles={sceneTiles} columns={5} rack={true} {inspect3D} label={`${name}'s 3D rack`} />
 		<div class="tiles-area">
 			{#each Array(5) as _, i}
 				<div class="notch n{i}" class:active={getSortClueTiles(i).length > 0}>
