@@ -68,5 +68,35 @@ test('reveals every hand and marks correct deductions when the game ends', async
 		networkStatus: 'skip'
 	});
 
+	const inspectButton = page.getByRole('button', { name: 'Inspect 3D' });
+	await expect(inspectButton).toHaveAttribute('aria-pressed', 'false');
+	await inspectButton.click();
+	await expect(page.getByRole('button', { name: 'Exit 3D' })).toHaveAttribute('aria-pressed', 'true');
+
+	const inspectableCanvases = page.locator('.tile-field-3d.inspect canvas');
+	await expect(inspectableCanvases).toHaveCount(4);
+	const localRackCanvas = myStand.locator('.tile-field-3d.inspect canvas');
+	const rackBounds = await localRackCanvas.boundingBox();
+	if (!rackBounds) throw new Error('The local rack canvas is not available for 3D inspection');
+	await page.mouse.move(rackBounds.x + rackBounds.width * 0.68, rackBounds.y + rackBounds.height * 0.52);
+	await page.mouse.down();
+	await page.mouse.move(rackBounds.x + rackBounds.width * 0.665, rackBounds.y + rackBounds.height * 0.52);
+	await page.mouse.up();
+
+	await tester.step('orbit-inspection', {
+		description: 'Inspection mode orbits a rack while preserving the complete game view',
+		verifications: [
+			{
+				spec: 'All four rack and table scenes expose orbit controls',
+				check: async () => await expect(inspectableCanvases).toHaveCount(4)
+			},
+			{
+				spec: 'Inspection mode remains visibly active until the player exits it',
+				check: async () => await expect(page.getByRole('button', { name: 'Exit 3D' })).toHaveAttribute('aria-pressed', 'true')
+			}
+		],
+		networkStatus: 'skip'
+	});
+
 	tester.generateDocs();
 });

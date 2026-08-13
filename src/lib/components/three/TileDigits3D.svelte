@@ -1,50 +1,65 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T, useThrelte } from '@threlte/core';
+	import { onMount } from 'svelte';
+	import { CanvasTexture, LinearFilter } from 'three';
+	import interBlack from '@fontsource/inter/files/inter-latin-900-normal.woff2?url';
 
-	let { value, color = '#fff7df' }: { value: number; color?: string } = $props();
+	let { value }: { value: number } = $props();
 
-	const SEGMENTS: Record<string, string[]> = {
-		'0': ['a', 'b', 'c', 'd', 'e', 'f'],
-		'1': ['b', 'c'],
-		'2': ['a', 'b', 'g', 'e', 'd'],
-		'3': ['a', 'b', 'c', 'd', 'g'],
-		'4': ['f', 'g', 'b', 'c'],
-		'5': ['a', 'f', 'g', 'c', 'd'],
-		'6': ['a', 'f', 'g', 'e', 'c', 'd'],
-		'7': ['a', 'b', 'c'],
-		'8': ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-		'9': ['a', 'b', 'c', 'd', 'f', 'g']
-	};
+	const { invalidate } = useThrelte();
+	let texture = $state.raw<CanvasTexture>();
 
-	const SEGMENT_LAYOUT: Record<string, { position: [number, number, number]; scale: [number, number, number] }> = {
-		a: { position: [0, 0.28, 0], scale: [0.24, 0.045, 0.025] },
-		b: { position: [0.145, 0.145, 0], scale: [0.045, 0.18, 0.025] },
-		c: { position: [0.145, -0.145, 0], scale: [0.045, 0.18, 0.025] },
-		d: { position: [0, -0.28, 0], scale: [0.24, 0.045, 0.025] },
-		e: { position: [-0.145, -0.145, 0], scale: [0.045, 0.18, 0.025] },
-		f: { position: [-0.145, 0.145, 0], scale: [0.045, 0.18, 0.025] },
-		g: { position: [0, 0, 0], scale: [0.24, 0.045, 0.025] }
-	};
+	onMount(() => {
+		let disposed = false;
 
-	let digits = $derived(value.toString().split(''));
+		async function createNumberTexture() {
+			const font = new FontFace('GotFiveTileNumber', `url(${interBlack})`, { weight: '900' });
+			await font.load();
+			document.fonts.add(font);
+			if (disposed) return;
+
+			const canvas = document.createElement('canvas');
+			canvas.width = 256;
+			canvas.height = 256;
+			const context = canvas.getContext('2d');
+			if (!context) return;
+
+			context.font = '900 148px GotFiveTileNumber';
+			context.textAlign = 'center';
+			context.textBaseline = 'middle';
+			context.lineJoin = 'round';
+			context.miterLimit = 2;
+			context.lineWidth = 24;
+			context.strokeStyle = '#050505';
+			context.fillStyle = '#ffffff';
+			context.strokeText(value.toString(), 128, 126, 218);
+			context.fillText(value.toString(), 128, 126, 218);
+
+			texture = new CanvasTexture(canvas);
+			texture.minFilter = LinearFilter;
+			texture.magFilter = LinearFilter;
+			texture.generateMipmaps = false;
+			texture.needsUpdate = true;
+			invalidate();
+		}
+
+		void createNumberTexture();
+		return () => {
+			disposed = true;
+			texture?.dispose();
+		};
+	});
 </script>
 
-<T.Group position={[0, 0.06, 0.242]}>
-	{#each digits as digit, digitIndex}
-		<T.Group
-			position={[
-				digits.length === 1 ? 0 : (digitIndex === 0 ? -0.2 : 0.2),
-				0,
-				0
-			]}
-			scale={digits.length === 1 ? 1 : 0.72}
-		>
-			{#each SEGMENTS[digit] as segment}
-				<T.Mesh position={SEGMENT_LAYOUT[segment].position} scale={SEGMENT_LAYOUT[segment].scale}>
-					<T.BoxGeometry args={[1, 1, 1]} />
-					<T.MeshBasicMaterial {color} toneMapped={false} />
-				</T.Mesh>
-			{/each}
-		</T.Group>
-	{/each}
-</T.Group>
+{#if texture}
+	<T.Mesh position={[0, 0.065, 0.232]}>
+		<T.PlaneGeometry args={[0.89, 0.89]} />
+		<T.MeshBasicMaterial
+			map={texture}
+			transparent={true}
+			alphaTest={0.08}
+			depthWrite={false}
+			toneMapped={false}
+		/>
+	</T.Mesh>
+{/if}

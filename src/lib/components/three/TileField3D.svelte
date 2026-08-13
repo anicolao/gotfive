@@ -7,11 +7,13 @@
 		tiles = [] as SceneTile[],
 		columns = 5,
 		rack = false,
+		inspect3D = false,
 		label = '3D tile display'
 	}: {
 		tiles?: SceneTile[];
 		columns?: number;
 		rack?: boolean;
+		inspect3D?: boolean;
 		label?: string;
 	} = $props();
 
@@ -28,9 +30,9 @@
 	}
 </script>
 
-<div class="tile-field-3d" class:rack aria-hidden="true" aria-label={label}>
+<div class="tile-field-3d" class:rack class:inspect={inspect3D} aria-hidden="true" aria-label={label}>
 	<Canvas {createRenderer} dpr={1} shadows={false} renderMode="on-demand">
-		<TileFieldScene {tiles} {columns} {rack} />
+		<TileFieldScene {tiles} {columns} {rack} {inspect3D} />
 	</Canvas>
 </div>
 
@@ -46,7 +48,22 @@
 		filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.65));
 	}
 
+	.tile-field-3d.inspect {
+		z-index: 20;
+		pointer-events: auto;
+		cursor: grab;
+		touch-action: none;
+	}
+
+	.tile-field-3d.inspect:active {
+		cursor: grabbing;
+	}
+
 	.tile-field-3d :global(canvas) {
 		pointer-events: none;
+	}
+
+	.tile-field-3d.inspect :global(canvas) {
+		pointer-events: auto;
 	}
 </style>

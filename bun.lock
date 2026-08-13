@@ -5,6 +5,7 @@
     "": {
       "name": "gotfive",
       "dependencies": {
+        "@fontsource/inter": "^5.3.0",
         "@reduxjs/toolkit": "^2.11.2",
         "@sveltejs/adapter-static": "^3.0.10",
         "@sveltejs/kit": "^2.59.1",
@@ -339,6 +340,8 @@
     "@firebase/util": ["@firebase/util@1.15.1", "", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-LUdM4Wg7YM9Pq/49nGYySJA0CSQEKnGffFzWV8+6gXN7mGxn+FL1IqvFbuZUtAQcfZgHYDwCE1wwlK7rB7gl2g=="],
 
     "@firebase/webchannel-wrapper": ["@firebase/webchannel-wrapper@1.0.6", "", {}, "sha512-Vr/Mqu79dMwGRAyGbJ4uN4+BtXB3/mRTdzetD1daWNeG8QaWuzhhbG77GltO5c0yYmYls8i250iX73624GJd7Q=="],
+
+    "@fontsource/inter": ["@fontsource/inter@5.3.0", "", {}, "sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g=="],
 
     "@google-cloud/cloud-sql-connector": ["@google-cloud/cloud-sql-connector@1.11.2", "", { "dependencies": { "@googleapis/sqladmin": "^37.0.0", "gaxios": "^7.1.4", "google-auth-library": "^10.6.2", "p-throttle": "^7.0.0" } }, "sha512-ImHGgHunHoAHnQ9Bbsuq9an0rwmMdaPL8nrdQkVNnuIb0GKE+rTyjKNV+po7DJLuk84JPUUbK0cWW9AjPiAblA=="],
 

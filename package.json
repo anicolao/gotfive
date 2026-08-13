@@ -13,6 +13,7 @@
     "test:e2e:update-snapshots": "VITE_APP_VERSION=1.0.0 VITE_GIT_HASH=test7ch VITE_FIREBASE_API_KEY=demo-key VITE_FIREBASE_AUTH_DOMAIN=gotfive-20260709.firebaseapp.com VITE_FIREBASE_PROJECT_ID=gotfive-20260709 VITE_FIREBASE_STORAGE_BUCKET=gotfive-20260709.firebasestorage.app VITE_FIREBASE_MESSAGING_SENDER_ID=1032210505294 VITE_FIREBASE_APP_ID=1:1032210505294:web:4b294b2d4c724099482d1f VITE_USE_FIREBASE_EMULATORS=true VITE_FIREBASE_AUTH_EMULATOR_PORT=9099 VITE_FIREBASE_FIRESTORE_EMULATOR_PORT=8085 firebase emulators:exec --only auth,firestore \"playwright test -u\""
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.59.1",

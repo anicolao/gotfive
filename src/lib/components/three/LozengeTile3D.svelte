@@ -29,11 +29,11 @@
 	} = $props();
 
 	const COLOR_MAP: Record<TileColor, string> = {
-		Red: '#ff496c',
-		Blue: '#35bfff',
-		Yellow: '#ffe052',
-		Green: '#50e39a',
-		Purple: '#c779ff'
+		Red: '#ff003d',
+		Blue: '#008cff',
+		Yellow: '#ffc400',
+		Green: '#00c968',
+		Purple: '#8b16ff'
 	};
 
 	const geometry = new RoundedBoxGeometry(1.08, 1.08, 0.42, 7, 0.16);
@@ -133,20 +133,22 @@
 	<T.Mesh {geometry} castShadow receiveShadow>
 		<T.MeshPhysicalMaterial
 			color={candyColor}
-			roughness={0.16}
-			metalness={0.02}
-			transmission={0.08}
-			thickness={1.15}
-			ior={1.42}
+			roughness={0.1}
+			metalness={0}
+			transmission={0}
+			thickness={1.5}
+			attenuationColor={candyColor}
+			attenuationDistance={0.72}
+			ior={1.5}
 			clearcoat={1}
-			clearcoatRoughness={0.08}
-			envMapIntensity={1.5}
+			clearcoatRoughness={0.04}
+			envMapIntensity={2}
 			emissive={candyColor}
-			emissiveIntensity={0.1}
+			emissiveIntensity={0.08}
 		/>
 	</T.Mesh>
 
-	<T.Mesh position={[0, 0, 0.005]} scale={[0.84, 0.84, 0.7]}>
+	<T.Mesh position={[0, 0, 0.005]} scale={[0.82, 0.82, 0.7]}>
 		<T.BoxGeometry args={[1, 1, 0.34]} />
 		<T.MeshBasicMaterial color={candyColor} transparent opacity={0.2} toneMapped={false} />
 	</T.Mesh>
@@ -155,9 +157,13 @@
 		<TileDigits3D value={data.id} />
 		<T.Group position={[0, -0.36, 0.245]}>
 			{#each Array(data.dots) as _, dotIndex}
-				<T.Mesh position={[(dotIndex - (data.dots - 1) / 2) * 0.14, 0, 0]}>
-					<T.CircleGeometry args={[0.045, 20]} />
-					<T.MeshBasicMaterial color="#fff7df" toneMapped={false} />
+				<T.Mesh position={[(dotIndex - (data.dots - 1) / 2) * 0.16, 0, 0]}>
+					<T.CircleGeometry args={[0.071, 24]} />
+					<T.MeshBasicMaterial color="#050505" toneMapped={false} />
+				</T.Mesh>
+				<T.Mesh position={[(dotIndex - (data.dots - 1) / 2) * 0.16, 0, 0.004]}>
+					<T.CircleGeometry args={[0.043, 24]} />
+					<T.MeshBasicMaterial color="#ffffff" toneMapped={false} />
 				</T.Mesh>
 			{/each}
 		</T.Group>

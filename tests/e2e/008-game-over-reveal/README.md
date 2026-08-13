@@ -12,3 +12,13 @@ Testing that game over reveals every tile and celebrates deductions the viewer g
 - [x] An incorrect deduction is not marked as correct
 
 ---
+
+## Inspection mode orbits a rack while preserving the complete game view
+
+![Inspection mode orbits a rack while preserving the complete game view](./screenshots/001-orbit-inspection.png)
+
+**Verifications:**
+- [x] All four rack and table scenes expose orbit controls
+- [x] Inspection mode remains visibly active until the player exits it
+
+---

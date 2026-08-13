@@ -3,6 +3,7 @@
 	import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 	import type { TileColor } from '$lib/game/tiles';
 	import LozengeTile3D from './LozengeTile3D.svelte';
+	import OrbitInspectionControls from './OrbitInspectionControls.svelte';
 
 	export type SceneTile = {
 		key: string;
@@ -17,11 +18,13 @@
 	let {
 		tiles = [] as SceneTile[],
 		columns = 5,
-		rack = false
+		rack = false,
+		inspect3D = false
 	}: {
 		tiles?: SceneTile[];
 		columns?: number;
 		rack?: boolean;
+		inspect3D?: boolean;
 	} = $props();
 
 	let tileSpacing = $derived(rack ? 1.7 : 2.05);
@@ -50,10 +53,18 @@
 	position={[0, 0, rack ? 8 : 8 * rows]}
 />
 
-<T.AmbientLight intensity={1.35} />
-<T.DirectionalLight position={[-4, 7, 8]} intensity={3.4} color="#d7f8ff" />
-<T.DirectionalLight position={[5, -2, 7]} intensity={2.6} color="#ff91e7" />
-<T.PointLight position={[0, 2, 5]} intensity={16} color="#fff2c4" distance={14} />
+{#if inspect3D}
+	<OrbitInspectionControls
+		target={[0, 0, 0]}
+		minDistance={2.4}
+		maxDistance={40}
+	/>
+{/if}
+
+<T.AmbientLight intensity={0.42} />
+<T.DirectionalLight position={[-4, 7, 8]} intensity={1.75} color="#e6fbff" />
+<T.DirectionalLight position={[5, -2, 7]} intensity={0.75} color="#ff63d8" />
+<T.PointLight position={[0, 2, 5]} intensity={4} color="#fff1bc" distance={14} />
 
 <T.Mesh geometry={baseGeometry} position={[0, rack ? -0.08 : 0, -0.33]} receiveShadow>
 	<T.MeshPhysicalMaterial

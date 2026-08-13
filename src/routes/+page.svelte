@@ -24,6 +24,7 @@
 	let gameState = $state(store.getState().game);
 	let playersState = $state(store.getState().players);
 	let uiState = $state(store.getState().ui);
+	let inspect3D = $state(false);
 
 	store.subscribe(() => {
 		const state = store.getState();
@@ -201,6 +202,14 @@
 							<div class="status-actions">
 								<button class="groovy-button" onclick={handleResetGame}>Play Again</button>
 								<button class="groovy-button alt" onclick={handleBackToLobby}>Back to Lobby</button>
+								<button
+									class="inspect-3d-button compact"
+									class:active={inspect3D}
+									type="button"
+									aria-label={inspect3D ? 'Exit 3D' : 'Inspect 3D'}
+									aria-pressed={inspect3D}
+									onclick={() => inspect3D = !inspect3D}
+								>3D</button>
 							</div>
 						</div>
 					{:else if (uiState?.myId && playersState?.players[uiState.myId]?.eliminated)}
@@ -227,6 +236,7 @@
 									revealHand={gameState?.status === 'FINISHED'}
 									isCurrentTurn={currentPlayerId === id}
 									canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
+									{inspect3D}
 									onSelectTarget={handleAskSort}
 									onSelectSlot={handleAskCompare}
 								/>
@@ -243,6 +253,7 @@
 								canSelectTile={canUseDrawnTile}
 								onReveal={handleReveal}
 								selectedTileId={uiState?.selectedTileId}
+								{inspect3D}
 								onSelectTile={handleSelectTile}
 							/>
 						{/if}
@@ -252,6 +263,15 @@
 						<div class="controls-left">
 							{#if gameState?.status === 'PLAYING'}
 								<button class="lobby-link-button" aria-label="Back to Lobby" onclick={handleBackToLobby}>Lobby</button>
+								<button
+									class="inspect-3d-button"
+									class:active={inspect3D}
+									type="button"
+									aria-pressed={inspect3D}
+									onclick={() => inspect3D = !inspect3D}
+								>
+									{inspect3D ? 'Exit 3D' : 'Inspect 3D'}
+								</button>
 							{/if}
 						</div>
 						{#if uiState?.myId && playersState?.players[uiState.myId]}
@@ -265,12 +285,11 @@
 								{correctlyDeducedTileIds}
 								isCurrentTurn={currentPlayerId === uiState.myId}
 								canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
+								{inspect3D}
 								onSelectTarget={handleAskSort}
 								onSelectSlot={handleAskCompare}
 							/>
 						{/if}
-						<div class="controls-right">
-						</div>
 					</div>
 				</div>
 
@@ -362,13 +381,16 @@
                 flex-shrink: 0;
         }
 
-        .controls-left, .controls-right {
+        .controls-left {
                 position: absolute;
                 bottom: 10px;
         }
 
-        .controls-left { left: 10px; }
-        .controls-right { right: 10px; }
+        .controls-left {
+				left: 10px;
+				display: flex;
+				gap: 6px;
+		}
 
         @media (orientation: portrait) {
                 main {
@@ -442,11 +464,12 @@
                         width: 100%;
                 }
 
-                .controls-left, .controls-right {
+                .controls-left {
                         position: static;
-                        flex: 0 0 100%;
+						flex: 0 0 100%;
                         display: flex;
                         justify-content: center;
+						gap: 6px;
                         order: 2;
                 }
 
@@ -505,11 +528,12 @@
                         flex-wrap: wrap;
                 }
 
-                .controls-left, .controls-right {
+                .controls-left {
                         position: static;
-                        flex: 0 0 100%;
+						flex: 0 0 100%;
                         display: flex;
                         justify-content: flex-start;
+						gap: 6px;
                         order: 2;
                 }
 
@@ -591,6 +615,35 @@
                 border-color: var(--color-neon-yellow);
                 color: var(--color-neon-yellow);
         }
+
+		.inspect-3d-button {
+				border: 1px solid var(--color-neon-magenta);
+				background: rgba(0, 0, 0, 0.72);
+				color: white;
+				border-radius: 6px;
+				padding: 4px 9px;
+				min-height: 28px;
+				font: inherit;
+				font-size: 0.72rem;
+				font-weight: 800;
+				text-transform: uppercase;
+				cursor: pointer;
+				box-shadow: 0 0 8px rgba(255, 0, 212, 0.3);
+		}
+
+		.inspect-3d-button.active {
+				background: var(--color-neon-magenta);
+				color: #050505;
+				box-shadow: 0 0 14px var(--color-neon-magenta);
+		}
+
+		.inspect-3d-button.compact {
+				position: absolute;
+				top: 8px;
+				right: 8px;
+				min-width: 42px;
+				padding-inline: 8px;
+		}
 
         .winner-msg {
                 font-size: 1.1rem;

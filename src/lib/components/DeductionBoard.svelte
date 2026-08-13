@@ -505,7 +505,9 @@
 
         .num {
                 z-index: 1;
-                text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+				-webkit-text-stroke: max(1px, calc(var(--mini-tile-size) * 0.055)) #050505;
+				paint-order: stroke fill;
+				text-shadow: 0 1px 1px rgba(0,0,0,0.8);
                 line-height: 1;
         }
 
