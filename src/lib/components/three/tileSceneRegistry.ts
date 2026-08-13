@@ -8,6 +8,7 @@ export type SceneTile = {
 	faceDown?: boolean;
 	selected?: boolean;
 	correct?: boolean;
+	pileCount?: number;
 	motionKey?: string | number;
 };
 

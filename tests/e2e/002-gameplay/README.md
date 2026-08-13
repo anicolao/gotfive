@@ -29,8 +29,8 @@ As a user, I want to play through a game with deterministic results.
 ![Asking for a clue records it on the stand and consumes the tile](./screenshots/002-ask-clue.png)
 
 **Verifications:**
-- [x] Alice stand has one active sorting notch
-- [x] The active notch contains a MiniTile representation of the consumed tile
+- [x] Alice stand has one occupied sorting lane
+- [x] The sorting lane contains the consumed tile
 - [x] The consumed tile is removed from the public pool
 - [x] Public tile is deselected after action
 - [x] The consumed physical tile flies and shrinks from the public line into its sort clue

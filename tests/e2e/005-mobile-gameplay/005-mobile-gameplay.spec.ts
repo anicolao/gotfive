@@ -102,9 +102,9 @@ test.describe('Mobile Gameplay', () => {
       description: 'Ask for a clue in portrait mode',
       verifications: [
         {
-          spec: 'Player 2 stand has an active notch',
+          spec: 'Player 2 stand has an occupied sorting lane',
           check: async () => {
-            await expect(p2Stand.locator('.notch.active')).toHaveCount(1);
+            await expect(p2Stand.locator('.sort-clues')).toHaveCount(1);
           }
         }
       ]
@@ -252,9 +252,9 @@ test.describe('Mobile Gameplay', () => {
       description: 'Ask for a clue in landscape mode',
       verifications: [
         {
-          spec: 'Player 2 stand has an active notch',
+          spec: 'Player 2 stand has an occupied sorting lane',
           check: async () => {
-            await expect(p2Stand.locator('.notch.active')).toHaveCount(1);
+            await expect(p2Stand.locator('.sort-clues')).toHaveCount(1);
           }
         }
       ]

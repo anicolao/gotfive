@@ -4,6 +4,7 @@
 	import { Group } from 'three';
 	import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 	import { getTileData, type TileColor } from '$lib/game/tiles';
+	import PileCount3D from './PileCount3D.svelte';
 	import TileDigits3D from './TileDigits3D.svelte';
 
 	type Position = [number, number, number];
@@ -14,6 +15,7 @@
 		faceDown = false,
 		selected = false,
 		correct = false,
+		pileCount,
 		revealFromFaceDown = false,
 		position = [0, 0, 0] as Position,
 		scale = 1,
@@ -24,6 +26,7 @@
 		faceDown?: boolean;
 		selected?: boolean;
 		correct?: boolean;
+		pileCount?: number;
 		revealFromFaceDown?: boolean;
 		position?: Position;
 		scale?: number;
@@ -63,8 +66,8 @@
 		if (!group) return;
 
 		const targetRotationY = faceDown ? Math.PI : 0;
-		const targetRotationX = selected ? -0.2 : -0.08;
-		const targetRotationZ = selected ? -0.07 : 0;
+		const targetRotationX = -0.08;
+		const targetRotationZ = 0;
 
 		if (!initialized) {
 			group.position.set(0, reducedMotion ? (selected ? 0.18 : 0) : -0.9, 0);
@@ -85,7 +88,8 @@
 			lastMotionKey !== undefined &&
 			(lastMotionKey !== motionKey || lastFaceDown !== faceDown || lastSelected !== selected)
 		) {
-			spinVelocity = faceDown !== lastFaceDown ? 11 : 7;
+			const selectionChanged = lastSelected !== selected;
+			spinVelocity = faceDown !== lastFaceDown ? 11 : selectionChanged ? 0 : 7;
 			bounce = selected ? 0.4 : 0.25;
 		}
 		lastMotionKey = motionKey;
@@ -185,6 +189,12 @@
 			<T.MeshBasicMaterial color="#fff7df" toneMapped={false} />
 		</T.Mesh>
 	</T.Group>
+
+	{#if pileCount !== undefined}
+		{#key pileCount}
+			<PileCount3D value={pileCount} />
+		{/key}
+	{/if}
 
 	{#if correct}
 		<T.Group position={[0.39, 0.39, 0.29]} scale={0.72}>
