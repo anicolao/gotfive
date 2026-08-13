@@ -152,6 +152,10 @@ test.describe('Firebase Lobby Event Replay', () => {
 		await observer.getByRole('button', { name: 'Join Lobby' }).click();
 		await expect(observer.locator('.players-list').getByText('Playing Host')).toBeVisible();
 		await expect(observer.locator('.players-list').getByText('playing')).toBeVisible();
+		expect(await observer.evaluate(() => {
+			window.scrollTo(0, 0);
+			return window.scrollY;
+		})).toBe(0);
 
 		await tester.step('playing-player-visible', {
 			description: 'Hosting player remains visible in lobby',
