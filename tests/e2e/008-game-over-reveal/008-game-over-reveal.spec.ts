@@ -73,22 +73,37 @@ test('reveals every hand and marks correct deductions when the game ends', async
 	await inspectButton.click();
 	await expect(page.getByRole('button', { name: 'Exit 3D' })).toHaveAttribute('aria-pressed', 'true');
 
-	const inspectableCanvases = page.locator('.tile-field-3d.inspect canvas');
-	await expect(inspectableCanvases).toHaveCount(4);
-	const localRackCanvas = myStand.locator('.tile-field-3d.inspect canvas');
-	const rackBounds = await localRackCanvas.boundingBox();
-	if (!rackBounds) throw new Error('The local rack canvas is not available for 3D inspection');
-	await page.mouse.move(rackBounds.x + rackBounds.width * 0.68, rackBounds.y + rackBounds.height * 0.52);
+	const unifiedScene = page.locator('.unified-tile-scene.inspect');
+	await expect(unifiedScene).toHaveAttribute('data-field-count', '4');
+	const inspectableCanvas = unifiedScene.locator('canvas');
+	await expect(inspectableCanvas).toHaveCount(1);
+	const sceneBounds = await inspectableCanvas.boundingBox();
+	if (!sceneBounds) throw new Error('The unified game canvas is not available for 3D inspection');
+	await page.mouse.move(sceneBounds.x + sceneBounds.width * 0.68, sceneBounds.y + sceneBounds.height * 0.72);
 	await page.mouse.down();
-	await page.mouse.move(rackBounds.x + rackBounds.width * 0.665, rackBounds.y + rackBounds.height * 0.52);
+	await page.mouse.move(sceneBounds.x + sceneBounds.width * 0.665, sceneBounds.y + sceneBounds.height * 0.72);
 	await page.mouse.up();
 
 	await tester.step('orbit-inspection', {
-		description: 'Inspection mode orbits a rack while preserving the complete game view',
+		description: 'Inspection mode orbits the unified 3D game surface',
 		verifications: [
 			{
-				spec: 'All four rack and table scenes expose orbit controls',
-				check: async () => await expect(inspectableCanvases).toHaveCount(4)
+				spec: 'One canvas contains all four rack and table fields',
+				check: async () => {
+					await expect(unifiedScene).toHaveAttribute('data-field-count', '4');
+					await expect(inspectableCanvas).toHaveCount(1);
+				}
+			},
+			{
+				spec: 'The drawing buffer matches the capped device pixel ratio',
+				check: async () => {
+					const resolution = await inspectableCanvas.evaluate((canvas: HTMLCanvasElement) => ({
+						bufferWidth: canvas.width,
+						cssWidth: canvas.clientWidth,
+						expectedDpr: Math.min(Math.max(window.devicePixelRatio || 1, 1), 2)
+					}));
+					expect(resolution.bufferWidth).toBe(Math.round(resolution.cssWidth * resolution.expectedDpr));
+				}
 			},
 			{
 				spec: 'Inspection mode remains visibly active until the player exits it',

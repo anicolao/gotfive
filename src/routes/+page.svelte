@@ -18,6 +18,7 @@
 	import PlayerStand from '$lib/components/PlayerStand.svelte';
 	import DeductionBoard from '$lib/components/DeductionBoard.svelte';
 	import Lobby from '$lib/components/Lobby.svelte';
+	import UnifiedTileScene3D from '$lib/components/three/UnifiedTileScene3D.svelte';
 	import { replaceState } from '$app/navigation';
 	import '../App.css';
 
@@ -195,6 +196,7 @@
 				</div>
 				{:else}
 				<div class="main-play-area">
+					<UnifiedTileScene3D {inspect3D} />
 					{#if gameState?.status === 'FINISHED'}
 						<div class="status-banner finished glass-panel">
 							<h2>GAME OVER</h2>
@@ -236,7 +238,6 @@
 									revealHand={gameState?.status === 'FINISHED'}
 									isCurrentTurn={currentPlayerId === id}
 									canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
-									{inspect3D}
 									onSelectTarget={handleAskSort}
 									onSelectSlot={handleAskCompare}
 								/>
@@ -253,7 +254,6 @@
 								canSelectTile={canUseDrawnTile}
 								onReveal={handleReveal}
 								selectedTileId={uiState?.selectedTileId}
-								{inspect3D}
 								onSelectTile={handleSelectTile}
 							/>
 						{/if}
@@ -285,7 +285,6 @@
 								{correctlyDeducedTileIds}
 								isCurrentTurn={currentPlayerId === uiState.myId}
 								canBeTarget={canUseDrawnTile && uiState?.selectedTileId !== null}
-								{inspect3D}
 								onSelectTarget={handleAskSort}
 								onSelectSlot={handleAskCompare}
 							/>

@@ -13,12 +13,13 @@ Testing that game over reveals every tile and celebrates deductions the viewer g
 
 ---
 
-## Inspection mode orbits a rack while preserving the complete game view
+## Inspection mode orbits the unified 3D game surface
 
-![Inspection mode orbits a rack while preserving the complete game view](./screenshots/001-orbit-inspection.png)
+![Inspection mode orbits the unified 3D game surface](./screenshots/001-orbit-inspection.png)
 
 **Verifications:**
-- [x] All four rack and table scenes expose orbit controls
+- [x] One canvas contains all four rack and table fields
+- [x] The drawing buffer matches the capped device pixel ratio
 - [x] Inspection mode remains visibly active until the player exits it
 
 ---
