@@ -14,7 +14,6 @@
 	};
 	export let canReveal = false;
 	export let canSelectTile = false;
-	export let inspect3D = false;
 	export let onReveal: (color: TileColor) => void;
 	export let onSelectTile: (id: number) => void;
 
@@ -36,7 +35,7 @@
 
 <div class="table">
 	<div class="decks-stage">
-		<TileField3D tiles={deckSceneTiles} columns={5} {inspect3D} label="Five 3D draw decks" />
+		<TileField3D tiles={deckSceneTiles} columns={5} label="Five 3D draw decks" />
 		<div class="decks-area">
 			{#each COLORS as color}
 				<button class="deck-btn {color.toLowerCase()}" on:click={() => onReveal(color)} disabled={!canReveal || decks[color].length === 0}>
@@ -56,7 +55,7 @@
 			class="pool-stage"
 			style={`--pool-columns: ${poolColumns}; --pool-rows: ${Math.max(1, Math.ceil(publicPool.length / poolColumns))}`}
 		>
-			<TileField3D tiles={poolSceneTiles} columns={poolColumns} {inspect3D} label="3D public tile pool" />
+			<TileField3D tiles={poolSceneTiles} columns={poolColumns} label="3D public tile pool" />
 			<div class="pool-tiles">
 				{#each publicPool as id}
 					<button
