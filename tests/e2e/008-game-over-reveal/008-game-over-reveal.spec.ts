@@ -64,8 +64,7 @@ test('reveals every hand and marks correct deductions when the game ends', async
 					await expect(incorrectTile.getByLabel('Correctly deduced')).toHaveCount(0);
 				}
 			}
-		],
-		networkStatus: 'skip'
+		]
 	});
 
 	const inspectButton = page.getByRole('button', { name: 'Inspect 3D' });
@@ -109,8 +108,7 @@ test('reveals every hand and marks correct deductions when the game ends', async
 				spec: 'Inspection mode remains visibly active until the player exits it',
 				check: async () => await expect(page.getByRole('button', { name: 'Exit 3D' })).toHaveAttribute('aria-pressed', 'true')
 			}
-		],
-		networkStatus: 'skip'
+		]
 	});
 
 	tester.generateDocs();
