@@ -1,5 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
+
+async function writeOwnUIEvents(page: Page, events: Array<{ type: string; payload: Record<string, unknown> }>) {
+	await page.evaluate(async (remoteEvents) => {
+		const { writeGameEvents } = await (0, eval)('import("/src/lib/firebase/events.ts")');
+		const state = (window as any).store.getState();
+		await writeGameEvents(state.ui.gameId, remoteEvents.map((event) => ({
+			...event,
+			payload: { ...event.payload, playerId: state.ui.myId }
+		})));
+	}, events);
+}
 
 test.describe('Multiplayer Turn-Taking', () => {
 	test('should rotate turns and handle elimination', async ({ browser }, testInfo) => {
@@ -109,29 +120,25 @@ test.describe('Multiplayer Turn-Taking', () => {
 			]
 		});
 
-		await clientPage.evaluate(() => {
-			const store = (window as any).store;
-			store.dispatch({ type: 'ui/markDeduction', payload: { id: 1, mark: 'X' } });
-			store.dispatch({ type: 'ui/markDeduction', payload: { id: 6, mark: 'OK' } });
-			store.dispatch({ type: 'ui/addStroke', payload: [[1, 1], [12, 12]] });
-		});
+		await writeOwnUIEvents(clientPage, [
+			{ type: 'ui/markDeductions', payload: { marks: { 1: 'X', 6: 'OK' } } },
+			{ type: 'ui/addStroke', payload: { points: [{ x: 1, y: 1 }, { x: 12, y: 12 }] } },
+			{ type: 'ui/setGuessInputs', payload: { values: ['1', '2', '3', '4', '5'] } }
+		]);
 		const clientGuessInputs = clientPage.locator('.deduction-board .guess-inputs input');
-		for (let i = 0; i < 5; i++) {
-			await clientGuessInputs.nth(i).fill(`${i + 1}`);
-		}
-		await expect(clientPage.locator('.deduction-board .strike')).toHaveCount(1);
-		await expect(clientPage.locator('.deduction-board .check')).toHaveCount(1);
-		await expect(clientGuessInputs.nth(0)).toHaveValue('1');
+		await expect(clientPage.locator('.deduction-board .strike')).toHaveCount(1, { timeout: 2000 });
+		await expect(clientPage.locator('.deduction-board .check')).toHaveCount(1, { timeout: 2000 });
+		await expect(clientGuessInputs.nth(0)).toHaveValue('1', { timeout: 2000 });
 
 		await clientPage.locator('.status-banner button:has-text("Play Again")').click();
 		await expect(hostPage.locator('.status-banner.finished')).not.toBeVisible();
 		await expect(clientPage.locator('.status-banner.finished')).not.toBeVisible();
 		await expect(clientPage.locator('.stand-container').filter({ hasText: 'Client' }).locator('.tile')).toHaveCount(5);
 
-		await expect(clientPage.locator('.deduction-board .strike')).toHaveCount(0);
-		await expect(clientPage.locator('.deduction-board .check')).toHaveCount(0);
+		await expect(clientPage.locator('.deduction-board .strike')).toHaveCount(0, { timeout: 2000 });
+		await expect(clientPage.locator('.deduction-board .check')).toHaveCount(0, { timeout: 2000 });
 		for (let i = 0; i < 5; i++) {
-			await expect(clientGuessInputs.nth(i)).toHaveValue('');
+			await expect(clientGuessInputs.nth(i)).toHaveValue('', { timeout: 2000 });
 		}
 
 		await clientPage.locator('.lobby-link-button').click();
