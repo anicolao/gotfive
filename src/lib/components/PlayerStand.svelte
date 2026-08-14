@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Tile from './Tile.svelte';
 	import MiniTile from './MiniTile.svelte';
+	import PlayerLabel3D from './three/PlayerLabel3D.svelte';
 	import TileField3D from './three/TileField3D.svelte';
 	import type { ClueRecord } from '../store/playersSlice';
 
@@ -76,7 +77,10 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="stand-container" class:can-target={canBeTarget} class:current-turn={isCurrentTurn} onclick={chooseSort}>
-	<div class="name-tag">{name} {isCurrentTurn ? '★' : ''}</div>
+	<div class="name-tag">
+		<PlayerLabel3D text={`${name} ${isCurrentTurn ? '★' : ''}`} current={isCurrentTurn} />
+		{name} {isCurrentTurn ? '★' : ''}
+	</div>
 	<div class="stand">
 		<TileField3D
 			tiles={sceneTiles}
@@ -173,13 +177,6 @@
                 transition: transform 0.2s, filter 0.2s;
         }
 
-        .current-turn .name-tag {
-                background-color: var(--color-neon-cyan);
-                color: #000;
-                animation: pulse 2s infinite;
-                box-shadow: 0 0 10px var(--color-neon-cyan);
-        }
-
         .current-turn .stand {
                 animation: breathing-glow 3s ease-in-out infinite;
         }
@@ -187,12 +184,6 @@
         @keyframes breathing-glow {
                 0%, 100% { filter: drop-shadow(0 0 5px var(--color-neon-cyan)); }
                 50% { filter: drop-shadow(0 0 20px var(--color-neon-cyan)); }
-        }
-
-        @keyframes pulse {
-                0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
-                70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
-                100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
         }
 
         .can-target {
@@ -208,14 +199,15 @@
         }
 
         .name-tag {
-                background-color: rgba(0, 0, 0, 0.6);
-                color: var(--color-neon-yellow);
+				position: relative;
+				background: transparent;
+				color: transparent;
                 padding: 4px 12px;
                 border-radius: 4px;
                 font-weight: bold;
                 text-transform: uppercase;
-                border: 1px solid var(--color-neon-yellow);
-                box-shadow: 0 0 5px rgba(255, 234, 0, 0.3);
+				border: 1px solid transparent;
+				box-shadow: none;
                 font-size: var(--font-size-small);
         }
 

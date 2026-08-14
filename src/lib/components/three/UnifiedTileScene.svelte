@@ -3,8 +3,9 @@
 	import { getTileData } from '$lib/game/tiles';
 	import OrbitInspectionControls from './OrbitInspectionControls.svelte';
 	import MovingTile3D from './MovingTile3D.svelte';
+	import PlayerLabelMesh3D from './PlayerLabelMesh3D.svelte';
 	import TileFieldGroup3D from './TileFieldGroup3D.svelte';
-	import type { SceneTile, TileFieldRegistration } from './tileSceneRegistry';
+	import type { PlayerLabelRegistration, SceneTile, TileFieldRegistration } from './tileSceneRegistry';
 
 	export type MeasuredTileField = TileFieldRegistration & {
 		x: number;
@@ -14,13 +15,22 @@
 		anchorRects?: Array<{ x: number; y: number; width: number; height: number }>;
 	};
 
+	export type MeasuredPlayerLabel = PlayerLabelRegistration & {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	};
+
 	let {
 		fields = [] as MeasuredTileField[],
+		labels = [] as MeasuredPlayerLabel[],
 		inspect3D = false,
 		onMotionStart = () => {},
 		onMotionEnd = () => {}
 	}: {
 		fields?: MeasuredTileField[];
+		labels?: MeasuredPlayerLabel[];
 		inspect3D?: boolean;
 		onMotionStart?: (key: string, from: string, to: string) => void;
 		onMotionEnd?: (key: string) => void;
@@ -179,6 +189,20 @@
 			scale={layout.metrics.scale}
 		/>
 	{/if}
+{/each}
+
+{#each labels as label (label.id)}
+	<PlayerLabelMesh3D
+		text={label.text}
+		current={label.current}
+		position={[
+			label.x + label.width / 2 - viewportWidth / 2,
+			viewportHeight / 2 - label.y - label.height / 2,
+			0
+		]}
+		width={label.width}
+		height={label.height}
+	/>
 {/each}
 
 {#each placedTiles as placement (placement.tile.key)}

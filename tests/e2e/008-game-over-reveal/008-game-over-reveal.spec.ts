@@ -74,6 +74,7 @@ test('reveals every hand and marks correct deductions when the game ends', async
 
 	const unifiedScene = page.locator('.unified-tile-scene.inspect');
 	await expect(unifiedScene).toHaveAttribute('data-field-count', '4');
+	await expect(unifiedScene).toHaveAttribute('data-player-label-count', '2');
 	const inspectableCanvas = unifiedScene.locator('canvas');
 	await expect(inspectableCanvas).toHaveCount(1);
 	const sceneBounds = await inspectableCanvas.boundingBox();
@@ -87,9 +88,10 @@ test('reveals every hand and marks correct deductions when the game ends', async
 		description: 'Inspection mode orbits the unified 3D game surface',
 		verifications: [
 			{
-				spec: 'One canvas contains all four rack and table fields',
+				spec: 'One canvas contains all rack and table fields plus both player labels',
 				check: async () => {
 					await expect(unifiedScene).toHaveAttribute('data-field-count', '4');
+					await expect(unifiedScene).toHaveAttribute('data-player-label-count', '2');
 					await expect(inspectableCanvas).toHaveCount(1);
 				}
 			},

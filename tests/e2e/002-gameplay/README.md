@@ -42,7 +42,7 @@ As a user, I want to play through a game with deterministic results.
 ![Asking for a dot clue records it above the slot and consumes the tile](./screenshots/003-ask-compare-clue.png)
 
 **Verifications:**
-- [x] Alice stand has a compare clue above the first slot
+- [x] Alice stand has a compare clue above the middle slot and in front of its 3D label
 - [x] The consumed tile is removed from the public pool
 - [x] The consumed physical tile flies and shrinks from the public line into its compare clue
 
