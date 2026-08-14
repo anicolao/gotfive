@@ -10,6 +10,7 @@ export type SceneTile = {
 	correct?: boolean;
 	pileCount?: number;
 	motionKey?: string | number;
+	rotationZ?: number;
 };
 
 export type TileFieldRegistration = {

@@ -171,8 +171,10 @@ test('User plays the game', async ({ page }, testInfo) => {
         check: async () => {
           const indicator = aliceMiddleSlot.locator('.compare-indicators .compare-clue');
           await expect(indicator).toBeVisible();
+          await expect(indicator).toHaveClass(/no-match/);
           await expect(indicator.locator('.mini-tile')).toBeVisible();
           await expect(indicator.locator('.mini-tile .number')).toHaveText(secondPublicTileId);
+          await expect(indicator.locator('.tile-field-3d')).toHaveAttribute('data-tile-orientation', 'tilted');
           await expect(page.locator('.unified-tile-scene')).toHaveAttribute('data-player-label-count', '2');
         }
       },

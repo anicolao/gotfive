@@ -43,7 +43,10 @@ test('lower tile tap asks whether to match or sort', async ({ page }) => {
 
 	await dialog.getByRole('button', { name: 'Match' }).click();
 
-	await expect(aliceFirstSlot.locator('.compare-indicators .compare-clue')).toBeVisible();
+	const matchClue = aliceFirstSlot.locator('.compare-indicators .compare-clue');
+	await expect(matchClue).toBeVisible();
+	await expect(matchClue).not.toHaveClass(/no-match/);
+	await expect(matchClue.locator('.tile-field-3d')).toHaveAttribute('data-tile-orientation', 'upright');
 	await expect(aliceStand.locator('.sort-clues')).toHaveCount(0);
 });
 

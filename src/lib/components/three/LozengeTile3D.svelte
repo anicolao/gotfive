@@ -19,6 +19,7 @@
 		revealFromFaceDown = false,
 		position = [0, 0, 0] as Position,
 		scale = 1,
+		rotationZ = 0,
 		motionKey = ''
 	}: {
 		id?: number | null;
@@ -30,6 +31,7 @@
 		revealFromFaceDown?: boolean;
 		position?: Position;
 		scale?: number;
+		rotationZ?: number;
 		motionKey?: string | number;
 	} = $props();
 
@@ -51,6 +53,7 @@
 	let lastMotionKey: string | number | undefined;
 	let lastFaceDown: boolean | undefined;
 	let lastSelected: boolean | undefined;
+	let lastRotationZ: number | undefined;
 	let spinVelocity = 0;
 	let bounce = 0;
 
@@ -67,7 +70,7 @@
 
 		const targetRotationY = faceDown ? Math.PI : 0;
 		const targetRotationX = -0.08;
-		const targetRotationZ = 0;
+		const targetRotationZ = rotationZ;
 
 		if (!initialized) {
 			group.position.set(0, reducedMotion ? (selected ? 0.18 : 0) : -0.9, 0);
@@ -86,7 +89,12 @@
 		if (
 			!reducedMotion &&
 			lastMotionKey !== undefined &&
-			(lastMotionKey !== motionKey || lastFaceDown !== faceDown || lastSelected !== selected)
+			(
+				lastMotionKey !== motionKey ||
+				lastFaceDown !== faceDown ||
+				lastSelected !== selected ||
+				lastRotationZ !== rotationZ
+			)
 		) {
 			const selectionChanged = lastSelected !== selected;
 			spinVelocity = faceDown !== lastFaceDown ? 11 : selectionChanged ? 0 : 7;
@@ -95,6 +103,7 @@
 		lastMotionKey = motionKey;
 		lastFaceDown = faceDown;
 		lastSelected = selected;
+		lastRotationZ = rotationZ;
 
 		if (reducedMotion) {
 			group.position.set(0, selected ? 0.18 : 0, 0);
@@ -132,6 +141,7 @@
 		motionKey;
 		faceDown;
 		selected;
+		rotationZ;
 		reducedMotion;
 		startAnimation();
 	});

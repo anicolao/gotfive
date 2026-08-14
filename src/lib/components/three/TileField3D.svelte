@@ -33,7 +33,14 @@
 	});
 </script>
 
-<div bind:this={element} class="tile-field-3d" class:rack aria-hidden="true" aria-label={label}></div>
+<div
+	bind:this={element}
+	class="tile-field-3d"
+	class:rack
+	data-tile-orientation={tiles.some((tile) => tile.rotationZ) ? 'tilted' : 'upright'}
+	aria-hidden="true"
+	aria-label={label}
+></div>
 
 <style>
 	.tile-field-3d {

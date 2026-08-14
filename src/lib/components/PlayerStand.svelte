@@ -42,7 +42,8 @@
 		return [{
 			key: `tile-${clue.tileId}`,
 			id: clue.tileId,
-			motionKey: `${id}:${clue.type}:${clue.targetSlot ?? clue.result}:${clue.tileId}`
+			motionKey: `${id}:${clue.type}:${clue.targetSlot ?? clue.result}:${clue.tileId}`,
+			rotationZ: clue.type === 'COMPARE' && clue.result === false ? -Math.PI / 12 : 0
 		}];
 	}
 
