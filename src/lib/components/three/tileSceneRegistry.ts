@@ -24,7 +24,15 @@ export type TileFieldRegistration = {
 	label: string;
 };
 
+export type PlayerLabelRegistration = {
+	id: symbol;
+	element: HTMLElement;
+	text: string;
+	current: boolean;
+};
+
 export const tileSceneFields = writable<TileFieldRegistration[]>([]);
+export const playerSceneLabels = writable<PlayerLabelRegistration[]>([]);
 
 export function registerTileField(field: Omit<TileFieldRegistration, 'id'>) {
 	const id = Symbol(field.label);
@@ -38,6 +46,22 @@ export function registerTileField(field: Omit<TileFieldRegistration, 'id'>) {
 		},
 		unregister() {
 			tileSceneFields.update((fields) => fields.filter((current) => current.id !== id));
+		}
+	};
+}
+
+export function registerPlayerLabel(label: Omit<PlayerLabelRegistration, 'id'>) {
+	const id = Symbol(label.text);
+	playerSceneLabels.update((labels) => [...labels, { id, ...label }]);
+
+	return {
+		update(next: Omit<PlayerLabelRegistration, 'id' | 'element'>) {
+			playerSceneLabels.update((labels) => labels.map((current) => (
+				current.id === id ? { ...current, ...next } : current
+			)));
+		},
+		unregister() {
+			playerSceneLabels.update((labels) => labels.filter((current) => current.id !== id));
 		}
 	};
 }

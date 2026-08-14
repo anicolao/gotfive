@@ -159,20 +159,21 @@ test('User plays the game', async ({ page }, testInfo) => {
   const secondPublicTileId = await secondPublicTile.locator('.number').innerText();
   await secondPublicTile.click();
   
-  // Click on Alice's first slot
-  const aliceFirstSlot = aliceStand.locator('.slot').first();
-  await aliceFirstSlot.evaluate(el => (el as HTMLElement).click());
+  // Use the middle slot so the clue overlaps the player label and exercises 3D depth ordering.
+  const aliceMiddleSlot = aliceStand.locator('.slot').nth(2);
+  await aliceMiddleSlot.evaluate(el => (el as HTMLElement).click());
 
   await tester.step('ask-compare-clue', {
     description: 'Asking for a dot clue records it above the slot and consumes the tile',
     verifications: [
       {
-        spec: 'Alice stand has a compare clue above the first slot',
+        spec: 'Alice stand has a compare clue above the middle slot and in front of its 3D label',
         check: async () => {
-          const indicator = aliceFirstSlot.locator('.compare-indicators .compare-clue');
+          const indicator = aliceMiddleSlot.locator('.compare-indicators .compare-clue');
           await expect(indicator).toBeVisible();
           await expect(indicator.locator('.mini-tile')).toBeVisible();
           await expect(indicator.locator('.mini-tile .number')).toHaveText(secondPublicTileId);
+          await expect(page.locator('.unified-tile-scene')).toHaveAttribute('data-player-label-count', '2');
         }
       },
       {

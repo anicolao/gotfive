@@ -2,8 +2,8 @@
 	import { Canvas } from '@threlte/core';
 	import { onMount } from 'svelte';
 	import { WebGLRenderer } from 'three';
-	import UnifiedTileScene, { type MeasuredTileField } from './UnifiedTileScene.svelte';
-	import { tileSceneFields } from './tileSceneRegistry';
+	import UnifiedTileScene, { type MeasuredPlayerLabel, type MeasuredTileField } from './UnifiedTileScene.svelte';
+	import { playerSceneLabels, tileSceneFields } from './tileSceneRegistry';
 
 	let { inspect3D = false }: { inspect3D?: boolean } = $props();
 
@@ -49,7 +49,8 @@
 		const observed = [
 			element,
 			...$tileSceneFields.map((field) => field.element),
-			...$tileSceneFields.flatMap((field) => field.anchors ?? [])
+			...$tileSceneFields.flatMap((field) => field.anchors ?? []),
+			...$playerSceneLabels.map((label) => label.element)
 		].filter(Boolean);
 		if (observed.length === 0) return;
 
@@ -96,6 +97,25 @@
 				};
 			});
 	});
+
+	let measuredLabels = $derived.by(() => {
+		layoutRevision;
+		if (!element) return [] as MeasuredPlayerLabel[];
+		const rootRect = element.getBoundingClientRect();
+
+		return $playerSceneLabels
+			.filter((label) => label.element.isConnected)
+			.map((label) => {
+				const rect = label.element.getBoundingClientRect();
+				return {
+					...label,
+					x: rect.left - rootRect.left,
+					y: rect.top - rootRect.top,
+					width: rect.width,
+					height: rect.height
+				};
+			});
+	});
 </script>
 
 <div
@@ -103,6 +123,7 @@
 	class="unified-tile-scene"
 	class:inspect={inspect3D}
 	data-field-count={measuredFields.length}
+	data-player-label-count={measuredLabels.length}
 	data-moving-tile-count={movingTileCount}
 	data-last-tile-motion={lastTileMotion}
 	aria-hidden="true"
@@ -110,6 +131,7 @@
 	<Canvas {createRenderer} {dpr} shadows={false} renderMode="on-demand">
 		<UnifiedTileScene
 			fields={measuredFields}
+			labels={measuredLabels}
 			{inspect3D}
 			onMotionStart={handleMotionStart}
 			onMotionEnd={handleMotionEnd}
