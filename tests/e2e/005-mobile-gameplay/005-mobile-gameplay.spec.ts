@@ -6,7 +6,7 @@ interface Store {
   getState: () => {
     game: { status: string; turnOrder: string[] };
     players: { players: Record<string, unknown> };
-    ui: { gameId: string; deductionBoard: Record<number, '?' | 'X' | 'OK'>; strokes: number[][][] };
+    ui: { gameId: string; myId: string; deductionBoard: Record<number, '?' | 'X' | 'OK'>; strokes: number[][][] };
   };
 }
 
@@ -20,6 +20,17 @@ async function writeRemoteGameEvent(page: Page, type: string, payload?: unknown)
     const gameId = (window as unknown as WindowWithStore).store.getState().ui.gameId;
     await writeGameEvent(gameId, args.type, args.payload);
   }, { type, payload });
+}
+
+async function writeRemoteGameEvents(page: Page, events: Array<{ type: string; payload?: Record<string, unknown> }>) {
+  await page.evaluate(async (remoteEvents) => {
+    const { writeGameEvents } = await (0, eval)('import("/src/lib/firebase/events.ts")');
+    const state = (window as unknown as WindowWithStore).store.getState();
+    await writeGameEvents(state.ui.gameId, remoteEvents.map((event) => ({
+      ...event,
+      payload: { ...event.payload, playerId: state.ui.myId }
+    })));
+  }, events);
 }
 
 async function scrollStatusBannerIntoView(page: Page) {
@@ -440,23 +451,24 @@ test.describe('Mobile Gameplay', () => {
     await page.getByRole('button', { name: 'Start Hosting' }).click();
     await page.getByRole('button', { name: 'START GAME' }).click();
 
-    await page.evaluate(() => {
-      const store = (window as unknown as WindowWithStore).store;
-      store.dispatch({ type: 'ui/markDeduction', payload: { id: 1, mark: 'X' } });
-      store.dispatch({ type: 'ui/markDeduction', payload: { id: 2, mark: 'OK' } });
-      store.dispatch({ type: 'ui/addStroke', payload: [[1, 1], [20, 20]] });
+    await writeRemoteGameEvents(page, [
+      { type: 'ui/markDeductions', payload: { marks: { 1: 'X', 2: 'OK' } } },
+      { type: 'ui/addStroke', payload: { points: [{ x: 1, y: 1 }, { x: 20, y: 20 }] } }
+    ]);
+    await expect(page.locator('.deduction-board .cell[data-id="1"] .strike')).toBeVisible({ timeout: 2000 });
+
+    const populated = await page.evaluate(() => {
+      const state = (window as unknown as WindowWithStore).store.getState().ui;
+      return {
+        marks: Object.keys(state.deductionBoard).length,
+        strokes: state.strokes.length
+      };
     });
-    await expect.poll(async () => {
-      return page.evaluate(() => {
-        const state = (window as unknown as WindowWithStore).store.getState().ui;
-        return {
-          marks: Object.keys(state.deductionBoard).length,
-          strokes: state.strokes.length
-        };
-      });
-    }).toEqual({ marks: 2, strokes: 1 });
+    expect(populated).toEqual({ marks: 2, strokes: 1 });
 
     await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await expect(page.locator('.deduction-board .strike')).toHaveCount(0, { timeout: 2000 });
+    await expect(page.locator('.deduction-board .check')).toHaveCount(0, { timeout: 2000 });
 
     const cleared = await page.evaluate(() => {
       const state = (window as unknown as WindowWithStore).store.getState().ui;

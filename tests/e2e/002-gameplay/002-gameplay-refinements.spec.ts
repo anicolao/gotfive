@@ -1,5 +1,13 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
+
+async function writeRemoteGameEvent(page: Page, type: string, payload?: unknown) {
+  await page.evaluate(async (args: { type: string; payload?: unknown }) => {
+    const { writeGameEvent } = await (0, eval)('import("/src/lib/firebase/events.ts")');
+    const gameId = (window as any).store.getState().ui.gameId;
+    await writeGameEvent(gameId, args.type, args.payload);
+  }, { type, payload });
+}
 
 test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) => {
   test.setTimeout(60000);
@@ -274,6 +282,25 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
       }
     ]
   });
+
+  const nextPlayerName = await page.evaluate(() => {
+    const state = (window as any).store.getState();
+    const nextIndex = (state.game.currentPlayerIndex + 1) % state.game.turnOrder.length;
+    return state.players.players[state.game.turnOrder[nextIndex]].name;
+  });
+  await writeRemoteGameEvent(page, 'game/nextTurn');
+  await expect(page.locator('.stand-container.current-turn').filter({ hasText: nextPlayerName })).toBeVisible({ timeout: 2000 });
+
+  // A later snapshot used to replay the prior round's persisted UI events.
+  const rematchClueSheet = await page.evaluate(() => {
+    const ui = (window as any).store.getState().ui;
+    return {
+      marks: Object.keys(ui.deductionBoard).length,
+      strokes: ui.strokes.length,
+      guessInputs: ui.guessInputs
+    };
+  });
+  expect(rematchClueSheet).toEqual({ marks: 0, strokes: 0, guessInputs: ['', '', '', '', ''] });
 
   // 6. Conclude
   tester.generateDocs();

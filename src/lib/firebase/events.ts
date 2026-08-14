@@ -527,9 +527,11 @@ export async function subscribeGame(gameId: string, dispatch: AppDispatch) {
 			const events = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event).sort(compareEvents);
 			if (events.length === 0) return;
 			let latestStartEvent: EventWithId | null = null;
+			let latestStartEventIndex = -1;
 			for (let i = events.length - 1; i >= 0; i -= 1) {
 				if (events[i].type === 'game/start') {
 					latestStartEvent = events[i];
+					latestStartEventIndex = i;
 					break;
 				}
 			}
@@ -539,7 +541,11 @@ export async function subscribeGame(gameId: string, dispatch: AppDispatch) {
 				&& currentGameStartEventId !== nextGameStartEventId;
 			dispatch(resetPlayers());
 			dispatch(resetGame());
-			for (const event of events) {
+			for (let i = 0; i < events.length; i += 1) {
+				const event = events[i];
+				// Deduction sheets are private round state. Replaying UI events from an
+				// earlier round would restore them after the rematch reset on every snapshot.
+				if (event.type.startsWith('ui/') && i < latestStartEventIndex) continue;
 				dispatch({ type: event.type, payload: event.payload, meta: { remote: true } });
 			}
 			if (shouldResetLocalUI) {
