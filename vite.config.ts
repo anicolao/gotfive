@@ -26,6 +26,23 @@ export default defineConfig({
 		'import.meta.env.VITE_APP_VERSION': JSON.stringify(process.env.VITE_APP_VERSION || pkg.version),
 		'import.meta.env.VITE_GIT_HASH': JSON.stringify(gitHash)
 	},
+	optimizeDeps: {
+		// Keep the dev-server graph immutable after startup. Late discovery can replace
+		// shared Svelte/Threlte chunks while an E2E page still references their old hashes.
+		noDiscovery: true,
+		include: [
+			'@reduxjs/toolkit',
+			'@threlte/core',
+			'firebase/app',
+			'firebase/auth',
+			'firebase/firestore',
+			'svelte',
+			'svelte/store',
+			'three',
+			'three/examples/jsm/controls/OrbitControls.js',
+			'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+		]
+	},
 	plugins: [
 		nodePolyfills({
 			include: ['buffer', 'events', 'util', 'stream'],
