@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { T, useThrelte } from '@threlte/core';
 	import { getTileData } from '$lib/game/tiles';
-	import OrbitInspectionControls from './OrbitInspectionControls.svelte';
 	import MovingTile3D from './MovingTile3D.svelte';
 	import PlayerLabelMesh3D from './PlayerLabelMesh3D.svelte';
 	import TileFieldGroup3D from './TileFieldGroup3D.svelte';
@@ -25,13 +24,11 @@
 	let {
 		fields = [] as MeasuredTileField[],
 		labels = [] as MeasuredPlayerLabel[],
-		inspect3D = false,
 		onMotionStart = () => {},
 		onMotionEnd = () => {}
 	}: {
 		fields?: MeasuredTileField[];
 		labels?: MeasuredPlayerLabel[];
-		inspect3D?: boolean;
 		onMotionStart?: (key: string, from: string, to: string) => void;
 		onMotionEnd?: (key: string) => void;
 	} = $props();
@@ -165,14 +162,6 @@
 	far={cameraFar}
 	position={[0, 0, cameraDistance]}
 />
-
-{#if inspect3D}
-	<OrbitInspectionControls
-		target={[0, 0, 0]}
-		minDistance={cameraDistance * 0.35}
-		maxDistance={cameraDistance * 2.5}
-	/>
-{/if}
 
 <T.AmbientLight intensity={0.5} />
 <T.DirectionalLight position={[-600, 900, 1400]} intensity={1.75} color="#e6fbff" />

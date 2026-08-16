@@ -61,6 +61,12 @@ test('User plays the game', async ({ page }, testInfo) => {
             await expect(deckCounts.nth(i)).toHaveAttribute('data-pile-count', '9');
           }
         }
+      },
+      {
+        spec: 'The 3D inspection control is not shown',
+        check: async () => {
+          await expect(page.getByRole('button', { name: /Inspect 3D|Exit 3D/ })).toHaveCount(0);
+        }
       }
     ]
   });
