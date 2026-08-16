@@ -10,6 +10,7 @@ As a user, I want to play through a game with deterministic results.
 - [x] Player "You" has 5 tiles
 - [x] Public pool has 5 initial tiles
 - [x] Each of the 5 colored decks has 9 tiles remaining
+- [x] The 3D inspection control is not shown
 
 ---
 

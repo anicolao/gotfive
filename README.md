@@ -12,7 +12,7 @@ A game of numbers.
 - Racks anchor every 3D tile to its measured slot, preserving centered sorting lanes between tiles and at both ends; the clue lozenge itself shows the sorted position, while compare clues stay upright for a match and tilt for no match. Deck counts are rendered on the 3D pile, and selecting a public tile is indicated by its lift rather than a DOM outline.
 - Semantic HTML controls sit above the WebGL presentation so keyboard, screen-reader, and automated-test interactions retain normal browser behavior.
 - Reduced-motion preferences skip transitional movement and render every piece directly in its settled state.
-- One responsive, high-DPI canvas renders every rack and table field through a distant, low-FOV camera. The temporary **Inspect 3D** control enables orbit, pan, and zoom gestures over that unified scene without interfering with normal game controls when inspection is off.
+- One responsive, high-DPI canvas renders every rack and table field through a distant, low-FOV camera.
 
 ## Development Commands
 - `bun install`: Install dependencies.

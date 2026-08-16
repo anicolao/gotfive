@@ -5,8 +5,6 @@
 	import UnifiedTileScene, { type MeasuredPlayerLabel, type MeasuredTileField } from './UnifiedTileScene.svelte';
 	import { playerSceneLabels, tileSceneFields } from './tileSceneRegistry';
 
-	let { inspect3D = false }: { inspect3D?: boolean } = $props();
-
 	let element: HTMLDivElement;
 	let layoutRevision = $state(0);
 	let dpr = $state(1);
@@ -121,7 +119,6 @@
 <div
 	bind:this={element}
 	class="unified-tile-scene"
-	class:inspect={inspect3D}
 	data-field-count={measuredFields.length}
 	data-player-label-count={measuredLabels.length}
 	data-moving-tile-count={movingTileCount}
@@ -132,7 +129,6 @@
 		<UnifiedTileScene
 			fields={measuredFields}
 			labels={measuredLabels}
-			{inspect3D}
 			onMotionStart={handleMotionStart}
 			onMotionEnd={handleMotionEnd}
 		/>
@@ -148,22 +144,7 @@
 		filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.62));
 	}
 
-	.unified-tile-scene.inspect {
-		z-index: 30;
-		pointer-events: auto;
-		cursor: grab;
-		touch-action: none;
-	}
-
-	.unified-tile-scene.inspect:active {
-		cursor: grabbing;
-	}
-
 	.unified-tile-scene :global(canvas) {
 		pointer-events: none;
-	}
-
-	.unified-tile-scene.inspect :global(canvas) {
-		pointer-events: auto;
 	}
 </style>
