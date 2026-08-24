@@ -53,6 +53,10 @@
                 --mini-tile-size: clamp(16px, 3vw, 24px);
         }
 
+		.clue {
+				--mini-tile-size: var(--clue-tile-size, clamp(20px, 3.75vw, 30px));
+		}
+
 		.semantic-only {
 			opacity: 0;
 		}
