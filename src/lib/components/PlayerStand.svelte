@@ -171,7 +171,7 @@
 
 <style>
         .stand-container {
-				--clue-tile-size: clamp(20px, 3.75vw, 30px);
+				--clue-tile-size: clamp(24px, 4.5vw, 36px);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -357,7 +357,9 @@
 
 		@media (orientation: landscape) and (max-height: 500px) {
 				.tiles-area {
-						gap: min(var(--gap-base), 4px);
+						--tile-size: clamp(36px, 6.3vw, 42px);
+						gap: 2px;
+						padding-inline: 2px;
 				}
 		}
 
@@ -375,8 +377,8 @@
                         width: 100%;
                         box-sizing: border-box;
 				grid-template-columns:
-						repeat(5, minmax(20px, 0.52fr) minmax(0, 1fr))
-						minmax(20px, 0.52fr);
+						repeat(5, minmax(var(--clue-tile-size), 0.52fr) minmax(0, 1fr))
+						minmax(var(--clue-tile-size), 0.52fr);
                         gap: 3px;
                         padding: 4px;
                 }

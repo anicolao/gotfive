@@ -584,6 +584,12 @@
                 z-index: 3;
         }
 
+		@media (orientation: landscape) and (min-width: 1200px) and (min-height: 700px) {
+				.deduction-board {
+						zoom: 1.25;
+				}
+		}
+
         @media (orientation: portrait) {
                 .deduction-board {
                         width: 100%;
