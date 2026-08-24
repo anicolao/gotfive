@@ -54,7 +54,7 @@
         }
 
 		.clue {
-				--mini-tile-size: var(--clue-tile-size, clamp(20px, 3.75vw, 30px));
+				--mini-tile-size: var(--clue-tile-size, clamp(24px, 4.5vw, 36px));
 		}
 
 		.semantic-only {
