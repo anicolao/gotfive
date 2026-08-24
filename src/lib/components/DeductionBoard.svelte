@@ -415,6 +415,8 @@
         .guess-inputs {
                 display: flex;
                 gap: 6px;
+				width: 100%;
+				justify-content: center;
         }
 
         .guess-inputs input {
@@ -432,7 +434,15 @@
                 font-size: max(12px, var(--font-size-small));
                 line-height: 1;
                 box-sizing: border-box;
+				padding: 0;
+				appearance: textfield;
         }
+
+		.guess-inputs input::-webkit-inner-spin-button,
+		.guess-inputs input::-webkit-outer-spin-button {
+				margin: 0;
+				appearance: none;
+		}
 
         .got-five-btn {
                 font-size: var(--font-size-small);

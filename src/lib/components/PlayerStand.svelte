@@ -104,7 +104,7 @@
 										background={false}
 										label={`${name}'s sort clue`}
 									/>
-									<MiniTile id={clue.tileId} size="small" semanticOnly={true} />
+									<MiniTile id={clue.tileId} size="clue" semanticOnly={true} />
 								</div>
 							{/each}
 						</div>
@@ -131,7 +131,7 @@
 										background={false}
 										label={`${name}'s compare clue`}
 									/>
-									<MiniTile id={clue.tileId} size="small" semanticOnly={true} />
+									<MiniTile id={clue.tileId} size="clue" semanticOnly={true} />
 								</div>
 							</div>
 						{/each}
@@ -149,7 +149,7 @@
 									background={false}
 									label={`${name}'s sort clue`}
 								/>
-								<MiniTile id={clue.tileId} size="small" semanticOnly={true} />
+								<MiniTile id={clue.tileId} size="clue" semanticOnly={true} />
 							</div>
 						{/each}
 					</div>
@@ -171,6 +171,7 @@
 
 <style>
         .stand-container {
+				--clue-tile-size: clamp(20px, 3.75vw, 30px);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -220,7 +221,7 @@
         }
 
 		.tiles-area {
-				--sort-lane-size: max(var(--mini-tile-size), calc(var(--tile-size) * 0.42));
+				--sort-lane-size: max(var(--clue-tile-size), calc(var(--tile-size) * 0.42));
 				display: grid;
 				grid-template-columns: repeat(5, var(--sort-lane-size) var(--tile-size)) var(--sort-lane-size);
                 align-items: center;
@@ -353,6 +354,12 @@
                 color: var(--color-text-main);
                 border-color: var(--color-text-muted);
         }
+
+		@media (orientation: landscape) and (max-height: 500px) {
+				.tiles-area {
+						gap: min(var(--gap-base), 4px);
+				}
+		}
 
         @media (orientation: portrait) {
                 .stand-container {
