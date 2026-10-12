@@ -36,7 +36,7 @@
 			const context = canvas.getContext('2d');
 			if (!context) return;
 
-			context.font = '900 142px GotFivePileCount';
+			context.font = '900 160px GotFivePileCount';
 			context.textAlign = 'center';
 			context.textBaseline = 'alphabetic';
 			context.lineJoin = 'round';
