@@ -13,10 +13,12 @@ A game of numbers.
 - Semantic HTML controls sit above the WebGL presentation so keyboard, screen-reader, and automated-test interactions retain normal browser behavior.
 - Reduced-motion preferences skip transitional movement and render every piece directly in its settled state.
 - One responsive, high-DPI canvas renders every rack and table field through a distant, low-FOV camera.
+- Event replay enforces one tile draw per turn, and Firestore uses its XHR transport on iOS WebKit and desktop Safari to avoid delayed snapshot frames.
 
 ## Development Commands
 - `bun install`: Install dependencies.
 - `bun run dev`: Start development server.
 - `bun run build`: Build for production.
+- `bun run test:unit`: Run reducer and Firebase configuration tests.
 - `bun run test:e2e`: Run E2E tests.
 - `nix develop`: Enter development environment.

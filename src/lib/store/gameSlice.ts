@@ -64,6 +64,7 @@ export const gameSlice = createSlice({
 			});
 		},
 		reveal: (state, action: PayloadAction<TileColor>) => {
+			if (state.hasDrawnThisTurn) return;
 			const color = action.payload;
 			const deck = state.decks[color];
 			if (deck.length > 0) {
