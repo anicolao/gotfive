@@ -83,14 +83,13 @@ test.describe('Multiplayer Turn-Taking', () => {
 			]
 		});
 
-		const otherInputs = await otherPlayerPage.locator('.guess-inputs input').all();
-		for (const input of otherInputs) {
-			await input.fill('1');
-		}
+		await writeOwnUIEvents(otherPlayerPage, [
+			{ type: 'ui/setGuessInputs', payload: { values: ['1', '1', '1', '1', '1'] } }
+		]);
 		await expect(otherPlayerPage.locator('.deduction-board .got-five-btn')).toBeEnabled();
-		for (const input of otherInputs) {
-			await input.fill('');
-		}
+		await writeOwnUIEvents(otherPlayerPage, [
+			{ type: 'ui/setGuessInputs', payload: { values: ['', '', '', '', ''] } }
+		]);
 
 		// Now eliminate the current player
 		console.log('Eliminating current player...');
@@ -98,10 +97,10 @@ test.describe('Multiplayer Turn-Taking', () => {
 		// Fill in some wrong guess
 		await currentPlayerPage.locator('.deck-btn.red').click();
 		await expect(currentPlayerPage.locator('.deck-btn.red')).toBeDisabled();
-		const inputs = await currentPlayerPage.locator('.guess-inputs input').all();
-		for (const input of inputs) {
-			await input.fill('1');
-		}
+		await writeOwnUIEvents(currentPlayerPage, [
+			{ type: 'ui/setGuessInputs', payload: { values: ['1', '1', '1', '1', '1'] } }
+		]);
+		await expect(currentPlayerPage.locator('.deduction-board .got-five-btn')).toBeEnabled();
 		await currentPlayerPage.getByRole('button', { name: 'GOT FIVE!' }).click();
 
 		// Should show game over
