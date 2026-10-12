@@ -1,11 +1,11 @@
 <script module lang="ts">
-	import interBlack from '@fontsource/inter/files/inter-latin-900-normal.woff2?url';
+	import interRegular from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
 
 	let fontPromise: Promise<FontFace> | undefined;
 
 	function loadCountFont() {
 		if (!fontPromise) {
-			const font = new FontFace('GotFivePileCount', `url(${interBlack})`, { weight: '900' });
+			const font = new FontFace('GotFivePileCount', `url(${interRegular})`, { weight: '400' });
 			document.fonts.add(font);
 			fontPromise = font.load();
 		}
@@ -36,11 +36,11 @@
 			const context = canvas.getContext('2d');
 			if (!context) return;
 
-			context.font = '900 160px GotFivePileCount';
+			context.font = '400 178px GotFivePileCount';
 			context.textAlign = 'center';
 			context.textBaseline = 'alphabetic';
 			context.lineJoin = 'round';
-			context.lineWidth = 24;
+			context.lineWidth = 16;
 			context.strokeStyle = '#050505';
 			context.fillStyle = '#ffffff';
 			const label = value.toString();
