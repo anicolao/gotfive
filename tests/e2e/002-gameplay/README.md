@@ -21,6 +21,7 @@ As a user, I want to play through a game with deterministic results.
 **Verifications:**
 - [x] Public pool now has 6 tiles
 - [x] Red deck has 8 tiles remaining
+- [x] A duplicate draw event is ignored until the next turn
 - [x] The revealed physical tile moves continuously from its deck into the public line
 
 ---

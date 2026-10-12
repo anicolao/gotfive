@@ -1,6 +1,11 @@
 import { getApps, initializeApp, type FirebaseApp } from 'firebase/app';
 import { connectAuthEmulator, getAuth, type Auth } from 'firebase/auth';
-import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore';
+import {
+	connectFirestoreEmulator,
+	initializeFirestore,
+	type Firestore,
+	type FirestoreSettings
+} from 'firebase/firestore';
 
 export interface FirebaseRuntime {
 	app: FirebaseApp;
@@ -10,6 +15,31 @@ export interface FirebaseRuntime {
 
 let runtime: FirebaseRuntime | null = null;
 let emulatorsConnected = false;
+
+interface BrowserIdentity {
+	maxTouchPoints: number;
+	platform: string;
+	userAgent: string;
+}
+
+export function shouldUseFetchStreams(browser: BrowserIdentity | undefined): boolean {
+	if (!browser) return true;
+	const isIOS = /iPad|iPhone|iPod/.test(browser.userAgent)
+		|| (browser.platform === 'MacIntel' && browser.maxTouchPoints > 1);
+	const isMacSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(browser.userAgent);
+	return !(isIOS || isMacSafari);
+}
+
+function firestoreSettings(): FirestoreSettings & { useFetchStreams: boolean } {
+	// WebKit in Safari 26.4 and 26.5 can hold the final Firestore Fetch Streams
+	// frame until a later keep-alive. Use XHR on WebKit until the upstream issue
+	// is fixed: https://github.com/firebase/firebase-js-sdk/issues/9789
+	return {
+		useFetchStreams: shouldUseFetchStreams(
+			typeof navigator === 'undefined' ? undefined : navigator
+		)
+	};
+}
 
 export function getFirebase(): FirebaseRuntime {
 	if (runtime) return runtime;
@@ -29,7 +59,7 @@ export function getFirebase(): FirebaseRuntime {
 
 	const app = getApps().length > 0 ? getApps()[0] : initializeApp(config);
 	const auth = getAuth(app);
-	const db = getFirestore(app);
+	const db = initializeFirestore(app, firestoreSettings());
 
 	if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && !emulatorsConnected) {
 		const authPort = Number(import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT || 9099);

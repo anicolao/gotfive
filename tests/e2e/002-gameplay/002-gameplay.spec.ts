@@ -74,6 +74,7 @@ test('User plays the game', async ({ page }, testInfo) => {
   // 3. Reveal a tile from the red deck
   await page.locator('.deck-btn.red').click();
   await expect(page.locator('.deck-btn.red')).toBeDisabled();
+  await writeRemoteGameEvent(page, 'game/reveal', 'Blue');
 
   await tester.step('reveal-tile', {
     description: 'Revealing a tile updates the public pool and deck count',
@@ -88,6 +89,12 @@ test('User plays the game', async ({ page }, testInfo) => {
         spec: 'Red deck has 8 tiles remaining',
         check: async () => {
           await expect(page.locator('.deck-btn.red')).toHaveAttribute('data-pile-count', '8');
+        }
+      },
+      {
+        spec: 'A duplicate draw event is ignored until the next turn',
+        check: async () => {
+          await expect(page.locator('.deck-btn.blue')).toHaveAttribute('data-pile-count', '9');
         }
       },
       {
