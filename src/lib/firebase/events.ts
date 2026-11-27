@@ -8,9 +8,9 @@ import {
 	setDoc,
 	doc,
 	writeBatch,
+	Timestamp,
 	type Firestore,
 	type QueryDocumentSnapshot,
-	type Timestamp,
 	type Unsubscribe,
 	where,
 	limit
@@ -25,20 +25,32 @@ import {
 	type User
 } from 'firebase/auth';
 import { getFirebase } from './config';
-import { setLobbyState, setMyStatus, setProfile, type GameInfo, type PlayerProfile } from '$lib/store/lobbySlice';
+import {
+	applyLobbyEvent,
+	cloneLobbyAccumulator,
+	compareEvents,
+	compareEventToCursor,
+	cursorFor,
+	deriveLobbyView,
+	emptyLobbyAccumulator,
+	maxCursor,
+	planGameBatch,
+	resolveUserProfile,
+	type EventCursor,
+	type LobbyAccumulator,
+	type OrderedEvent,
+	type UserRecord
+} from './projection';
+import { setLobbyState, setMyStatus } from '$lib/store/lobbySlice';
 import { sync as syncGame, resetGame } from '$lib/store/gameSlice';
 import { syncPlayers, resetPlayers, clearPlayers } from '$lib/store/playersSlice';
-import { resetUI, setGameId, setIsHost, setMyId } from '$lib/store/uiSlice';
-import type { AppDispatch, RootState } from '$lib/store';
+import { resetUI, setGameId, setIsHost, setMyId, syncUI } from '$lib/store/uiSlice';
+import { store, type AppDispatch, type RootState } from '$lib/store';
 
-export const LOBBY_REDUCER_VERSION = 1;
-export const GAME_REDUCER_VERSION = 1;
-const STALE_PUBLIC_GAME_AGE_MILLIS = 2 * 60 * 60 * 1000;
+export const LOBBY_REDUCER_VERSION = 2;
+export const GAME_REDUCER_VERSION = 2;
 
-export interface EventCursor {
-	createdAtMillis: number;
-	documentId: string;
-}
+export type { EventCursor, UserRecord };
 
 export interface FirebaseEvent<TPayload = any> {
 	type: string;
@@ -55,29 +67,25 @@ interface CachedProjection<T> {
 	state: T;
 }
 
-interface UserRecord {
-	uid: string;
-	displayName: string;
-	avatar: string;
-	visibility: 'visible' | 'lurking';
-	presence: 'online' | 'idle' | 'offline';
-	activeGameId?: string | null;
-	isAnonymous: boolean;
-	googleLinked: boolean;
-	googleEmail?: string | null;
-	lastSeenAt: number;
+interface CachedGameState {
+	game: RootState['game'];
+	players: RootState['players'];
+	ui: {
+		deductionBoard: RootState['ui']['deductionBoard'];
+		guessInputs: RootState['ui']['guessInputs'];
+	};
+	startEventId: string | null;
 }
 
 const EVENT_SCHEMA_VERSION = 1;
 let currentUser: User | null = null;
 let userRecords = new Map<string, UserRecord>();
-let lobbyEvents: EventWithId[] = [];
+let lobbyAccumulator: LobbyAccumulator = emptyLobbyAccumulator();
 let lobbyUnsubscribe: Unsubscribe | null = null;
 let usersUnsubscribe: Unsubscribe | null = null;
 let gameUnsubscribe: Unsubscribe | null = null;
 let currentLobbyId = 'default';
 let eventDocumentCounter = 0;
-let currentGameStartEventId: string | null = null;
 
 type EventWithId = FirebaseEvent & { id: string };
 
@@ -113,17 +121,8 @@ function eventFromDoc(snapshot: QueryDocumentSnapshot): EventWithId | null {
 	return { ...data, id: snapshot.id };
 }
 
-function compareEvents(a: EventWithId, b: EventWithId) {
-	const createdDelta = a.createdAt.toMillis() - b.createdAt.toMillis();
-	if (createdDelta !== 0) return createdDelta;
-	return a.id.localeCompare(b.id);
-}
-
-function cursorFor(event: EventWithId): EventCursor {
-	return {
-		createdAtMillis: event.createdAt.toMillis(),
-		documentId: event.id
-	};
+function cursorToTimestamp(cursor: EventCursor): Timestamp {
+	return new Timestamp(cursor.createdAtSeconds, cursor.createdAtNanoseconds);
 }
 
 function nextEventDocumentId(target: ReturnType<typeof collection>) {
@@ -143,7 +142,16 @@ function loadCache<T>(stream: string, reducerVersion: number): CachedProjection<
 	if (!raw) return null;
 	try {
 		const parsed = JSON.parse(raw) as CachedProjection<T>;
-		return parsed.reducerVersion === reducerVersion ? parsed : null;
+		if (parsed.reducerVersion !== reducerVersion) return null;
+		if (
+			parsed.cursor !== null
+			&& (typeof parsed.cursor.createdAtSeconds !== 'number'
+				|| typeof parsed.cursor.createdAtNanoseconds !== 'number'
+				|| typeof parsed.cursor.documentId !== 'string')
+		) {
+			return null;
+		}
+		return parsed;
 	} catch {
 		return null;
 	}
@@ -314,128 +322,8 @@ export async function lobbyGameCodeExists(gameId: string) {
 	});
 }
 
-function userProfile(uid: string): UserRecord {
-	return userRecords.get(uid) || {
-		uid,
-		displayName: uid.slice(0, 8),
-		avatar: 'default',
-		visibility: 'visible',
-		presence: 'offline',
-		activeGameId: null,
-		isAnonymous: true,
-		googleLinked: false,
-		lastSeenAt: 0
-	};
-}
-
-function projectLobby(events: EventWithId[]) {
-	const games = new Map<string, GameInfo & { status?: string; roster: Set<string> }>();
-	const players = new Map<string, PlayerProfile>();
-	const closedGames = new Set<string>();
-	const now = Date.now();
-
-	for (const event of [...events].sort(compareEvents)) {
-		const payload = event.payload || {};
-		if ((payload.lobbyId || 'default') !== currentLobbyId) continue;
-		switch (event.type) {
-			case 'lobby/join': {
-				const uid = payload.uid || event.actorUid;
-				const user = userProfile(uid);
-				players.set(uid, {
-					id: uid,
-					name: user.displayName,
-					avatar: user.avatar,
-					status: user.visibility,
-					activity: user.activeGameId ? 'playing' : 'idle',
-					lastSeen: user.lastSeenAt
-				});
-				break;
-			}
-			case 'lobby/leave':
-				players.delete(payload.uid || event.actorUid);
-				break;
-			case 'lobby/createGame': {
-				if (closedGames.has(payload.gameId)) break;
-				const host = userProfile(event.actorUid);
-				games.set(payload.gameId, {
-					hostId: payload.gameId,
-					hostName: host.displayName,
-					name: payload.name,
-					visibility: payload.visibility,
-					playerCount: 1,
-					maxPlayers: payload.maxPlayers,
-					createdAtMillis: event.createdAt.toMillis(),
-					status: 'open',
-					roster: new Set([event.actorUid])
-				});
-				break;
-			}
-			case 'lobby/updateGame': {
-				const game = games.get(payload.gameId);
-				if (game) Object.assign(game, payload);
-				break;
-			}
-			case 'lobby/joinGame': {
-				const game = games.get(payload.gameId);
-				if (game && game.status === 'open') {
-					game.roster.add(payload.uid || event.actorUid);
-					game.playerCount = game.roster.size;
-				}
-				break;
-			}
-			case 'lobby/leaveGame': {
-				const game = games.get(payload.gameId);
-				if (game && game.status === 'open') {
-					game.roster.delete(payload.uid || event.actorUid);
-					game.playerCount = game.roster.size;
-				}
-				break;
-			}
-			case 'lobby/startGame': {
-				const game = games.get(payload.gameId);
-				if (game) game.status = 'playing';
-				break;
-			}
-			case 'lobby/closeGame':
-				closedGames.add(payload.gameId);
-				games.delete(payload.gameId);
-				break;
-		}
-	}
-
-	const publicGames: Record<string, GameInfo> = {};
-	for (const [gameId, game] of games) {
-		if (game.status === 'open' && game.createdAtMillis && now - game.createdAtMillis > STALE_PUBLIC_GAME_AGE_MILLIS) {
-			game.status = 'stale';
-		}
-		if (game.status === 'open') {
-			publicGames[gameId] = {
-				hostId: gameId,
-				hostName: game.hostName,
-				name: game.name,
-				visibility: game.visibility,
-				playerCount: game.playerCount,
-				maxPlayers: game.maxPlayers,
-				createdAtMillis: game.createdAtMillis
-			};
-		}
-	}
-
-	return {
-		players: Object.fromEntries(players),
-		publicGames
-	};
-}
-
-function applyLobbyProjection(dispatch: AppDispatch) {
-	const projection = projectLobby(lobbyEvents);
-	dispatch(setLobbyState(projection));
-	const last = [...lobbyEvents].sort(compareEvents).at(-1);
-	saveCache(`lobby:${currentLobbyId}`, {
-		reducerVersion: LOBBY_REDUCER_VERSION,
-		cursor: last ? cursorFor(last) : null,
-		state: projection
-	});
+function dispatchLobbyView(dispatch: AppDispatch) {
+	dispatch(setLobbyState(deriveLobbyView(lobbyAccumulator, userRecords)));
 }
 
 export async function subscribeLobby(dispatch: AppDispatch) {
@@ -447,14 +335,28 @@ export async function subscribeLobby(dispatch: AppDispatch) {
 	usersUnsubscribe?.();
 	lobbyUnsubscribe?.();
 
-	const cached = loadCache<ReturnType<typeof projectLobby>>(`lobby:${currentLobbyId}`, LOBBY_REDUCER_VERSION);
-	if (cached) dispatch(setLobbyState(cached.state));
+	const streamKey = `lobby:${currentLobbyId}`;
+	const cached = loadCache<LobbyAccumulator>(streamKey, LOBBY_REDUCER_VERSION);
+	const initialCursor = cached?.cursor ?? null;
+	let latestCursor: EventCursor | null = initialCursor;
+	const appliedEventIds = new Set<string>();
+
+	lobbyAccumulator = cached ? cloneLobbyAccumulator(cached.state) : emptyLobbyAccumulator();
+	if (cached) {
+		dispatchLobbyView(dispatch);
+	}
 
 	usersUnsubscribe = onSnapshot(
 		collection(getFirebase().db, 'users'),
 		(snapshot) => {
-			userRecords = new Map(snapshot.docs.map((docSnap) => [docSnap.id, docSnap.data() as UserRecord]));
-			applyLobbyProjection(dispatch);
+			for (const change of snapshot.docChanges()) {
+				if (change.type === 'removed') {
+					userRecords.delete(change.doc.id);
+				} else {
+					userRecords.set(change.doc.id, change.doc.data() as UserRecord);
+				}
+			}
+			dispatchLobbyView(dispatch);
 		},
 		(error) => {
 			console.error('Firebase users subscription failed', error);
@@ -462,12 +364,46 @@ export async function subscribeLobby(dispatch: AppDispatch) {
 		}
 	);
 
-	const lobbyQuery = query(collection(getFirebase().db, 'lobby'), orderBy('createdAt'));
+	const lobbyCollection = collection(getFirebase().db, 'lobby');
+	const lobbyQuery = initialCursor
+		? query(
+			lobbyCollection,
+			where('createdAt', '>=', cursorToTimestamp(initialCursor)),
+			orderBy('createdAt')
+		)
+		: query(lobbyCollection, orderBy('createdAt'));
+
 	lobbyUnsubscribe = onSnapshot(
 		lobbyQuery,
+		{ includeMetadataChanges: true },
 		(snapshot) => {
-			lobbyEvents = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event);
-			applyLobbyProjection(dispatch);
+			const newEvents: EventWithId[] = [];
+			for (const change of snapshot.docChanges({ includeMetadataChanges: true })) {
+				if (change.type !== 'added' && change.type !== 'modified') continue;
+				const event = eventFromDoc(change.doc);
+				if (!event || appliedEventIds.has(event.id)) continue;
+				if (initialCursor && compareEventToCursor(event, initialCursor) <= 0) {
+					appliedEventIds.add(event.id);
+					continue;
+				}
+				newEvents.push(event);
+			}
+
+			if (newEvents.length > 0) {
+				newEvents.sort(compareEvents);
+				for (const event of newEvents) {
+					appliedEventIds.add(event.id);
+					latestCursor = maxCursor(latestCursor, cursorFor(event));
+					applyLobbyEvent(lobbyAccumulator, event, currentLobbyId);
+				}
+				dispatchLobbyView(dispatch);
+				saveCache(streamKey, {
+					reducerVersion: LOBBY_REDUCER_VERSION,
+					cursor: latestCursor,
+					state: cloneLobbyAccumulator(lobbyAccumulator)
+				});
+			}
+
 			dispatch(setMyStatus('LOBBY_CLIENT'));
 		},
 		(error) => {
@@ -487,79 +423,95 @@ export function unsubscribeLobby() {
 }
 
 export function getLobbyRoster(gameId: string) {
-	const roster = new Set<string>();
-	for (const event of [...lobbyEvents].sort(compareEvents)) {
-		const payload = event.payload || {};
-		if ((payload.lobbyId || 'default') !== currentLobbyId) continue;
-		if (payload.gameId !== gameId) continue;
-		if (event.type === 'lobby/createGame') roster.add(event.actorUid);
-		if (event.type === 'lobby/joinGame') roster.add(payload.uid || event.actorUid);
-		if (event.type === 'lobby/leaveGame') roster.delete(payload.uid || event.actorUid);
-		if (event.type === 'lobby/closeGame') roster.clear();
-	}
-	return [...roster];
+	return [...(lobbyAccumulator.games[gameId]?.roster ?? [])];
 }
 
 export function getUserDisplay(uid: string) {
-	const user = userProfile(uid);
+	const user = resolveUserProfile(userRecords, uid);
 	return { name: user.displayName, avatar: user.avatar };
 }
 
 export async function subscribeGame(gameId: string, dispatch: AppDispatch) {
 	gameUnsubscribe?.();
-	currentGameStartEventId = null;
+	const user = await ensureAuth();
 	dispatch(resetPlayers());
 	dispatch(resetGame());
 	dispatch(resetUI());
 	dispatch(setGameId(gameId));
 	await updateUserPresence(gameId);
 
-	const cached = loadCache<{ game: RootState['game']; players: RootState['players'] }>(`game:${gameId}`, GAME_REDUCER_VERSION);
+	const streamKey = `game:${gameId}:${user.uid}`;
+	const cached = loadCache<CachedGameState>(streamKey, GAME_REDUCER_VERSION);
+	const initialCursor = cached?.cursor ?? null;
+	let latestCursor: EventCursor | null = initialCursor;
+	let currentGameStartEventId: string | null = cached?.state.startEventId ?? null;
+	const appliedEventIds = new Set<string>();
+
 	if (cached) {
 		dispatch(syncPlayers(cached.state.players));
 		dispatch(syncGame(cached.state.game));
+		dispatch(syncUI(cached.state.ui));
 	}
 
-	const gameQuery = query(collection(getFirebase().db, 'games', gameId, 'actions'), orderBy('createdAt'));
+	const actionsCollection = collection(getFirebase().db, 'games', gameId, 'actions');
+	const gameQuery = initialCursor
+		? query(
+			actionsCollection,
+			where('createdAt', '>=', cursorToTimestamp(initialCursor)),
+			orderBy('createdAt')
+		)
+		: query(actionsCollection, orderBy('createdAt'));
+
 	gameUnsubscribe = onSnapshot(
 		gameQuery,
+		{ includeMetadataChanges: true },
 		(snapshot) => {
-			const events = snapshot.docs.map(eventFromDoc).filter((event): event is EventWithId => !!event).sort(compareEvents);
-			if (events.length === 0) return;
-			let latestStartEvent: EventWithId | null = null;
-			let latestStartEventIndex = -1;
-			for (let i = events.length - 1; i >= 0; i -= 1) {
-				if (events[i].type === 'game/start') {
-					latestStartEvent = events[i];
-					latestStartEventIndex = i;
-					break;
+			const newEvents: OrderedEvent[] = [];
+			for (const change of snapshot.docChanges({ includeMetadataChanges: true })) {
+				if (change.type !== 'added' && change.type !== 'modified') continue;
+				const event = eventFromDoc(change.doc);
+				if (!event || appliedEventIds.has(event.id)) continue;
+				if (initialCursor && compareEventToCursor(event, initialCursor) <= 0) {
+					appliedEventIds.add(event.id);
+					continue;
+				}
+				newEvents.push(event);
+			}
+
+			if (newEvents.length === 0) return;
+
+			newEvents.sort(compareEvents);
+			for (const event of newEvents) {
+				appliedEventIds.add(event.id);
+				latestCursor = maxCursor(latestCursor, cursorFor(event));
+			}
+
+			const plan = planGameBatch(newEvents, currentGameStartEventId);
+			if (plan.clearPlayersFirst) {
+				dispatch(clearPlayers());
+			}
+			for (const step of plan.steps) {
+				if (step.kind === 'resetUI') {
+					dispatch(resetUI());
+				} else {
+					dispatch({ type: step.event.type, payload: step.event.payload, meta: { remote: true } });
 				}
 			}
-			const nextGameStartEventId = latestStartEvent?.id || null;
-			const shouldResetLocalUI = !!currentGameStartEventId
-				&& !!nextGameStartEventId
-				&& currentGameStartEventId !== nextGameStartEventId;
-			dispatch(resetPlayers());
-			dispatch(resetGame());
-			for (let i = 0; i < events.length; i += 1) {
-				const event = events[i];
-				// Deduction sheets are private round state. Replaying UI events from an
-				// earlier round would restore them after the rematch reset on every snapshot.
-				if (event.type.startsWith('ui/') && i < latestStartEventIndex) continue;
-				dispatch({ type: event.type, payload: event.payload, meta: { remote: true } });
-			}
-			if (shouldResetLocalUI) {
-				dispatch(resetUI());
-			}
-			currentGameStartEventId = nextGameStartEventId;
-			const last = events.at(-1);
-			import('$lib/store').then(({ store }) => {
-				const state = store.getState();
-				saveCache(`game:${gameId}`, {
-					reducerVersion: GAME_REDUCER_VERSION,
-					cursor: last ? cursorFor(last) : null,
-					state: { game: state.game, players: state.players }
-				});
+			currentGameStartEventId = plan.nextGameStartEventId;
+
+			const state = store.getState();
+			saveCache<CachedGameState>(streamKey, {
+				reducerVersion: GAME_REDUCER_VERSION,
+				cursor: latestCursor,
+				state: {
+					game: state.game,
+					players: state.players,
+					ui: {
+						deductionBoard: state.ui.deductionBoard,
+						guessInputs: state.ui.guessInputs
+					},
+					startEventId: currentGameStartEventId
+				}
 			});
 		},
 		(error) => {

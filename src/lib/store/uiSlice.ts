@@ -72,6 +72,11 @@ export const uiSlice = createSlice({
 		selectTile: (state, action: PayloadAction<number | null>) => {
 			state.selectedTileId = action.payload;
 		},
+		syncUI: (state, action: PayloadAction<{ deductionBoard: Record<number, '?' | 'X' | 'OK'>; guessInputs: string[] }>) => {
+			state.deductionBoard = { ...action.payload.deductionBoard };
+			state.guessInputs = action.payload.guessInputs.slice(0, 5);
+			while (state.guessInputs.length < 5) state.guessInputs.push('');
+		},
 		resetUI: (state) => {
 			state.deductionBoard = {};
 			state.guessInputs = ['', '', '', '', ''];
@@ -81,5 +86,5 @@ export const uiSlice = createSlice({
 	}
 });
 
-export const { setMyId, setIsHost, setGameId, markDeduction, markDeductions, clearDeductionBoard, setGuessInputs, setGuessInput, setOverlay, selectTile, resetUI } = uiSlice.actions;
+export const { setMyId, setIsHost, setGameId, markDeduction, markDeductions, clearDeductionBoard, setGuessInputs, setGuessInput, setOverlay, selectTile, syncUI, resetUI } = uiSlice.actions;
 export default uiSlice.reducer;

@@ -186,7 +186,16 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
   await guessInputs.nth(4).fill('42');
   await expect(guessInputs.nth(4)).toHaveValue('42');
 
-  await page.waitForTimeout(1000);
+  await expect.poll(async () => page.evaluate(() => {
+    const state = (window as any).store.getState();
+    const raw = localStorage.getItem(`gotfive:event-cache:game:${state.ui.gameId}:${state.ui.myId}`);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw).state?.ui?.guessInputs?.[4] ?? null;
+    } catch {
+      return null;
+    }
+  })).toBe('42');
   await page.reload();
   await expect(page.locator('.deduction-board')).toBeVisible();
   await expect(page.locator(`.deduction-board .cell[data-id="${tile2}"] .check`)).toBeVisible();
