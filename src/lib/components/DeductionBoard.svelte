@@ -16,13 +16,6 @@
 		return ids;
 	});
 
-	let canvas: HTMLCanvasElement;
-	let ctx: CanvasRenderingContext2D;
-	let drawing = false;
-	let currentStroke: number[][] = [];
-	let startPos = { x: 0, y: 0 };
-	let moved = false;
-
 	let gameState = $state(store.getState().game);
 	let playersState = $state(store.getState().players);
 	let uiState = $state(store.getState().ui);
@@ -80,141 +73,21 @@
 	}));
 
 	onMount(() => {
-		const context = canvas?.getContext('2d');
-		if (context) {
-			ctx = context;
-			resizeCanvas();
-		}
-		window.addEventListener('resize', resizeCanvas);
-
 		const unsubscribe = store.subscribe(() => {
-			if (!canvas || !ctx) return;
-			
 			const state = store.getState();
 			gameState = state.game;
 			playersState = state.players;
 			uiState = state.ui;
-			
-			// Defensive check for canvas and ctx to prevent "Cannot read properties of null" errors
-			// especially during mount/unmount transitions.
-			const c = canvas;
-			const context = ctx;
-			if (uiState?.strokes?.length === 0) {
-				context.clearRect(0, 0, c.width, c.height);
-			} else {
-				redrawStrokes();
-			}
 		});
 
 		return () => {
-			window.removeEventListener('resize', resizeCanvas);
 			unsubscribe();
-			ctx = null as any;
 		};
 	});
-
-	function resizeCanvas() {
-		if (!canvas) return;
-		const rect = canvas.getBoundingClientRect();
-		if (!rect) return;
-		canvas.width = rect.width;
-		canvas.height = rect.height;
-
-		if (ctx) {
-			ctx.lineWidth = 2;
-			ctx.lineCap = 'round';
-			ctx.strokeStyle = 'rgba(62, 39, 35, 0.6)';
-			redrawStrokes();
-		}
-	}
-
-	function redrawStrokes() {
-		const c = canvas;
-		const context = ctx;
-		if (!context || !c || !uiState?.strokes) return;
-		context.clearRect(0, 0, c.width, c.height);
-		uiState.strokes.forEach((stroke: number[][]) => {
-			if (stroke.length === 0) return;
-			context.beginPath();
-			context.moveTo(stroke[0][0], stroke[0][1]);
-			for (let i = 1; i < stroke.length; i++) {
-				context.lineTo(stroke[i][0], stroke[i][1]);
-			}
-			context.stroke();
-		});
-	}
-
-	function handleMouseDown(e: MouseEvent | TouchEvent) {
-		const rect = canvas.getBoundingClientRect();
-		const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
-		const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
-		const x = clientX - rect.left;
-		const y = clientY - rect.top;
-
-		startPos = { x: clientX, y: clientY };
-		moved = false;
-		drawing = true;
-		currentStroke = [[x, y]];
-
-		if (ctx) {
-			ctx.beginPath();
-			ctx.moveTo(x, y);
-		}
-	}
-
-	function handleMouseMove(e: MouseEvent | TouchEvent) {
-		if (drawing) {
-			const rect = canvas.getBoundingClientRect();
-			const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
-			const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
-			const x = clientX - rect.left;
-			const y = clientY - rect.top;
-
-			if (Math.abs(clientX - startPos.x) > 5 || Math.abs(clientY - startPos.y) > 5) {
-				moved = true;
-			}
-
-			currentStroke.push([x, y]);
-			if (ctx) {
-				ctx.lineTo(x, y);
-				ctx.stroke();
-			}
-		}
-	}
 
 	async function writeOwnGameEvent(type: string, payload: any) {
 		if (!uiState?.gameId || !uiState?.myId) return;
 		await writeGameEvent(uiState.gameId, type, { ...payload, playerId: uiState.myId });
-	}
-
-	function handleMouseUp(e: MouseEvent | TouchEvent) {
-		if (!drawing) return;
-		drawing = false;
-
-		if (moved && currentStroke.length > 1) {
-			writeOwnGameEvent('ui/addStroke', {
-				points: currentStroke.map(([x, y]) => ({ x, y }))
-			});
-		} else if (!moved) {
-			// Small click, toggle deduction
-			canvas.style.pointerEvents = 'none';
-			const el = document.elementFromPoint(startPos.x, startPos.y);
-			canvas.style.pointerEvents = 'auto';
-
-			const cell = el?.closest('.cell');
-			if (cell) {
-				const id = parseInt(cell.getAttribute('data-id') || '0');
-				if (id) toggleDeduction(id);
-			}
-			redrawStrokes(); // Clear the "dot" created during mousedown
-		}
-		currentStroke = [];
-	}
-
-	function stopDrawing() {
-		if (drawing) {
-			handleMouseUp({} as any);
-		}
 	}
 
 	function toggleDeduction(id: number) {
@@ -331,9 +204,10 @@
 				<div class="row">
 					{#each row as id}
 						<button
+							type="button"
 							class="cell {displayDeductions[id] || 'unknown'} {visibleTiles.has(id) ? 'dimmed' : ''}"
 							data-id={id}
-							onclick={(e) => e.preventDefault()}
+							onclick={() => toggleDeduction(id)}
 						>
 							<div class="mini-tile {COLORS[i].toLowerCase()}">
 								<span class="num">{id}</span>
@@ -353,16 +227,6 @@
 				</div>
 			{/each}
 		</div>
-		<canvas
-			bind:this={canvas}
-			onmousedown={handleMouseDown}
-			onmousemove={handleMouseMove}
-			onmouseup={handleMouseUp}
-			onmouseleave={stopDrawing}
-			ontouchstart={(e) => { e.preventDefault(); handleMouseDown(e); }}
-			ontouchmove={(e) => { e.preventDefault(); handleMouseMove(e); }}
-			ontouchend={(e) => { e.preventDefault(); handleMouseUp(e); }}
-		></canvas>
 	</div>
 </div>
 
@@ -571,17 +435,6 @@
         .dimmed {
                 opacity: 0.3;
                 filter: grayscale(0.5);
-        }
-
-        canvas {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: auto;
-                cursor: crosshair;
-                z-index: 3;
         }
 
 		@media (orientation: landscape) and (min-width: 1200px) and (min-height: 700px) {

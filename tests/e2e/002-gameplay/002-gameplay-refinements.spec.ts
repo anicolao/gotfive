@@ -61,22 +61,10 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
 
   // --- Deduction Board Tests ---
 
-  const canvas = page.locator('.deduction-board canvas');
-  const boardCells = page.locator('.deduction-board .cell');
   const guessInputs = page.locator('.deduction-board .guess-inputs input');
 
   async function clickCell(id: number) {
-    const cell = page.locator(`.deduction-board .cell[data-id="${id}"]`);
-    const cellBox = await cell.boundingBox();
-    const canvasBox = await canvas.boundingBox();
-    if (cellBox && canvasBox) {
-      await canvas.click({
-        position: {
-          x: cellBox.x + cellBox.width / 2 - canvasBox.x,
-          y: cellBox.y + cellBox.height / 2 - canvasBox.y
-        }
-      });
-    }
+    await page.locator(`.deduction-board .cell[data-id="${id}"]`).click();
   }
 
   // Dynamically determine the colors in the player's hand
@@ -195,14 +183,6 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
     ]
   });
 
-  const canvasBox = await canvas.boundingBox();
-  if (canvasBox) {
-    await page.mouse.move(canvasBox.x + 12, canvasBox.y + 12);
-    await page.mouse.down();
-    await page.mouse.move(canvasBox.x + 40, canvasBox.y + 40);
-    await page.mouse.up();
-  }
-  await expect.poll(async () => page.evaluate(() => (window as any).store.getState().ui.strokes.length)).toBeGreaterThan(0);
   await guessInputs.nth(4).fill('42');
   await expect(guessInputs.nth(4)).toHaveValue('42');
 
@@ -213,7 +193,6 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
   await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .check`)).toBeHidden();
   await expect(page.locator(`.deduction-board .cell[data-id="${tile1}"] .strike`)).toBeHidden();
   await expect(guessInputs.nth(4)).toHaveValue('42');
-  await expect.poll(async () => page.evaluate(() => (window as any).store.getState().ui.strokes.length)).toBeGreaterThan(0);
 
   // --- Play Again Button Tests ---
 
@@ -296,11 +275,10 @@ test('Deduction Board and Play Again Refinements', async ({ page }, testInfo) =>
     const ui = (window as any).store.getState().ui;
     return {
       marks: Object.keys(ui.deductionBoard).length,
-      strokes: ui.strokes.length,
       guessInputs: ui.guessInputs
     };
   });
-  expect(rematchClueSheet).toEqual({ marks: 0, strokes: 0, guessInputs: ['', '', '', '', ''] });
+  expect(rematchClueSheet).toEqual({ marks: 0, guessInputs: ['', '', '', '', ''] });
 
   // 6. Conclude
   tester.generateDocs();

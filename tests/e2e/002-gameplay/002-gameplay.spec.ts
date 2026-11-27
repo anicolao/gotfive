@@ -211,20 +211,8 @@ test('User plays the game', async ({ page }, testInfo) => {
   });
 
   // 6. Use deduction board
-  const canvas = page.locator('.deduction-board canvas');
   const boardCell = page.locator('.deduction-board .cell').first();
-  
-  const cellBox = await boardCell.boundingBox();
-  const canvasBox = await canvas.boundingBox();
-  
-  if (cellBox && canvasBox) {
-    await canvas.click({
-      position: {
-        x: cellBox.x + cellBox.width / 2 - canvasBox.x,
-        y: cellBox.y + cellBox.height / 2 - canvasBox.y
-      }
-    });
-  }
+  await boardCell.click();
   
   await tester.step('deduction-board', {
     description: 'Deduction board cells show dots and automated marking',
