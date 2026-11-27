@@ -33,12 +33,35 @@ async function writeRemoteGameEvents(page: Page, events: Array<{ type: string; p
   }, events);
 }
 
-async function scrollStatusBannerIntoView(page: Page) {
-  await page.waitForSelector('.status-banner', { state: 'visible' });
-  await page.evaluate(() => {
-    document.querySelector('.status-banner')?.scrollIntoView({ block: 'center' });
-    document.querySelector('.deduction-area')?.scrollTo({ top: 0 });
+async function expectNoScrollingAnywhere(page: Page) {
+  const scrollState = await page.evaluate(() => {
+    const selectors = ['html', 'body', '.game-container', 'main', '.main-play-area', '.deduction-area', '.deduction-board', '.grid-container'];
+    const overflowing: Array<{ selector: string; scrollWidth: number; clientWidth: number; scrollHeight: number; clientHeight: number }> = [];
+    for (const selector of selectors) {
+      const el = document.querySelector(selector);
+      if (!el) continue;
+      if (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1) {
+        overflowing.push({
+          selector,
+          scrollWidth: el.scrollWidth,
+          clientWidth: el.clientWidth,
+          scrollHeight: el.scrollHeight,
+          clientHeight: el.clientHeight
+        });
+      }
+    }
+    const lastColumnCell = document.querySelector('.deduction-board .row .cell:last-child');
+    const lastCellRect = lastColumnCell?.getBoundingClientRect();
+    return {
+      overflowing,
+      lastCellInViewport: lastCellRect
+        ? lastCellRect.right <= window.innerWidth + 1 && lastCellRect.bottom <= window.innerHeight + 1
+        : true
+    };
   });
+
+  expect(scrollState.overflowing).toEqual([]);
+  expect(scrollState.lastCellInViewport).toBe(true);
 }
 
 test.describe('Mobile Gameplay', () => {
@@ -133,7 +156,8 @@ test.describe('Mobile Gameplay', () => {
     }
     await expect(page.locator('.deduction-board .got-five-btn')).toBeEnabled();
     await page.locator('.deduction-board .got-five-btn').click();
-    await scrollStatusBannerIntoView(page);
+    await expect(page.locator('.status-banner')).toBeVisible();
+    await expectNoScrollingAnywhere(page);
 
     await tester.step('mobile-portrait-guess', {
       description: 'Submit a guess in portrait mode',
@@ -283,7 +307,8 @@ test.describe('Mobile Gameplay', () => {
     }
     await expect(page.locator('.deduction-board .got-five-btn')).toBeEnabled();
     await page.locator('.deduction-board .got-five-btn').click();
-    await scrollStatusBannerIntoView(page);
+    await expect(page.locator('.status-banner')).toBeVisible();
+    await expectNoScrollingAnywhere(page);
 
     await tester.step('mobile-landscape-guess', {
       description: 'Submit a guess in landscape mode',
@@ -392,53 +417,25 @@ test.describe('Mobile Gameplay', () => {
     expect(layout.board.width).toBeGreaterThanOrEqual(360);
     expect(layout.localStand.width).toBeGreaterThanOrEqual(330);
     expect(layout.overlapPairs).toEqual([]);
-
-    const scrollRunway = await page.evaluate(() => {
-      const main = document.querySelector('main')!;
-      const grid = document.querySelector('.grid-container')!;
-      main.scrollTop = main.scrollHeight;
-      const gridRect = grid.getBoundingClientRect();
-      return {
-        canScroll: main.scrollHeight > main.clientHeight,
-        bottomRunway: window.innerHeight - gridRect.bottom
-      };
-    });
-
-    expect(scrollRunway.canScroll).toBe(true);
-    expect(scrollRunway.bottomRunway).toBeGreaterThanOrEqual(120);
+    await expectNoScrollingAnywhere(page);
   });
 
-  test('Landscape deduction side allows overflow scrolling', async ({ page }) => {
-    await page.setViewportSize({ width: 667, height: 450 });
-    await page.goto(`/?seed=123&myId=landscape-scroll-test-user&lobbyId=lobby-005-landscape-scroll&hostGameId=SCROL`);
+  test('Phone landscape fits all twelve deduction columns without scrolling', async ({ page }) => {
+    await page.setViewportSize({ width: 667, height: 375 });
+    await page.goto(`/?seed=123&myId=landscape-noscroll-test-user&lobbyId=lobby-005-landscape-noscroll&hostGameId=NOSCR`);
 
     await page.getByLabel('Your Name:').fill('ScrollUser');
     await page.getByRole('button', { name: 'Join Lobby' }).click();
     await page.getByRole('button', { name: 'Host New Game' }).click();
     await page.getByRole('button', { name: 'Start Hosting' }).click();
+    await page.evaluate(() => {
+      const store = (window as unknown as WindowWithStore).store;
+      store.dispatch({ type: 'players/addPlayer', payload: { id: 'p2', name: 'Player 2' } });
+    });
     await page.getByRole('button', { name: 'START GAME' }).click();
     await expect(page.locator('.deduction-area')).toBeVisible();
 
-    const scrolled = await page.evaluate(() => {
-      const area = document.querySelector('.deduction-area')!;
-      const spacer = document.createElement('div');
-      spacer.style.flex = '0 0 300px';
-      spacer.setAttribute('data-test-scroll-spacer', 'true');
-      area.appendChild(spacer);
-      const before = {
-        overflowY: getComputedStyle(area).overflowY,
-        canScroll: area.scrollHeight > area.clientHeight
-      };
-      area.scrollTop = area.scrollHeight;
-      return {
-        ...before,
-        scrollTop: area.scrollTop
-      };
-    });
-
-    expect(scrolled.overflowY).toBe('auto');
-    expect(scrolled.canScroll).toBe(true);
-    expect(scrolled.scrollTop).toBeGreaterThan(0);
+    await expectNoScrollingAnywhere(page);
   });
 
   test('Clear button resets deduction markings and notes', async ({ page }) => {
