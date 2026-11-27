@@ -194,7 +194,7 @@
 					{/if}
 				</div>
 				{:else}
-				<div class="main-play-area">
+				<div class="main-play-area" data-opponents={otherPlayerIds.length}>
 					<UnifiedTileScene3D />
 					{#if gameState?.status === 'FINISHED'}
 						<div class="status-banner finished glass-panel">
@@ -218,7 +218,7 @@
 							<button class="groovy-button" onclick={() => acknowledgeElimination(newlyEliminatedPlayer.id)}>Continue</button>
 						</div>
 					{/if}
-					<div class="opponents-area">
+					<div class="opponents-area" data-opponents={otherPlayerIds.length}>
 						{#each otherPlayerIds as id}
 							{#if playersState?.players[id]}
 								<PlayerStand
@@ -251,11 +251,6 @@
 					</div>
 
 					<div class="player-area">
-						<div class="controls-left">
-							{#if gameState?.status === 'PLAYING'}
-								<button class="lobby-link-button" aria-label="Back to Lobby" onclick={handleBackToLobby}>Lobby</button>
-							{/if}
-						</div>
 						{#if uiState?.myId && playersState?.players[uiState.myId]}
 							<PlayerStand
 								id={uiState.myId}
@@ -275,7 +270,12 @@
 				</div>
 
 				<div class="deduction-area">
-					<DeductionBoard deductions={uiState?.deductionBoard} {canSubmitGuess} />
+					<DeductionBoard
+						deductions={uiState?.deductionBoard}
+						{canSubmitGuess}
+						showLobbyButton={gameState?.status === 'PLAYING'}
+						onBackToLobby={handleBackToLobby}
+					/>
 				</div>
 				{/if}
 				</main>
@@ -288,6 +288,7 @@
         .game-container {
                 width: 100vw;
                 height: 100vh;
+                height: 100dvh;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
@@ -298,57 +299,59 @@
                 flex: 1;
                 display: flex;
                 flex-direction: row;
-                padding: var(--gap-base);
-                gap: var(--gap-base);
-                overflow: visible;
+                padding: 8px 10px 18px;
+                gap: 10px;
+                overflow: hidden;
                 box-sizing: border-box;
                 min-width: 0;
                 min-height: 0;
+                height: 100%;
         }
 
         .main-play-area {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
+                justify-content: space-between;
                 gap: var(--gap-base);
-                overflow: visible;
+                overflow: hidden;
                 min-width: 0;
+                min-height: 0;
                 position: relative;
         }
 
         .deduction-area {
-                width: auto;
-                max-width: 380px;
-                flex-shrink: 0;
-                overflow-y: auto;
+                width: clamp(320px, 34vw, 480px);
+                flex: 0 0 auto;
+                overflow: hidden;
                 display: flex;
                 flex-direction: column;
+                justify-content: center;
                 min-height: 0;
-                -webkit-overflow-scrolling: touch;
-        }
-
-        @media (min-width: 1200px) {
-                .deduction-area {
-                        max-width: 500px;
-                }
         }
 
         .opponents-area {
                 display: flex;
                 flex-direction: row;
                 justify-content: center;
+                align-items: flex-start;
                 gap: var(--gap-base);
                 flex-wrap: wrap;
                 flex-shrink: 0;
+                padding-top: 2px;
+        }
+
+        .opponents-area[data-opponents='2'],
+        .opponents-area[data-opponents='3'] {
+                --tile-size: clamp(24px, min(4.2vw, 7dvh), 46px);
         }
 
         .public-area {
                 display: flex;
                 justify-content: center;
-                flex: 1;
+                flex: 1 1 auto;
                 align-items: center;
-                min-height: 80px;
-                flex-shrink: 1;
+                min-height: 0;
                 overflow: visible;
         }
 
@@ -357,83 +360,59 @@
                 justify-content: center;
                 align-items: flex-end;
                 position: relative;
-                padding-bottom: var(--gap-base);
-                min-height: 80px;
+                padding-bottom: 2px;
+                min-height: 0;
                 flex-shrink: 0;
         }
-
-        .controls-left {
-                position: absolute;
-                bottom: 10px;
-        }
-
-		.controls-left {
-				left: 10px;
-				display: flex;
-				align-items: stretch;
-				gap: 6px;
-		}
-
-		@media (orientation: landscape) and (min-height: 501px) {
-				.controls-left {
-						flex-direction: column;
-				}
-		}
 
         @media (orientation: portrait) {
                 main {
                         flex-direction: column;
-                        gap: 8px;
-                        padding: 6px;
-                        justify-content: flex-start;
-                        overflow-y: auto;
+                        gap: 6px;
+                        padding: 6px 6px 18px;
+                        justify-content: space-between;
+                        overflow: hidden;
                         width: 100%;
-                        scroll-padding-bottom: 40vh;
-                        -webkit-overflow-scrolling: touch;
-                }
-
-                main::after {
-                        content: '';
-                        flex: 0 0 40vh;
                 }
 
                 .main-play-area {
-                        flex: 0 0 auto;
+                        flex: 1 1 auto;
                         width: 100%;
+                        min-height: 0;
                         display: flex;
                         flex-direction: column;
-                        gap: 8px;
-                        overflow: visible;
-                }
-
-                .status-banner {
-                        position: relative;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        z-index: 20;
-                        padding: 8px;
-                        margin: 4px auto;
-                        width: 95%;
-                        box-sizing: border-box;
-                }
-
-                .status-banner h2 {
-                        font-size: 1rem;
+                        justify-content: space-evenly;
+                        gap: 4px;
+                        overflow: hidden;
                 }
 
                 .opponents-area {
                         min-height: 0;
                         flex: 0 1 auto;
                         display: flex;
+                        flex-direction: column;
                         align-items: center;
                         justify-content: center;
+                        gap: 4px;
                         width: 100%;
+                }
+
+                .opponents-area[data-opponents='2'],
+                .opponents-area[data-opponents='3'] {
+                        --tile-size: clamp(26px, min(8.6vw, 4.4dvh), 44px);
+                }
+
+                .main-play-area[data-opponents='3'] .public-area {
+                        --tile-size: clamp(30px, min(9.8vw, 5dvh), 48px);
+                }
+
+                .main-play-area[data-opponents='3'] .player-area {
+                        --tile-size: clamp(30px, min(9.8vw, 5dvh), 48px);
                 }
 
                 .public-area {
                         min-height: 0;
-                        flex: 0 0 auto;
+                        flex: 0 1 auto;
                         overflow: visible;
                         display: flex;
                         align-items: center;
@@ -442,114 +421,101 @@
                 }
 
                 .player-area {
-                        padding-bottom: 2px;
+                        padding-bottom: 0;
                         min-height: 0;
                         flex: 0 1 auto;
                         display: flex;
-                        flex-wrap: wrap;
                         align-items: center;
                         justify-content: center;
                         width: 100%;
                 }
 
-                .controls-left {
-                        position: static;
-						flex: 0 0 100%;
-                        display: flex;
-                        justify-content: center;
-						gap: 6px;
-                        order: 2;
-                }
-
                 .deduction-area {
                         flex: 0 0 auto;
                         width: 100%;
-                        min-height: 150px;
-                        max-height: none;
-                        overflow: visible;
+                        max-width: min(100%, 660px);
+                        margin: 0 auto;
+                        min-height: 0;
+                        overflow: hidden;
                         border-top: 1px solid var(--color-glass-border);
-                        padding-top: 8px;
-                }
-                }
-
-        @media (orientation: portrait) and (min-width: 600px) {
-                .main-play-area {
-                        flex: 1.5;
-                }
-                .deduction-area {
-                        flex: 1;
-                        max-height: none;
+                        padding-top: 6px;
                 }
         }
-        @media (orientation: landscape) and (max-height: 500px) {
+
+        @media (orientation: landscape) and (max-height: 540px) {
                 main {
-                        padding: 4px;
+                        padding: 4px 6px 14px;
                         gap: 6px;
+                        overflow: hidden;
                 }
 
                 .main-play-area {
-                        overflow-y: visible;
+                        flex: 1 1 53%;
+                        gap: 2px;
+                        justify-content: space-between;
+                        overflow: hidden;
                 }
 
                 .deduction-area {
-                        width: 230px;
-                        max-width: 35vw;
+                        width: clamp(265px, 45vw, 420px);
+                        max-width: 47vw;
                         flex: 0 0 auto;
                         border-left: 1px solid var(--color-glass-border);
                         padding-left: 6px;
                         box-sizing: border-box;
-                        height: calc(100vh - 8px);
-                        height: calc(100dvh - 8px);
-                        max-height: calc(100vh - 8px);
-                        max-height: calc(100dvh - 8px);
-                        overflow-y: auto;
-                        padding-bottom: 32px;
+                        height: 100%;
+                        overflow: hidden;
+                        justify-content: center;
                 }
 
                 .opponents-area {
-                        gap: 4px;
+                        gap: 3px;
+                        padding-top: 0;
+                }
+
+                .opponents-area[data-opponents='2'],
+                .opponents-area[data-opponents='3'] {
+                        --tile-size: clamp(22px, min(4.2vw, 7dvh), 32px);
+                }
+
+                .main-play-area[data-opponents='3'] .public-area,
+                .main-play-area[data-opponents='3'] .player-area {
+                        --tile-size: clamp(24px, min(5vw, 8.2dvh), 34px);
                 }
 
                 .player-area {
-                        padding-bottom: 2px;
-                        min-height: 60px;
-                        flex-wrap: wrap;
-                }
-
-                .controls-left {
-                        position: static;
-						flex: 0 0 100%;
-                        display: flex;
-                        justify-content: flex-start;
-						gap: 6px;
-                        order: 2;
-                }
-
-                .public-area {
-                        min-height: 100px;
+                        padding-bottom: 0;
                 }
         }
 
         .lobby-wrapper {
                 width: 100%;
-                max-width: 500px;
+                max-width: min(560px, 100%);
                 margin: 0 auto;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                justify-content: flex-start;
-                gap: 1rem;
-                padding: 1.5rem;
+                justify-content: center;
+                gap: 0.75rem;
+                padding: 1.25rem;
                 align-self: center;
                 box-sizing: border-box;
-                overflow-y: auto;
+                overflow: hidden;
                 max-height: 100%;
         }
 
         @media (max-width: 600px) {
                 .lobby-wrapper {
-                        padding: 0.25rem;
-                        gap: 0.25rem;
+                        padding: 0.5rem;
+                        gap: 0.5rem;
+                }
+        }
+
+        @media (orientation: landscape) and (max-height: 540px) {
+                .lobby-wrapper {
+                        max-width: min(720px, 98vw);
+                        padding: 0.45rem 0.75rem;
+                        gap: 0.35rem;
                 }
         }
 
@@ -559,26 +525,41 @@
         }
 
         .status-banner {
-                padding: 10px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 30;
+                width: min(360px, calc(100% - 16px));
+                box-sizing: border-box;
+                padding: 12px 16px;
                 text-align: center;
                 border: 1px solid var(--color-neon-magenta);
-                box-shadow: 0 0 15px rgba(255, 0, 212, 0.3);
-                margin-bottom: 5px;
-                flex-shrink: 0;
+                background: rgba(11, 12, 16, 0.92);
+                box-shadow: 0 0 24px rgba(255, 0, 212, 0.35);
         }
 
         .status-banner h2 {
                 margin: 0;
-                font-size: 1.2rem;
+                font-size: 1.15rem;
                 color: var(--color-neon-magenta);
                 text-shadow: 0 0 10px rgba(255, 0, 212, 0.5);
+        }
+
+        .status-banner p {
+                margin: 4px 0 8px;
         }
 
         .status-actions {
                 display: flex;
                 justify-content: center;
-                gap: 12px;
+                gap: 10px;
                 flex-wrap: wrap;
+        }
+
+        .status-banner .groovy-button {
+                padding: 7px 14px;
+                font-size: 0.8rem;
         }
 
         .groovy-button.alt {
@@ -586,36 +567,18 @@
                 border-color: var(--color-neon-cyan);
         }
 
-        .lobby-link-button {
-                border: 1px solid var(--color-neon-cyan);
-                background: rgba(0, 0, 0, 0.35);
-                color: var(--color-text-main);
-                border-radius: 6px;
-                padding: 4px 8px;
-                min-width: 58px;
-                min-height: 28px;
-                font: inherit;
-                font-size: 0.75rem;
-                cursor: pointer;
-        }
-
-        .lobby-link-button:hover {
-                border-color: var(--color-neon-yellow);
-                color: var(--color-neon-yellow);
-        }
-
         .winner-msg {
-                font-size: 1.1rem;
+                font-size: 1rem;
                 font-weight: bold;
                 color: var(--color-neon-yellow);
-                margin: 5px 0;
+                margin: 4px 0 8px;
                 text-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
         }
 
         .version-info {
                 position: absolute;
-                bottom: 5px;
-                right: 10px;
+                bottom: 3px;
+                right: 8px;
                 width: 90px;
                 color: rgba(240, 240, 240, 0.5);
                 font-family: 'Inter', system-ui, sans-serif;
@@ -624,5 +587,6 @@
                 line-height: 11px;
                 text-align: right;
                 letter-spacing: 0;
+                pointer-events: none;
         }
 </style>

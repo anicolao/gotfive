@@ -26,21 +26,30 @@
 	--color-glass-border: rgba(0, 229, 255, 0.3);
 	--color-glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 
-	/* Backward compatibility mapping to not break everything immediately */
+	/* Backward compatibility mapping */
 	--color-avocado: var(--color-neon-cyan);
 	--color-gold: var(--color-neon-yellow);
 	--color-orange: var(--color-neon-magenta);
 	--color-wood: var(--color-bg-base);
 	--color-cream: var(--color-text-main);
 
-	/* Responsive Sizing */
-	--tile-size: clamp(20px, min(7vw, 12vh), 70px);
-	--mini-tile-size: clamp(14px, min(3.5vw, 6vh), 26px);
-	--gap-base: clamp(1px, 0.8vw, 6px);
-	--font-size-large: clamp(0.8rem, 1.8vw, 1.6rem);
-	--font-size-medium: clamp(0.6rem, 1.2vw, 1rem);
-	--font-size-small: clamp(0.5rem, 1vw, 0.75rem);
-	}
+	/* Responsive Sizing (no-scroll viewport-locked budgets) */
+	--tile-size: clamp(28px, min(6vw, 9.2dvh), 68px);
+	--mini-tile-size: clamp(16px, min(2.4vw, 4.4dvh), 30px);
+	--gap-base: clamp(2px, 0.6vw, 6px);
+	--font-size-large: clamp(0.85rem, 1.6vw, 1.5rem);
+	--font-size-medium: clamp(0.65rem, 1.1vw, 0.95rem);
+	--font-size-small: clamp(0.55rem, 0.95vw, 0.78rem);
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
+}
 
 body {
 	background-color: var(--color-bg-base);
@@ -51,13 +60,9 @@ body {
 	background-size: 32px 32px, 32px 32px, 100% 100%;
 	color: var(--color-text-main);
 	font-family: 'Inter', system-ui, sans-serif;
-	margin: 0;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-height: 100vh;
-	height: 100vh;
-	overflow: hidden;
 }
 
 /* Glassmorphism helpers */
@@ -111,15 +116,18 @@ body {
 
 @media (orientation: portrait) {
 	:root {
-		--tile-size: clamp(48px, calc((100vw - 54px) / 6), 62px);
-		--mini-tile-size: clamp(24px, calc((100vw - 72px) / 12), 36px);
-		--gap-base: 4px;
+		--tile-size: clamp(32px, min(11vw, 6.2dvh), 58px);
+		--mini-tile-size: clamp(20px, min(7vw, 3.6dvh), 44px);
+		--gap-base: clamp(2px, 0.8vw, 5px);
+		--font-size-small: clamp(0.6rem, 2.2vw, 0.8rem);
 	}
 }
 
-@media (orientation: portrait) and (max-height: 760px) {
+@media (orientation: landscape) and (max-height: 540px) {
 	:root {
-		--tile-size: 40px;
-		--mini-tile-size: 22px;
+		--tile-size: clamp(28px, min(6vw, 10.5dvh), 44px);
+		--mini-tile-size: clamp(16px, min(3vw, 5dvh), 24px);
+		--gap-base: 3px;
+		--font-size-small: clamp(0.55rem, 1.5vw, 0.72rem);
 	}
 }

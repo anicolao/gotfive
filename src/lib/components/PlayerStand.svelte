@@ -355,38 +355,62 @@
                 border-color: var(--color-text-muted);
         }
 
-		@media (orientation: landscape) and (max-height: 500px) {
-				.tiles-area {
-						--tile-size: clamp(36px, 6.3vw, 42px);
+		@media (orientation: landscape) and (max-height: 540px) {
+				.stand-container {
+						--clue-tile-size: clamp(18px, 3vw, 24px);
 						gap: 2px;
-						padding-inline: 2px;
+				}
+
+				.name-tag {
+						padding: 2px 8px;
+						font-size: 0.62rem;
+				}
+
+				.tiles-area {
+						--sort-lane-size: max(var(--clue-tile-size), calc(var(--tile-size) * 0.42));
+						gap: 2px;
+						padding: 6px 4px 3px;
+				}
+
+				.base {
+						height: 10px;
 				}
 		}
 
         @media (orientation: portrait) {
                 .stand-container {
-                        width: 100%;
-                        max-width: 380px;
+                        --clue-tile-size: clamp(18px, 4.2vw, 28px);
+                        width: fit-content;
+                        max-width: 100%;
+                        gap: 2px;
+                }
+
+                .name-tag {
+                        padding: 2px 10px;
                 }
 
                 .stand {
-                        width: 100%;
+                        width: fit-content;
+                        max-width: 100%;
                 }
 
                 .tiles-area {
-                        width: 100%;
+                        --sort-lane-size: max(var(--clue-tile-size), calc(var(--tile-size) * 0.42));
+                        width: fit-content;
+                        max-width: 100%;
                         box-sizing: border-box;
-				grid-template-columns:
-						repeat(5, minmax(var(--clue-tile-size), 0.52fr) minmax(0, 1fr))
-						minmax(var(--clue-tile-size), 0.52fr);
+                        grid-template-columns:
+                                repeat(5, minmax(var(--clue-tile-size), var(--sort-lane-size)) minmax(0, var(--tile-size)))
+                                minmax(var(--clue-tile-size), var(--sort-lane-size));
                         gap: 3px;
-                        padding: 4px;
+                        padding: 6px 4px 3px;
                 }
 
                 .slot {
-                        width: 100%;
+                        width: min(100%, var(--tile-size));
                         height: auto;
                         aspect-ratio: 1;
+                        justify-self: center;
                 }
 
                 .slot :global(.tile) {
@@ -401,7 +425,7 @@
                 }
 
                 .base {
-                        height: 18px;
+                        height: 12px;
                 }
 
                 .action-panel {

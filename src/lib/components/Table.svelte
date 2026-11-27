@@ -87,21 +87,23 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
+                box-sizing: border-box;
         }
 
         .decks-area {
                 display: flex;
                 gap: var(--gap-base);
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
                 justify-content: center;
-				position: relative;
-				z-index: 2;
+                position: relative;
+                z-index: 2;
         }
 
-		.decks-stage {
-				position: relative;
-				margin-bottom: var(--gap-base);
-		}
+        .decks-stage {
+                position: relative;
+                margin-bottom: var(--gap-base);
+                max-width: 100%;
+        }
 
         .deck-btn {
                 background: none;
@@ -124,27 +126,27 @@
         .pool-area {
                 text-align: center;
                 width: 100%;
-				display: flex;
-				justify-content: center;
+                display: flex;
+                justify-content: center;
         }
 
-		.pool-stage {
-				position: relative;
-				width: min(
-					100%,
-					calc(var(--pool-columns) * var(--tile-size) + (var(--pool-columns) - 1) * var(--gap-base))
-				);
-				min-height: calc(var(--pool-rows) * var(--tile-size) + (var(--pool-rows) - 1) * var(--gap-base));
-		}
+        .pool-stage {
+                position: relative;
+                width: min(
+                        100%,
+                        calc(var(--pool-columns) * var(--tile-size) + (var(--pool-columns) - 1) * var(--gap-base))
+                );
+                min-height: calc(var(--pool-rows) * var(--tile-size) + (var(--pool-rows) - 1) * var(--gap-base));
+        }
 
         .pool-tiles {
-                display: flex;
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: repeat(var(--pool-columns), minmax(0, var(--tile-size)));
                 gap: var(--gap-base);
                 justify-content: center;
                 min-height: var(--tile-size);
-				position: relative;
-				z-index: 2;
+                position: relative;
+                z-index: 2;
         }
 
         .tile-btn {
@@ -153,6 +155,13 @@
                 padding: 0;
                 cursor: pointer;
                 transition: transform 0.2s;
+                width: 100%;
+                aspect-ratio: 1;
+        }
+
+        .tile-btn :global(.tile) {
+                width: 100%;
+                height: 100%;
         }
 
         .tile-btn:hover:not(:disabled) {

@@ -378,7 +378,7 @@
 			<p>Your Game ID (share this with friends):</p>
 			<div class="id-display">
 				<code>{currentGameId}</code>
-				<button onclick={() => copyToClipboard(currentGameId)}>Copy</button>
+				<button class="groovy-button-small" onclick={() => copyToClipboard(currentGameId)}>Copy</button>
 			</div>
 			<p>Or share this invite link:</p>
 			<button class="groovy-button" onclick={copyInviteLink}>Copy Invite Link</button>
@@ -580,8 +580,7 @@
 		padding: 15px;
 	}
 	.players-list {
-		max-height: 250px;
-		overflow-y: auto;
+		overflow: hidden;
 	}
 	.players-list .me { color: var(--color-neon-cyan); font-weight: bold; }
 	.players-list .lurkers-count { font-style: italic; color: var(--color-text-muted); }
@@ -646,34 +645,91 @@
 		margin-top: 5px;
 	}
 
-	@media (max-width: 768px) {
-	        .step {
-	                margin-bottom: 5px;
-	                padding: 10px;
-	        }
+	@media (orientation: portrait) and (max-width: 768px) {
+		.step {
+			margin-bottom: 8px;
+			padding: 10px;
+		}
 		.lobby-layout {
 			flex-direction: column;
-			gap: 5px;
+			gap: 8px;
+			margin-top: 8px;
+		}
+		.lobby-sidebar {
+			gap: 8px;
 		}
 		.lobby-main {
-			padding: 5px;
+			padding: 8px;
 		}
 		.profile-card, .players-list-panel {
-			padding: 5px;
+			padding: 8px;
+		}
+		.games-header {
+			margin-bottom: 8px;
 		}
 		.games-list {
-			gap: 5px;
+			gap: 6px;
 			margin-bottom: 10px;
 		}
 		.game-card {
-			padding: 5px;
+			padding: 8px;
 		}
 		.join-private {
-			padding-top: 5px;
+			padding-top: 8px;
 		}
-		h2 { margin-bottom: 16px; font-size: 19px; line-height: 23px; }
-		h3 { margin: 2px 0; font-size: 16px; line-height: 19px; }
-		.input-group { margin-bottom: 5px; }
-		input, select { padding: 8px; font-size: 1rem; }
+		h2 { margin-bottom: 10px; font-size: 20px; line-height: 24px; }
+		h3 { margin: 4px 0; font-size: 15px; line-height: 18px; }
+		h4 { margin: 6px 0; font-size: 14px; line-height: 17px; }
+		.input-group { margin-bottom: 8px; gap: 4px; }
+		input, select { padding: 8px; font-size: 0.95rem; }
+		li { padding: 4px 6px; font-size: 0.9rem; }
+	}
+
+	@media (orientation: landscape) and (max-height: 540px) {
+		.lobby-header-row {
+			margin-bottom: 4px;
+		}
+		h2 { margin: 0 0 6px; font-size: 18px; line-height: 22px; }
+		h3 { margin: 4px 0; font-size: 14px; line-height: 17px; }
+		h4 { margin: 4px 0; font-size: 13px; line-height: 16px; }
+		.step {
+			margin-bottom: 6px;
+			padding: 8px 12px;
+		}
+		.input-group {
+			margin-bottom: 6px;
+			gap: 4px;
+		}
+		label { font-size: 0.85rem; }
+		input, select { padding: 6px 10px; font-size: 0.9rem; }
+		.lobby-layout {
+			flex-direction: row;
+			gap: 10px;
+			margin-top: 4px;
+		}
+		.lobby-sidebar {
+			gap: 6px;
+		}
+		.lobby-main, .profile-card, .players-list-panel {
+			padding: 8px;
+		}
+		.games-header {
+			margin-bottom: 6px;
+		}
+		.games-list {
+			gap: 6px;
+			margin-bottom: 8px;
+		}
+		.game-card {
+			padding: 6px 8px;
+		}
+		.join-private {
+			padding-top: 6px;
+		}
+		.status {
+			margin-top: 6px;
+		}
+		li { padding: 3px 6px; font-size: 0.82rem; }
+		.actions { margin-top: 6px; }
 	}
 </style>

@@ -5,7 +5,17 @@
 	import { writeGameEvent, writeGameEvents } from '$lib/firebase/events';
 	import { onMount } from 'svelte';
 
-	let { deductions = {}, canSubmitGuess = false } = $props();
+	let {
+		deductions = {},
+		canSubmitGuess = false,
+		showLobbyButton = false,
+		onBackToLobby = () => {}
+	}: {
+		deductions?: Record<number, '?' | 'X' | 'OK'>;
+		canSubmitGuess?: boolean;
+		showLobbyButton?: boolean;
+		onBackToLobby?: () => void;
+	} = $props();
 
 	const COLORS = ['Red', 'Blue', 'Yellow', 'Green', 'Purple'];
 	const TILE_IDS_BY_COLOR = COLORS.map((_, i) => {
@@ -180,7 +190,12 @@
 <div class="deduction-board">
 	<div class="header">
 		<h2>Top Secret Log</h2>
-		<button onclick={clearBoard}>Clear</button>
+		<div class="header-actions">
+			<button type="button" class="header-btn" onclick={clearBoard}>Clear</button>
+			{#if showLobbyButton}
+				<button type="button" class="header-btn lobby-link-button" aria-label="Back to Lobby" onclick={onBackToLobby}>Lobby</button>
+			{/if}
+		</div>
 	</div>
 
 	<div class="guess-area">
@@ -190,6 +205,7 @@
 					type="number"
 					min="1"
 					max="60"
+					aria-label={`Guess slot ${i + 1}`}
 					value={val}
 					oninput={(e) => setGuessInput(i, e.currentTarget.value)}
 					placeholder="?"
@@ -197,8 +213,9 @@
 			{/each}
 		</div>
 		<button class="groovy-button got-five-btn" disabled={!canGuess} onclick={submitGuess}>
-		        GOT FIVE!
-		</button>	</div>
+			GOT FIVE!
+		</button>
+	</div>
 
 	<div class="grid-container">
 		<div class="grid">
@@ -236,24 +253,52 @@
         .deduction-board {
                 background: var(--color-bg-panel);
                 backdrop-filter: blur(12px);
-                padding: var(--gap-base);
-                border-radius: 12px;
+                padding: 8px;
+                border-radius: 10px;
                 border: 1px solid var(--color-glass-border);
                 box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 229, 255, 0.1);
                 color: var(--color-text-main);
-                width: fit-content;
+                width: 100%;
                 position: relative;
                 margin: 0 auto;
                 max-width: 100%;
                 box-sizing: border-box;
                 flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
         }
 
         .header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: var(--gap-base);
+                gap: 6px;
+        }
+
+        .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+        }
+
+        .header-btn {
+                border: 1px solid var(--color-neon-cyan);
+                background: rgba(0, 0, 0, 0.45);
+                color: var(--color-text-main);
+                border-radius: 6px;
+                padding: 3px 9px;
+                min-height: 24px;
+                font: inherit;
+                font-size: 0.72rem;
+                font-weight: 600;
+                cursor: pointer;
+                white-space: nowrap;
+        }
+
+        .header-btn:hover {
+                border-color: var(--color-neon-yellow);
+                color: var(--color-neon-yellow);
         }
 
         h2 {
@@ -264,80 +309,87 @@
                 letter-spacing: 1px;
                 color: var(--color-neon-cyan);
                 text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+                white-space: nowrap;
         }
 
         .guess-area {
                 display: flex;
-                flex-direction: column;
+                flex-direction: row;
                 align-items: center;
-                gap: var(--gap-base);
-                margin-bottom: var(--gap-base);
-                padding: var(--gap-base);
+                justify-content: space-between;
+                gap: 6px;
+                padding: 6px 8px;
                 background: rgba(0,0,0,0.5);
                 border-radius: 8px;
                 border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .guess-inputs {
-                display: flex;
-                gap: 6px;
-				width: 100%;
-				justify-content: center;
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 4px;
+                flex: 1 1 auto;
+                min-width: 0;
+                max-width: 260px;
         }
 
         .guess-inputs input {
-                width: calc(var(--mini-tile-size) * 1.45);
-                height: calc(var(--mini-tile-size) * 1.25);
-                min-width: 28px;
-                min-height: 24px;
+                width: 100%;
+                height: clamp(24px, 3.6dvh, 36px);
+                min-width: 0;
                 text-align: center;
                 border: 1px solid var(--color-neon-yellow);
-                border-radius: 34%;
+                border-radius: 8px;
                 font-family: 'Courier New', Courier, monospace;
                 font-weight: bold;
                 background: rgba(0, 0, 0, 0.8);
                 color: var(--color-neon-yellow);
-                font-size: max(12px, var(--font-size-small));
+                font-size: clamp(12px, 1.4vw, 15px);
                 line-height: 1;
                 box-sizing: border-box;
-				padding: 0;
-				appearance: textfield;
+                padding: 0;
+                appearance: textfield;
         }
 
-		.guess-inputs input::-webkit-inner-spin-button,
-		.guess-inputs input::-webkit-outer-spin-button {
-				margin: 0;
-				appearance: none;
-		}
+        .guess-inputs input::-webkit-inner-spin-button,
+        .guess-inputs input::-webkit-outer-spin-button {
+                margin: 0;
+                appearance: none;
+        }
 
         .got-five-btn {
-                font-size: var(--font-size-small);
-                padding: 8px 16px;
+                font-size: clamp(0.62rem, 1vw, 0.78rem);
+                padding: 6px 10px;
+                white-space: nowrap;
+                flex-shrink: 0;
         }
 
         .grid-container {
                 position: relative;
                 border: 1px solid var(--color-glass-border);
-                padding: var(--gap-base);
+                padding: 4px;
                 background: rgba(0, 0, 0, 0.4);
                 border-radius: 8px;
-                overflow: auto;
-                max-height: 100%;
+                overflow: hidden;
+                width: 100%;
+                box-sizing: border-box;
         }
 
         .grid {
                 display: flex;
                 flex-direction: column;
-                gap: 4px;
+                gap: 3px;
                 z-index: 2;
                 position: relative;
-                min-width: min-content;
+                width: 100%;
         }
 
         .row {
-                display: flex;
-                gap: 4px;
+                display: grid;
+                grid-template-columns: repeat(12, minmax(0, 1fr));
+                gap: 3px;
                 align-items: center;
+                width: 100%;
         }
 
         .cell {
@@ -346,8 +398,9 @@
                 border: none;
                 cursor: pointer;
                 position: relative;
-                width: var(--mini-tile-size);
-                height: var(--mini-tile-size);
+                width: 100%;
+                aspect-ratio: 1;
+                min-width: 0;
         }
 
         .mini-tile {
@@ -359,14 +412,14 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                font-size: calc(var(--mini-tile-size) * 0.5);
+                font-size: clamp(9px, calc(var(--mini-tile-size) * 0.48), 16px);
                 font-weight: bold;
                 color: white;
                 position: relative;
                 box-shadow:
                         inset 0 2px 2px rgba(255,255,255,0.38),
                         inset 0 -2px 3px rgba(0,0,0,0.22),
-                        0 3px 5px rgba(0,0,0,0.5);
+                        0 2px 4px rgba(0,0,0,0.5);
                 transition: transform 0.1s;
                 padding: 0;
                 box-sizing: border-box;
@@ -381,9 +434,9 @@
 
         .num {
                 z-index: 1;
-				-webkit-text-stroke: max(1px, calc(var(--mini-tile-size) * 0.055)) #050505;
-				paint-order: stroke fill;
-				text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+                -webkit-text-stroke: max(1px, calc(var(--mini-tile-size) * 0.05)) #050505;
+                paint-order: stroke fill;
+                text-shadow: 0 1px 1px rgba(0,0,0,0.8);
                 line-height: 1;
         }
 
@@ -394,8 +447,8 @@
         }
 
         .dot {
-                width: calc(var(--mini-tile-size) * 0.15);
-                height: calc(var(--mini-tile-size) * 0.15);
+                width: clamp(2.5px, calc(var(--mini-tile-size) * 0.13), 5px);
+                height: clamp(2.5px, calc(var(--mini-tile-size) * 0.13), 5px);
                 background-color: white;
                 border-radius: 50%;
                 box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
@@ -426,7 +479,7 @@
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                border: 3px solid var(--color-neon-cyan);
+                border: 2px solid var(--color-neon-cyan);
                 border-radius: 3px;
                 box-sizing: border-box;
                 z-index: 2;
@@ -439,92 +492,72 @@
                 filter: grayscale(0.5);
         }
 
-		@media (orientation: landscape) and (min-width: 1200px) and (min-height: 700px) {
-				.deduction-board {
-						zoom: 1.25;
-				}
-		}
-
         @media (orientation: portrait) {
                 .deduction-board {
-                        width: 100%;
-                        margin: 0;
-                        padding: 4px;
+                        padding: 6px;
+                        gap: 5px;
                         border-radius: 8px;
                 }
 
-                .header {
-                        gap: 8px;
-                }
-
-                .header button {
-                        min-height: 28px;
-                        white-space: nowrap;
-                }
-
-                .guess-inputs {
-                        width: 100%;
-                        justify-content: center;
-                }
-
-                .guess-inputs input {
-                        width: 42px;
-                        height: 34px;
-                        min-width: 42px;
-                        min-height: 34px;
-                        font-size: 16px;
-                }
-
-                .grid-container {
-                        width: 100%;
-                        box-sizing: border-box;
-                        overflow: visible;
-                        padding: 4px;
-                }
-
-                .grid {
-                        width: 100%;
-                        gap: 4px;
-                }
-
-                .row {
-                        display: grid;
-                        grid-template-columns: repeat(12, minmax(0, 1fr));
-                        gap: 4px;
-                        width: 100%;
-                }
-
-                .cell {
-                        width: auto;
-                        height: auto;
-                        aspect-ratio: 1;
-                }
-        }
-
-        @media (orientation: portrait) and (max-height: 760px) {
-                .deduction-board {
-                        width: min(100%, 330px);
-                        margin: 0 auto;
-                }
-
                 .guess-area {
-                        padding: 2px;
-                        margin-bottom: 2px;
+                        padding: 4px 6px;
                 }
 
                 .guess-inputs input {
-                        width: 34px;
-                        height: 30px;
-                        min-width: 34px;
-                        min-height: 30px;
+                        height: clamp(28px, 4dvh, 36px);
+                        font-size: 14px;
                 }
 
                 .got-five-btn {
-                        padding: 4px 12px;
+                        padding: 6px 10px;
+                        font-size: 0.72rem;
+                }
+        }
+
+        @media (orientation: landscape) and (max-height: 540px) {
+                .deduction-board {
+                        padding: 5px;
+                        gap: 4px;
+                        border-radius: 8px;
                 }
 
-                .row {
+                .header-btn {
+                        padding: 2px 7px;
+                        min-height: 20px;
+                        font-size: 0.65rem;
+                }
+
+                .guess-area {
+                        padding: 4px 5px;
+                        gap: 4px;
+                }
+
+                .guess-inputs {
                         gap: 3px;
+                }
+
+                .guess-inputs input {
+                        height: 24px;
+                        font-size: 12px;
+                        border-radius: 6px;
+                }
+
+                .got-five-btn {
+                        padding: 4px 8px;
+                        font-size: 0.62rem;
+                }
+
+                .grid-container {
+                        padding: 3px;
+                }
+
+                .grid, .row {
+                        gap: 2px;
+                }
+
+                .mini-tile {
+                        font-size: clamp(8.5px, 1.6vw, 12px);
+                        border-radius: 3px;
                 }
         }
 </style>
