@@ -6,7 +6,7 @@ interface Store {
   getState: () => {
     game: { status: string; turnOrder: string[] };
     players: { players: Record<string, unknown> };
-    ui: { gameId: string; myId: string; deductionBoard: Record<number, '?' | 'X' | 'OK'>; strokes: number[][][] };
+    ui: { gameId: string; myId: string; deductionBoard: Record<number, '?' | 'X' | 'OK'> };
   };
 }
 
@@ -452,19 +452,17 @@ test.describe('Mobile Gameplay', () => {
     await page.getByRole('button', { name: 'START GAME' }).click();
 
     await writeRemoteGameEvents(page, [
-      { type: 'ui/markDeductions', payload: { marks: { 1: 'X', 2: 'OK' } } },
-      { type: 'ui/addStroke', payload: { points: [{ x: 1, y: 1 }, { x: 20, y: 20 }] } }
+      { type: 'ui/markDeductions', payload: { marks: { 1: 'X', 2: 'OK' } } }
     ]);
     await expect(page.locator('.deduction-board .cell[data-id="1"] .strike')).toBeVisible({ timeout: 2000 });
 
     const populated = await page.evaluate(() => {
       const state = (window as unknown as WindowWithStore).store.getState().ui;
       return {
-        marks: Object.keys(state.deductionBoard).length,
-        strokes: state.strokes.length
+        marks: Object.keys(state.deductionBoard).length
       };
     });
-    expect(populated).toEqual({ marks: 2, strokes: 1 });
+    expect(populated).toEqual({ marks: 2 });
 
     await page.getByRole('button', { name: 'Clear', exact: true }).click();
     await expect(page.locator('.deduction-board .strike')).toHaveCount(0, { timeout: 2000 });
@@ -474,13 +472,11 @@ test.describe('Mobile Gameplay', () => {
       const state = (window as unknown as WindowWithStore).store.getState().ui;
       return {
         marks: Object.keys(state.deductionBoard).length,
-        strokes: state.strokes.length,
         dimmedTiles: document.querySelectorAll('.deduction-board .cell.dimmed').length
       };
     });
 
     expect(cleared.marks).toBe(0);
-    expect(cleared.strokes).toBe(0);
     expect(cleared.dimmedTiles).toBeGreaterThan(0);
   });
 });

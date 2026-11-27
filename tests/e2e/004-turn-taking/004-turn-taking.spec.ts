@@ -121,7 +121,6 @@ test.describe('Multiplayer Turn-Taking', () => {
 
 		await writeOwnUIEvents(clientPage, [
 			{ type: 'ui/markDeductions', payload: { marks: { 1: 'X', 6: 'OK' } } },
-			{ type: 'ui/addStroke', payload: { points: [{ x: 1, y: 1 }, { x: 12, y: 12 }] } },
 			{ type: 'ui/setGuessInputs', payload: { values: ['1', '2', '3', '4', '5'] } }
 		]);
 		const clientGuessInputs = clientPage.locator('.deduction-board .guess-inputs input');

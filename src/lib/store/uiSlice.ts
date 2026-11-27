@@ -4,7 +4,6 @@ export interface UIState {
 	myId: string | null;
 	isHost: boolean;
 	deductionBoard: Record<number, '?' | 'X' | 'OK'>;
-	strokes: number[][][]; // [strokeIndex][pointIndex][x, y]
 	guessInputs: string[];
 	overlay: 'RULES' | 'GUESS' | 'NONE';
 	selectedTileId: number | null;
@@ -15,7 +14,6 @@ const initialState: UIState = {
 	myId: null,
 	isHost: false,
 	deductionBoard: {},
-	strokes: [],
 	guessInputs: ['', '', '', '', ''],
 	overlay: 'NONE',
 	selectedTileId: null,
@@ -49,20 +47,9 @@ export const uiSlice = createSlice({
 				state.deductionBoard[Number(id)] = mark;
 			});
 		},
-		addStroke: (state, action: PayloadAction<number[][] | { stroke?: number[][]; points?: Array<{ x: number; y: number }>; playerId?: string | null }>) => {
-			const stroke = Array.isArray(action.payload)
-				? action.payload
-				: action.payload.stroke || action.payload.points?.map((point) => [point.x, point.y]) || [];
-			if (!Array.isArray(action.payload) && !isLocalPlayerAction(state, action.payload)) return;
-			state.strokes.push(stroke);
-		},
-		clearStrokes: (state) => {
-			state.strokes = [];
-		},
 		clearDeductionBoard: (state, action: PayloadAction<{ playerId?: string | null } | undefined>) => {
 			if (!isLocalPlayerAction(state, action.payload)) return;
 			state.deductionBoard = {};
-			state.strokes = [];
 			state.guessInputs = ['', '', '', '', ''];
 		},
 		setGuessInputs: (state, action: PayloadAction<{ values: string[]; playerId?: string | null }>) => {
@@ -85,7 +72,6 @@ export const uiSlice = createSlice({
 		},
 		resetUI: (state) => {
 			state.deductionBoard = {};
-			state.strokes = [];
 			state.guessInputs = ['', '', '', '', ''];
 			state.overlay = 'NONE';
 			state.selectedTileId = null;
@@ -93,5 +79,5 @@ export const uiSlice = createSlice({
 	}
 });
 
-export const { setMyId, setIsHost, setGameId, markDeduction, markDeductions, addStroke, clearStrokes, clearDeductionBoard, setGuessInputs, setGuessInput, setOverlay, selectTile, resetUI } = uiSlice.actions;
+export const { setMyId, setIsHost, setGameId, markDeduction, markDeductions, clearDeductionBoard, setGuessInputs, setGuessInput, setOverlay, selectTile, resetUI } = uiSlice.actions;
 export default uiSlice.reducer;
