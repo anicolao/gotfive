@@ -343,11 +343,12 @@ Membership:
 - Membership is derived from `/lobby` events.
 - A client can read a game action stream if replaying `/lobby` shows that its UID joined that game and was not removed before start, subject to security rule practicality.
 
-Security note:
+Security note (Trusted-Client Model):
 
-- Any signed-in user may read any game action stream.
+- Got Five! intentionally uses a trusted-client model: any signed-in user may read any game action stream, including dealt hands (`players/setHand`) and per-player deduction sheet actions (`ui/*` such as marks and guess inputs).
+- Clients are trusted to mask the local player's hidden hand in the UI and ignore other players' `ui/*` events via `playerId` filtering. Storing deduction state in `/games/{gameId}/actions` is an accepted trade-off for simple reload persistence without an authoritative server.
 - Hidden game IDs are still useful for UX, but not treated as a hard security boundary.
-- Firestore rules should focus on requiring auth, append-only writes, and basic actor attribution. They do not need to enforce membership or gameplay legality.
+- Firestore rules focus on requiring auth, append-only writes, and basic actor attribution. They do not need to enforce membership, per-player privacy, or gameplay legality.
 
 ## Existing Game Actions
 

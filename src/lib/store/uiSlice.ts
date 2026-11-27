@@ -20,6 +20,8 @@ const initialState: UIState = {
 	gameId: null
 };
 
+// Trusted-client model: clients receive all game stream events and filter
+// private deduction-sheet actions (`ui/*`) locally by `playerId`.
 function isLocalPlayerAction(state: UIState, payload: { playerId?: string | null } | undefined) {
 	return !payload?.playerId || !state.myId || payload.playerId === state.myId;
 }
