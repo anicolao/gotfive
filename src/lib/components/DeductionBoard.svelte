@@ -85,6 +85,8 @@
 		};
 	});
 
+	// Trusted-client model: per-player deduction marks and guess inputs are persisted
+	// in the shared game action stream and filtered client-side by `playerId`.
 	async function writeOwnGameEvent(type: string, payload: any) {
 		if (!uiState?.gameId || !uiState?.myId) return;
 		await writeGameEvent(uiState.gameId, type, { ...payload, playerId: uiState.myId });

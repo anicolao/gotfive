@@ -14,6 +14,7 @@ A game of numbers.
 - Reduced-motion preferences skip transitional movement and render every piece directly in its settled state.
 - One responsive, high-DPI canvas renders every rack and table field through a distant, low-FOV camera.
 - Event replay enforces one tile draw per turn, and Firestore uses its XHR transport on iOS WebKit and desktop Safari to avoid delayed snapshot frames.
+- **Trusted-Client Model:** Got Five! assumes trusted clients playing among friends. Hidden hands and per-player deduction sheet actions (`ui/*`) are stored in the shared `/games/{gameId}/actions` stream so state syncs cleanly across reloads without a game server; each client is trusted to mask the local player's hidden rack and filter deduction events to its own `playerId`.
 
 ## Development Commands
 - `bun install`: Install dependencies.
